@@ -6,7 +6,7 @@ import android.os.Parcelable
 /**
  * Created by std on 2018-02-06.
  */
-class Customer constructor(var userType : String) : Parcelable {
+class Driver constructor(var userType: String) : Parcelable {
     constructor(parcel: Parcel) : this(parcel.readString()) {
     }
 
@@ -18,12 +18,12 @@ class Customer constructor(var userType : String) : Parcelable {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<Customer> {
-        override fun createFromParcel(parcel: Parcel): Customer {
-            return Customer(parcel)
+    companion object CREATOR : Parcelable.Creator<Driver> {
+        override fun createFromParcel(parcel: Parcel): Driver {
+            return Driver(parcel)
         }
 
-        override fun newArray(size: Int): Array<Customer?> {
+        override fun newArray(size: Int): Array<Driver?> {
             return arrayOfNulls(size)
         }
     }
