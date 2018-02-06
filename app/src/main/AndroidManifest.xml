@@ -21,7 +21,9 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <activity android:name=".Controller.StartActivity"></activity>
+        <activity android:name=".Controller.StartActivity" />
+        <activity android:name=".Controller.CustomerLoginActivity" />
+        <activity android:name=".Controller.DriverLoginActivity"></activity>
     </application>
 
 </manifest>
