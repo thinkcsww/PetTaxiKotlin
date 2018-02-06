@@ -23,7 +23,9 @@
 
         <activity android:name=".Controller.StartActivity" />
         <activity android:name=".Controller.CustomerLoginActivity" />
-        <activity android:name=".Controller.DriverLoginActivity"></activity>
+        <activity android:name=".Controller.DriverLoginActivity" />
+        <activity android:name=".Controller.DriverRegisterActivity" />
+        <activity android:name=".Controller.CustomerRegisterActivity"></activity>
     </application>
 
 </manifest>
