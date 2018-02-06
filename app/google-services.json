@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "728003793176",
+    "firebase_url": "https://pettaxikotlin.firebaseio.com",
+    "project_id": "pettaxikotlin",
+    "storage_bucket": "pettaxikotlin.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728003793176:android:b660a19fe4452cb6",
+        "android_client_info": {
+          "package_name": "kr.co.pirnardoors.pettaxikotlin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "728003793176-sq265ji1iutreu8jtid5ivnmhnq0ui32.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.co.pirnardoors.pettaxikotlin",
+            "certificate_hash": "c9e0d1695a251dfc51a46297a46f77a47a01b8c8"
+          }
+        },
+        {
+          "client_id": "728003793176-ocqls4205tbth0n4h7p3e888ad3nekce.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAm5ssaq4azWEDUErZHfeXBJWYWAvnwBXo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "728003793176-ocqls4205tbth0n4h7p3e888ad3nekce.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

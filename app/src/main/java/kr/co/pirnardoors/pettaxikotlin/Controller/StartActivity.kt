@@ -1,12 +1,13 @@
-package kr.co.pirnardoors.pettaxikotlin
+package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import kr.co.pirnardoors.pettaxikotlin.R
 
-class MainActivity : AppCompatActivity() {
+class StartActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_start)
     }
 }
