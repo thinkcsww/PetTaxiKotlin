@@ -32,6 +32,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var locationListener : LocationListener? = null
     lateinit var lastKnownLocation : Location
     var requestActive : Boolean = false
+    var driverActive = false
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

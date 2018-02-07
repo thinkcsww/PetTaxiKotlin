@@ -16,6 +16,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.kakao.kakaonavi.Location
+import com.kakao.kakaonavi.NaviOptions
+import com.kakao.kakaonavi.options.CoordType
+import com.kakao.kakaonavi.options.RpOption
+import com.kakao.kakaonavi.options.VehicleType
 import kotlinx.android.synthetic.main.activity_driver_map.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
@@ -23,6 +28,9 @@ import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_REQUEST
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.toast
 import java.util.ArrayList
+import com.kakao.kakaonavi.KakaoNaviParams
+import com.kakao.kakaonavi.KakaoNaviService
+
 
 class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -30,6 +38,8 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_map)
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
@@ -41,6 +51,17 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
         var requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
         var requestUserId = req.requestUserId
+
+        //Kakao navigation
+   /*     val options = NaviOptions.newBuilder()
+                .setCoordType(CoordType.WGS84)
+                .setVehicleType(VehicleType.FIRST)
+                .setRpOption(RpOption.SHORTEST).build()
+
+        val destination = Location.newBuilder("목적지", req.requestLatitude, req.requestLongitude).build()
+        val builder = KakaoNaviParams.newBuilder(destination).setNaviOptions(options)*/
+
+
 
 
         // Double marker driver, and customer
@@ -73,13 +94,33 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             simpleAlert.setTitle("확인")
             simpleAlert.setMessage("정말 수락하시겠습니까?")
 
+            //Yes Button
             simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
                 dialogInterface, i ->
                 acceptBtn.visibility = View.INVISIBLE
                 var database = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId).child("MD")
                 database.setValue(driverUserId)
-            })
+                //kakao
+                val options = NaviOptions.newBuilder()
+                        .setCoordType(CoordType.WGS84)
+                        .setVehicleType(VehicleType.FIRST)
+                        .setRpOption(RpOption.SHORTEST).build()
 
+                val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
+
+
+                // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
+
+                val builder = KakaoNaviParams.newBuilder(destination)
+                        .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
+
+                KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
+                KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
+
+                finish()
+                return@setButton
+            })
+            // No Button
             simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {
                 dialogInterface, i ->
                 toast("취소되었습니다.")
