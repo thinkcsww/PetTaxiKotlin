@@ -8,11 +8,13 @@ import android.widget.Toast
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_customer_register.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_USERTYPE
 
 class CustomerRegisterActivity : AppCompatActivity() {
 
@@ -21,6 +23,9 @@ class CustomerRegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer_register)
+
+
+
 
         authStateListener = FirebaseAuth.AuthStateListener {
             var user = FirebaseAuth.getInstance().currentUser

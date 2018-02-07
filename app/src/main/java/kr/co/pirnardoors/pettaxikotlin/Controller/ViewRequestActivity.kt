@@ -1,5 +1,6 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import com.google.firebase.auth.FirebaseAuth
@@ -15,6 +16,10 @@ class ViewRequestActivity : AppCompatActivity() {
 
         logoutBtn.setOnClickListener {
             auth.signOut()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+            return@setOnClickListener
 
         }
     }

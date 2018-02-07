@@ -30,6 +30,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             auth.signOut()
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            finish()
+            return@setOnClickListener
         }
     }
 
