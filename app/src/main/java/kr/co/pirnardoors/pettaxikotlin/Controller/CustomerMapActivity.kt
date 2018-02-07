@@ -1,20 +1,17 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.SyncStateContract.Helpers.update
-import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import android.widget.Toast
+import com.firebase.geofire.GeoFire
+import com.firebase.geofire.GeoLocation
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,7 +20,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.android.synthetic.main.activity_rider_map.*
+import com.google.firebase.database.FirebaseDatabase
+import kotlinx.android.synthetic.main.activity_customer_map.*
 import kr.co.pirnardoors.pettaxikotlin.R
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -32,16 +30,43 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     var locationManager : LocationManager? = null
     var locationListener : LocationListener? = null
+    lateinit var lastKnownLocation : Location
+    var requestActive : Boolean = false
+    var userId = FirebaseAuth.getInstance().currentUser?.uid
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_rider_map)
+        setContentView(R.layout.activity_customer_map)
         val auth = FirebaseAuth.getInstance()
+        val database = FirebaseDatabase.getInstance().getReference("Request")
+        val geoFire = GeoFire(database)
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
 
+        //call catcardog Button
+
+        callBtn.setOnClickListener {
+            if(lastKnownLocation != null) {
+                if (requestActive == false) {
+                    requestActive = true
+                    callBtn.setText("취소하기")
+                    geoFire.setLocation(userId, GeoLocation(lastKnownLocation.latitude, lastKnownLocation.longitude))
+                } else {
+                    requestActive = false
+                    callBtn.setText("캣카독 부르기")
+                    geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
+                        if (error == null) {
+                            Toast.makeText(this@CustomerMapActivity, "취소되었습니다.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            error.message
+                        }
+                    })
+                }
+            }
+        }
 
 
         //Log out
@@ -85,7 +110,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
 
-        var lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(lastKnownLocation != null) {
             var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
