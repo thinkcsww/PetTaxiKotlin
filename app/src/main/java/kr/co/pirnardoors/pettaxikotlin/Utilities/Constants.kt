@@ -7,3 +7,4 @@ package kr.co.pirnardoors.pettaxikotlin.Utilities
 const val TAG = "Info: "
 
 const val LISTVIEW = "Info listView"
+const val EXTRA_REQUEST = "request"

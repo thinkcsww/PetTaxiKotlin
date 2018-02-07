@@ -50,7 +50,10 @@
         <activity
             android:name=".Controller.CustomerMapActivity"
             android:label="@string/title_activity_rider_map" />
-        <activity android:name=".Controller.ViewRequestActivity"></activity>
+        <activity android:name=".Controller.ViewRequestActivity" />
+        <activity
+            android:name=".Controller.DriverMapActivity"
+            android:label="@string/title_activity_driver_map"></activity>
     </application>
 
 </manifest>

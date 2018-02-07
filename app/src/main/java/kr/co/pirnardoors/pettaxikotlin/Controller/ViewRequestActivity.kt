@@ -8,11 +8,14 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Adapter
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
@@ -21,18 +24,21 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_view_request.*
+import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_REQUEST
 import kr.co.pirnardoors.pettaxikotlin.Utilities.LISTVIEW
+import java.util.*
 
 class ViewRequestActivity : AppCompatActivity() {
     var request = ArrayList<String>()
-    var requestuserId = ArrayList<String>()
+    var requestUserId = ArrayList<String>()
     var requestLatitudes = ArrayList<Double>()
     var requestLongitudes = ArrayList<Double>()
     var auth = FirebaseAuth.getInstance()
     var locationManager : LocationManager? = null
     var locationListener : LocationListener? = null
-    var lastKnowLocation : Location? = null
+    var lastKnownLocation : Location? = null
     var adapter :ArrayAdapter<String>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,9 +79,9 @@ class ViewRequestActivity : AppCompatActivity() {
             return
         }
         locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-        lastKnowLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        if(lastKnowLocation != null) {
-            updateListView(lastKnowLocation!!)
+        lastKnownLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        if(lastKnownLocation != null) {
+            updateListView(lastKnownLocation!!)
         } else {
             Toast.makeText(this, "위치 파악 문제가 발생하였습니다.", Toast.LENGTH_SHORT).show()
         }
@@ -89,7 +95,35 @@ class ViewRequestActivity : AppCompatActivity() {
             return@setOnClickListener
 
         }
+
+        // Listview item clicked listener
+        listView.onItemClickListener = object : AdapterView.OnItemClickListener {
+            override fun onItemClick(p0: AdapterView<*>?, p1: View?, i: Int, p3: Long) {
+                if (ActivityCompat.checkSelfPermission(this@ViewRequestActivity,
+                                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this@ViewRequestActivity, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return
+                }
+
+                 lastKnownLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                if(requestLatitudes.size > i && requestLongitudes.size > i && requestUserId.size > i
+                        && lastKnownLocation != null) {
+
+                    var req : Request = Request(0.0,0.0,"",0.0,0.0)
+                    req.requestLatitude = requestLatitudes[i]
+                    req.requestLongitude = requestLongitudes[i]
+                    req.driverLatitude = lastKnownLocation!!.latitude
+                    req.driverLongitude = lastKnownLocation!!.longitude
+                    req.requestUserId = requestUserId[i]
+                    var intent = Intent(this@ViewRequestActivity, DriverMapActivity::class.java)
+                    intent.putExtra(EXTRA_REQUEST, req)
+                    startActivity(intent)
+                }
+            }
+
+        }
     }
+    //oncreate finish
+
 
     //Read data from firebase to caculate distance
     private fun updateListView(location : Location) {
@@ -128,9 +162,9 @@ class ViewRequestActivity : AppCompatActivity() {
                             request.add(distanceRound.toString() + "Km")
                             requestLatitudes.add(requestLatitude)
                             requestLongitudes.add(requestLongitued)
-                            requestuserId.add(userId)
+                            requestUserId.add(userId)
                         }
-
+//                        Collections.sort(request)
                         adapter!!.notifyDataSetChanged()
 
                     }
