@@ -113,6 +113,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(lastKnownLocation != null) {
             var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
+            mMap.clear()
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
             mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
         }
@@ -129,6 +130,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(lastKnownLocation != null) {
             var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
+
+            mMap.clear()
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
             mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
         }

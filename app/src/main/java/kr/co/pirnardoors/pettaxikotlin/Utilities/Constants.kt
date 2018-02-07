@@ -5,3 +5,5 @@ package kr.co.pirnardoors.pettaxikotlin.Utilities
  */
 
 const val TAG = "Info: "
+
+const val LISTVIEW = "Info listView"
