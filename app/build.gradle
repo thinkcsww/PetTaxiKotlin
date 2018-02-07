@@ -35,5 +35,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:11.8.0'
     implementation 'com.google.firebase:firebase-auth:11.8.0'
     implementation 'com.firebase:geofire-android:2.1.1'
+    implementation 'org.jetbrains.anko:anko-commons:0.10.2'
+    implementation 'org.jetbrains.anko:anko-appcompat-v7-commons:0.10.2'
+    implementation 'org.jetbrains.anko:anko-support-v4-commons:0.10.2'
 }
 apply plugin: 'com.google.gms.google-services'

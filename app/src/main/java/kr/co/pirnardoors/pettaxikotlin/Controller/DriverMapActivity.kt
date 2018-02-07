@@ -1,7 +1,10 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
+import android.app.AlertDialog
+import android.app.PendingIntent.getActivity
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -11,15 +14,19 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import kotlinx.android.synthetic.main.activity_driver_map.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_REQUEST
+import org.jetbrains.anko.alert
+import org.jetbrains.anko.toast
 import java.util.ArrayList
 
 class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     lateinit var mMap: GoogleMap
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_map)
@@ -28,12 +35,15 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        //intent receive
         var req : Request = intent.getParcelableExtra(EXTRA_REQUEST)
-
+        var driverUserId = FirebaseAuth.getInstance().currentUser?.uid
         var driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
         var requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
-        var requsetUserId = req.requestUserId
+        var requestUserId = req.requestUserId
 
+
+        // Double marker driver, and customer
         val mapLayout = findViewById(R.id.mapRelativeLayout) as RelativeLayout
         mapLayout.viewTreeObserver.addOnGlobalLayoutListener {
             val markers = ArrayList<Marker>()
@@ -55,7 +65,31 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-    }
+        //accept button -> add data on customer request using customer userId
+
+        acceptBtn.setOnClickListener {
+
+            val simpleAlert = AlertDialog.Builder(this@DriverMapActivity, R.style.AlertDialogTheme).create()
+            simpleAlert.setTitle("확인")
+            simpleAlert.setMessage("정말 수락하시겠습니까?")
+
+            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
+                dialogInterface, i ->
+                acceptBtn.visibility = View.INVISIBLE
+                var database = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId).child("MD")
+                database.setValue(driverUserId)
+            })
+
+            simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {
+                dialogInterface, i ->
+                toast("취소되었습니다.")
+            })
+
+            simpleAlert.show()
+
+        }
+    } //oncreate finish
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
