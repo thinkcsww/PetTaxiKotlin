@@ -2,20 +2,31 @@ package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.AlertDialog
 import android.app.PendingIntent.getActivity
+import android.content.pm.PackageManager
+import android.location.LocationListener
+import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.RelativeLayout
 import android.widget.Toast
+import com.firebase.geofire.GeoFire
+import com.firebase.geofire.GeoLocation
+import com.google.android.gms.common.api.GoogleApi
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.internal.IGoogleMapDelegate
 import com.google.android.gms.maps.model.*
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.kakao.kakaonavi.Location
 import com.kakao.kakaonavi.NaviOptions
 import com.kakao.kakaonavi.options.CoordType
@@ -44,7 +55,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
         //intent receive
         var req : Request = intent.getParcelableExtra(EXTRA_REQUEST)
         var driverUserId = FirebaseAuth.getInstance().currentUser?.uid
@@ -97,28 +107,30 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             //Yes Button
             simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
                 dialogInterface, i ->
-                acceptBtn.visibility = View.INVISIBLE
-                var database = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId).child("MD")
-                database.setValue(driverUserId)
-                //kakao
-                val options = NaviOptions.newBuilder()
-                        .setCoordType(CoordType.WGS84)
-                        .setVehicleType(VehicleType.FIRST)
-                        .setRpOption(RpOption.SHORTEST).build()
-
-                val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
+//                acceptBtn.visibility = View.INVISIBLE
+                var databaseCustomer = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId)
+                databaseCustomer.child("MD").setValue(driverUserId)
 
 
-                // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
-
-                val builder = KakaoNaviParams.newBuilder(destination)
-                        .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
-
-                KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
-                KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
-
-                finish()
-                return@setButton
+//                //kakao
+//                val options = NaviOptions.newBuilder()
+//                        .setCoordType(CoordType.WGS84)
+//                        .setVehicleType(VehicleType.FIRST)
+//                        .setRpOption(RpOption.SHORTEST).build()
+//
+//                val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
+//
+//
+//                // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
+//
+//                val builder = KakaoNaviParams.newBuilder(destination)
+//                        .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
+//
+//                KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
+//                KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
+//
+//                finish()
+//                return@setButton
             })
             // No Button
             simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {

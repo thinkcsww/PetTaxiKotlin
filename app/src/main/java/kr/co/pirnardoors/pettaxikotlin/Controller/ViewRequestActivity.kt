@@ -18,11 +18,10 @@ import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import com.firebase.geofire.GeoFire
+import com.firebase.geofire.GeoLocation
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_view_request.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
@@ -40,15 +39,14 @@ class ViewRequestActivity : AppCompatActivity() {
     var locationListener : LocationListener? = null
     var lastKnownLocation : Location? = null
     var adapter :ArrayAdapter<String>? = null
+    var driverUserId : String? = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_request)
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, request)
-
-
-        request.add("test")
         listView.adapter = adapter
 
+        driverUserId = FirebaseAuth.getInstance().currentUser?.uid
 
 
         // Find driver location
@@ -61,8 +59,11 @@ class ViewRequestActivity : AppCompatActivity() {
                 var location = p0
                 if (location != null) {
                     updateListView(location)
+                    var databaseDriver = FirebaseDatabase.getInstance().getReference("Respond")
+                    var geoFire = GeoFire(databaseDriver)
+                    geoFire.setLocation(driverUserId, GeoLocation(location!!.latitude, location!!.longitude))
                 }
-             }
+            }
 
             override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
              }
@@ -146,23 +147,26 @@ class ViewRequestActivity : AppCompatActivity() {
                     var children = dataSnapShot.children
                     for (data in children) {
                         var userId = data.key
-                        var requestLatitude = data.child("l").child("0").getValue() as Double
-                        var requestLongitued = data.child("l").child("1").getValue() as Double
-                        Log.d(LISTVIEW, userId)
-                        Log.d(LISTVIEW, requestLatitude.toString())
-                        Log.d(LISTVIEW, requestLongitued.toString())
-                        var destination = Location("Destination")
-                        destination.latitude = requestLatitude
-                        destination.longitude = requestLongitued
-                        var distanceKm = driverLocation.distanceTo(destination) / 1000
-                        var distanceRound = Math.round(distanceKm)
-                        Log.d(LISTVIEW + "distance =", distanceRound.toString())
+                        var md = data.child("MD").getValue().toString()
+                        if(md == "") {
+                            var requestLatitude = data.child("l").child("0").getValue()
+                            var requestLongitued = data.child("l").child("1").getValue()
+                            Log.d(LISTVIEW, userId)
+                            Log.d(LISTVIEW, requestLatitude.toString())
+                            Log.d(LISTVIEW, requestLongitued.toString())
+                            var destination = Location("Destination")
+                            destination.latitude = requestLatitude.toString().toDouble()
+                            destination.longitude = requestLongitued.toString().toDouble()
+                            var distanceKm = driverLocation.distanceTo(destination) / 1000
+                            var distanceRound = Math.round(distanceKm)
+                            Log.d(LISTVIEW + "distance =", distanceRound.toString())
 
-                        if(distanceRound >= 0) {
-                            request.add(distanceRound.toString() + "Km")
-                            requestLatitudes.add(requestLatitude)
-                            requestLongitudes.add(requestLongitued)
-                            requestUserId.add(userId)
+                            if (distanceRound >= 0) {
+                                request.add(distanceRound.toString() + "Km")
+                                requestLatitudes.add(requestLatitude.toString().toDouble())
+                                requestLongitudes.add(requestLongitued.toString().toDouble())
+                                requestUserId.add(userId)
+                            }
                         }
 //                        Collections.sort(request)
                         adapter!!.notifyDataSetChanged()
