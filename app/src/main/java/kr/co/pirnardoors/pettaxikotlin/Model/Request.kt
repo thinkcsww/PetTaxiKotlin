@@ -7,13 +7,17 @@ import android.os.Parcelable
  * Created by std on 2018-02-07.
  */
 class Request constructor(var requestLatitude : Double, var requestLongitude : Double,
-                          var requestUserId : String, var driverLatitude : Double, var driverLongitude : Double) :Parcelable {
+                          var requestUserId : String, var driverLatitude : Double, var driverLongitude : Double,
+                          var requestDestination: String, var requestNumber: String, var requestType: String ) :Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readDouble(),
             parcel.readDouble(),
             parcel.readString(),
             parcel.readDouble(),
-            parcel.readDouble()) {
+            parcel.readDouble(),
+            parcel.readString(),
+            parcel.readString(),
+            parcel.readString()) {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -22,6 +26,9 @@ class Request constructor(var requestLatitude : Double, var requestLongitude : D
         parcel.writeString(requestUserId)
         parcel.writeDouble(driverLatitude)
         parcel.writeDouble(driverLongitude)
+        parcel.writeString(requestDestination)
+        parcel.writeString(requestNumber)
+        parcel.writeString(requestType)
     }
 
     override fun describeContents(): Int {

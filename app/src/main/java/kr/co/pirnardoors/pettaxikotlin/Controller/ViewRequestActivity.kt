@@ -32,6 +32,9 @@ import java.util.*
 class ViewRequestActivity : AppCompatActivity() {
     var request = ArrayList<String>()
     var requestUserId = ArrayList<String>()
+    var requestDestinations = ArrayList<String>()
+    var requestTypes = ArrayList<String>()
+    var requestNumbers = ArrayList<String>()
     var requestLatitudes = ArrayList<Double>()
     var requestLongitudes = ArrayList<Double>()
     var auth = FirebaseAuth.getInstance()
@@ -109,12 +112,16 @@ class ViewRequestActivity : AppCompatActivity() {
                 if(requestLatitudes.size > i && requestLongitudes.size > i && requestUserId.size > i
                         && lastKnownLocation != null) {
 
-                    var req : Request = Request(0.0,0.0,"",0.0,0.0)
+                    var req : Request = Request(0.0,0.0,"",0.0,0.0,"","","")
                     req.requestLatitude = requestLatitudes[i]
                     req.requestLongitude = requestLongitudes[i]
                     req.driverLatitude = lastKnownLocation!!.latitude
                     req.driverLongitude = lastKnownLocation!!.longitude
                     req.requestUserId = requestUserId[i]
+                    req.requestDestination = requestDestinations[i]
+                    req.requestNumber = requestNumbers[i]
+                    req.requestType = requestTypes[i]
+
                     var intent = Intent(this@ViewRequestActivity, DriverMapActivity::class.java)
                     intent.putExtra(EXTRA_REQUEST, req)
                     startActivity(intent)
@@ -141,9 +148,8 @@ class ViewRequestActivity : AppCompatActivity() {
             override fun onDataChange(p0: DataSnapshot?) {
                 var dataSnapShot = p0
                 if(dataSnapShot != null) {
-                    request.clear()
-                    requestLatitudes.clear()
-                    requestLongitudes.clear()
+                    request.clear(); requestLatitudes.clear(); requestLongitudes.clear()
+                    requestDestinations.clear() ; requestNumbers.clear(); requestTypes.clear()
                     var children = dataSnapShot.children
                     for (data in children) {
                         var userId = data.key
@@ -151,6 +157,9 @@ class ViewRequestActivity : AppCompatActivity() {
                         if(md == "") {
                             var requestLatitude = data.child("l").child("0").getValue()
                             var requestLongitued = data.child("l").child("1").getValue()
+                            var requestDestination = data.child("Destination").getValue()
+                            var requestType = data.child("Type").getValue()
+                            var requestNumber = data.child("Number").getValue()
                             Log.d(LISTVIEW, userId)
                             Log.d(LISTVIEW, requestLatitude.toString())
                             Log.d(LISTVIEW, requestLongitued.toString())
@@ -162,10 +171,14 @@ class ViewRequestActivity : AppCompatActivity() {
                             Log.d(LISTVIEW + "distance =", distanceRound.toString())
 
                             if (distanceRound >= 0) {
-                                request.add(distanceRound.toString() + "Km")
+                                request.add("${distanceRound.toString()}Km,  " +
+                                        "목적지: $requestDestination")
                                 requestLatitudes.add(requestLatitude.toString().toDouble())
                                 requestLongitudes.add(requestLongitued.toString().toDouble())
                                 requestUserId.add(userId)
+                                requestDestinations.add(requestDestination.toString())
+                                requestTypes.add(requestType.toString())
+                                requestNumbers.add(requestNumber.toString())
                             }
                         }
 //                        Collections.sort(request)

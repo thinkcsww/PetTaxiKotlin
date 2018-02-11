@@ -1,5 +1,6 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,8 +11,11 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
@@ -28,11 +32,13 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_customer_map.*
+import kotlinx.android.synthetic.main.layout_destination.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.R.id.callBtn
 import kr.co.pirnardoors.pettaxikotlin.R.id.matchText
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
+import org.w3c.dom.Text
 import kotlin.concurrent.thread
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -49,7 +55,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     val auth = FirebaseAuth.getInstance()
     val database = FirebaseDatabase.getInstance().getReference("Request")
     val geoFire = GeoFire(database)
-    val driverUserIdForRecord = driverUserId
     private var carNumber : String? = null
     private var phoneNumber : String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,13 +101,45 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         //call catcardog Button
 
+
+
         callBtn.setOnClickListener {
             if(lastKnownLocation != null) {
                 if (requestActive == false) {
-                    requestActive = true
-                    callBtn.setText("취소하기")
-                    geoFire.setLocation(userId, GeoLocation(lastKnownLocation.latitude, lastKnownLocation.longitude))
-                    database.child(userId).child("MD").setValue("")
+                    val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
+                    val mView = layoutInflater.inflate(R.layout.layout_destination, null)
+                    var destinationEditText :TextView = mView.findViewById(R.id.destinationEditText)
+                    var numberEditText : TextView = mView.findViewById(R.id.numberEditText)
+                    var typeEditText : TextView = mView.findViewById(R.id.typeEditText)
+                    val okBtn : Button = mView.findViewById(R.id.okBtn)
+                    val noBtn : Button = mView.findViewById(R.id.noBtn)
+
+                    mBuilder.setView(mView)
+                    val dialog = mBuilder.create()
+                    okBtn.setOnClickListener {
+                        if(lastKnownLocation != null) {
+                            if (requestActive == false) {
+                                requestActive = true
+                                callBtn.setText("취소하기")
+                                var destination : String = destinationEditText.text.toString()
+                                var number = numberEditText.text.toString()
+                                var type = typeEditText.text.toString()
+                                geoFire.setLocation(userId, GeoLocation(lastKnownLocation.latitude, lastKnownLocation.longitude))
+                                database.child(userId).child("MD").setValue("")
+                                database.child(userId).child("Destination").setValue(destination)
+                                database.child(userId).child("Number").setValue(number)
+                                database.child(userId).child("Type").setValue(type)
+
+                                //toast("요청이 확인되었습니다.")
+
+                                dialog.dismiss()
+                            }
+                        }
+                    }
+                    noBtn.setOnClickListener {
+                       dialog.dismiss()
+                    }
+                    dialog.show()
                 } else {
                     requestActive = false
                     callBtn.setText("캣카독 부르기")
@@ -116,6 +153,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+
 
 
         //Log out
@@ -194,6 +232,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             matchText.visibility = View.INVISIBLE
 
                             geoFire.removeLocation(userId)
+                            var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
+                            startActivity(intentMeet)
                         }, 5000)
 
 

@@ -61,6 +61,10 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
         var requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
         var requestUserId = req.requestUserId
+        var requestDestination = req.requestDestination
+        var requestType = req.requestType
+        var requestNumber = req.requestNumber
+
 
         //Kakao navigation
    /*     val options = NaviOptions.newBuilder()
@@ -112,25 +116,25 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 databaseCustomer.child("MD").setValue(driverUserId)
 
 
-//                //kakao
-//                val options = NaviOptions.newBuilder()
-//                        .setCoordType(CoordType.WGS84)
-//                        .setVehicleType(VehicleType.FIRST)
-//                        .setRpOption(RpOption.SHORTEST).build()
-//
-//                val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
-//
-//
-//                // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
-//
-//                val builder = KakaoNaviParams.newBuilder(destination)
-//                        .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
-//
-//                KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
-//                KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
-//
-//                finish()
-//                return@setButton
+                //kakao
+                val options = NaviOptions.newBuilder()
+                        .setCoordType(CoordType.WGS84)
+                        .setVehicleType(VehicleType.FIRST)
+                        .setRpOption(RpOption.SHORTEST).build()
+
+                val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
+
+
+                // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
+
+                val builder = KakaoNaviParams.newBuilder(destination)
+                        .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
+
+                KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
+                KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
+
+
+
             })
             // No Button
             simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {

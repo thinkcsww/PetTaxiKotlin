@@ -46,9 +46,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-
-        <meta-data android:name="com.kakao.sdk.AppKey"
-
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
             android:value="a8ff886bd944e47f8eb3c88a17a8a850" />
 
         <activity
@@ -57,7 +56,8 @@
         <activity android:name=".Controller.ViewRequestActivity" />
         <activity
             android:name=".Controller.DriverMapActivity"
-            android:label="@string/title_activity_driver_map"></activity>
+            android:label="@string/title_activity_driver_map" />
+        <activity android:name=".Controller.MeetActivity"></activity>
     </application>
 
 </manifest>
