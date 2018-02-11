@@ -10,7 +10,9 @@ import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
@@ -19,6 +21,13 @@ import android.widget.TextView
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException
+import com.google.android.gms.common.GooglePlayServicesRepairableException
+import com.google.android.gms.common.api.Status
+import com.google.android.gms.location.places.Place
+import com.google.android.gms.location.places.ui.PlaceAutocomplete
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment
+import com.google.android.gms.location.places.ui.PlaceSelectionListener
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -44,7 +53,8 @@ import kotlin.concurrent.thread
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-
+    lateinit var destinationLatLng : LatLng
+    var destiniation : String? = ""
     var locationManager : LocationManager? = null
     var locationListener : LocationListener? = null
     lateinit var lastKnownLocation : Location
@@ -98,7 +108,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-
         //call catcardog Button
 
 
@@ -106,6 +115,16 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         callBtn.setOnClickListener {
             if(lastKnownLocation != null) {
                 if (requestActive == false) {
+
+//                    try {
+//                        val intent = PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+//                                        .build(this);
+//                        startActivityForResult(intent, 1);
+//                    } catch (e: GooglePlayServicesRepairableException) {
+//                        e.message
+//                    } catch (e: GooglePlayServicesNotAvailableException) {
+//                        e.message
+//                    }
                     val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
                     val mView = layoutInflater.inflate(R.layout.layout_destination, null)
                     var destinationEditText :TextView = mView.findViewById(R.id.destinationEditText)
@@ -154,6 +173,20 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        val autocompleteFragment = fragmentManager.findFragmentById(R.id.place_autocomplete_fragment) as PlaceAutocompleteFragment
+
+        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+            override fun onPlaceSelected(place: Place) {
+                destiniation = place.name.toString()
+                destinationLatLng = place.latLng
+                toast(destiniation.toString())
+
+            }
+
+            override fun onError(status: Status) {
+
+            }
+        })
 
 
         //Log out
@@ -164,6 +197,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             finish()
             return@setOnClickListener
         }
+
+
+
 
 
     }
