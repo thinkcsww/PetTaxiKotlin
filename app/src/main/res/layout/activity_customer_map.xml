@@ -86,7 +86,7 @@
         android:layout_alignTop="@+id/map"
         android:background="@color/cardview_light_background"
         android:orientation="vertical"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <TextView
             android:layout_width="match_parent"

@@ -358,6 +358,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 updateMap(location)
                 checkIfDriverIsMatched()
                 Log.i("Info", driverUserId)
+                if(requestActive == true) {
+
+                }
             }
 
             override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {

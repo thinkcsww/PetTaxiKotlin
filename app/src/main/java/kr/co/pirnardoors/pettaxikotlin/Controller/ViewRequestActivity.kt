@@ -159,7 +159,7 @@ class ViewRequestActivity : AppCompatActivity() {
                             var requestLongitued = data.child("l").child("1").getValue()
                             var requestDestination = data.child("Destination").getValue()
                             //var requestType = data.child("Type").getValue()
-                            var requestNumber = data.child("Number").getValue()
+                            var requestNumber = data.child("PN").getValue()
                             Log.d(LISTVIEW, userId)
                             Log.d(LISTVIEW, requestLatitude.toString())
                             Log.d(LISTVIEW, requestLongitued.toString())
@@ -172,7 +172,7 @@ class ViewRequestActivity : AppCompatActivity() {
 
                             if (distanceRound >= 0) {
                                 request.add("${distanceRound.toString()}Km,  " +
-                                        "목적지: $requestDestination")
+                                        "목적지: $requestDestination, 탑승인원 : $requestNumber")
                                 requestLatitudes.add(requestLatitude.toString().toDouble())
                                 requestLongitudes.add(requestLongitued.toString().toDouble())
                                 requestUserId.add(userId)
