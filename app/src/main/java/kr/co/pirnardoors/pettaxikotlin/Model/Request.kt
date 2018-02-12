@@ -8,14 +8,13 @@ import android.os.Parcelable
  */
 class Request constructor(var requestLatitude : Double, var requestLongitude : Double,
                           var requestUserId : String, var driverLatitude : Double, var driverLongitude : Double,
-                          var requestDestination: String, var requestNumber: String, var requestType: String ) :Parcelable {
+                          var requestDestination: String, var requestNumber: String) :Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readDouble(),
             parcel.readDouble(),
             parcel.readString(),
             parcel.readDouble(),
             parcel.readDouble(),
-            parcel.readString(),
             parcel.readString(),
             parcel.readString()) {
     }
@@ -28,7 +27,6 @@ class Request constructor(var requestLatitude : Double, var requestLongitude : D
         parcel.writeDouble(driverLongitude)
         parcel.writeString(requestDestination)
         parcel.writeString(requestNumber)
-        parcel.writeString(requestType)
     }
 
     override fun describeContents(): Int {

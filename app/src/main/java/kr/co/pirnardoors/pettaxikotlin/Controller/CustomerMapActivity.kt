@@ -1,6 +1,5 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,22 +9,21 @@ import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AlertDialog
+import android.text.TextUtils
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException
-import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.places.Place
-import com.google.android.gms.location.places.ui.PlaceAutocomplete
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment
 import com.google.android.gms.location.places.ui.PlaceSelectionListener
 
@@ -41,19 +39,17 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_customer_map.*
-import kotlinx.android.synthetic.main.layout_destination.*
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.R.id.callBtn
-import kr.co.pirnardoors.pettaxikotlin.R.id.matchText
-import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
-import org.w3c.dom.Text
-import kotlin.concurrent.thread
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
+    lateinit var translateAnimRight : Animation
+    lateinit var translateAnimLeft : Animation
     lateinit var destinationLatLng : LatLng
+    var destinationLatitude : Double? = null
+    var destinationLongitude : Double? = null
     var destiniation : String? = ""
     var locationManager : LocationManager? = null
     var locationListener : LocationListener? = null
@@ -65,11 +61,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     val auth = FirebaseAuth.getInstance()
     val database = FirebaseDatabase.getInstance().getReference("Request")
     val geoFire = GeoFire(database)
+    var isPageOpen = false
     private var carNumber : String? = null
     private var phoneNumber : String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer_map)
+
 
 
 
@@ -105,53 +103,63 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 }
             }).start()
+        //Menu Button
+
+        val animListener = SlidingPageAnimationListener()
+        translateAnimRight = AnimationUtils.loadAnimation(this@CustomerMapActivity, R.anim.right_in)
+        translateAnimLeft = AnimationUtils.loadAnimation(this@CustomerMapActivity, R.anim.left_out)
+        menuBtn.setOnClickListener {
+            if (isPageOpen == false) {
+                menuLayout.startAnimation(translateAnimRight)
+                menuLayout.setVisibility(View.VISIBLE)
+                callBtn.visibility = View.INVISIBLE
+            } else {
+                menuLayout.startAnimation(translateAnimLeft)
+            }
+        }
+        translateAnimLeft.setAnimationListener(animListener)
+        translateAnimRight.setAnimationListener(animListener)
 
 
 
         //call catcardog Button
-
-
-
         callBtn.setOnClickListener {
             if(lastKnownLocation != null) {
                 if (requestActive == false) {
 
-//                    try {
-//                        val intent = PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-//                                        .build(this);
-//                        startActivityForResult(intent, 1);
-//                    } catch (e: GooglePlayServicesRepairableException) {
-//                        e.message
-//                    } catch (e: GooglePlayServicesNotAvailableException) {
-//                        e.message
-//                    }
                     val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
                     val mView = layoutInflater.inflate(R.layout.layout_destination, null)
-                    var destinationEditText :TextView = mView.findViewById(R.id.destinationEditText)
                     var numberEditText : TextView = mView.findViewById(R.id.numberEditText)
-                    var typeEditText : TextView = mView.findViewById(R.id.typeEditText)
+                   // var typeEditText : TextView = mView.findViewById(R.id.typeEditText)
                     val okBtn : Button = mView.findViewById(R.id.okBtn)
                     val noBtn : Button = mView.findViewById(R.id.noBtn)
 
                     mBuilder.setView(mView)
                     val dialog = mBuilder.create()
                     okBtn.setOnClickListener {
-                        if(lastKnownLocation != null) {
+                        if(lastKnownLocation != null ) {
                             if (requestActive == false) {
-                                requestActive = true
-                                callBtn.setText("취소하기")
-                                var destination : String = destinationEditText.text.toString()
                                 var number = numberEditText.text.toString()
-                                var type = typeEditText.text.toString()
-                                geoFire.setLocation(userId, GeoLocation(lastKnownLocation.latitude, lastKnownLocation.longitude))
-                                database.child(userId).child("MD").setValue("")
-                                database.child(userId).child("Destination").setValue(destination)
-                                database.child(userId).child("Number").setValue(number)
-                                database.child(userId).child("Type").setValue(type)
+                                if (!TextUtils.isEmpty(number) && destiniation != "") {
+                                    requestActive = true
+                                    callBtn.setText("취소하기")
 
-                                //toast("요청이 확인되었습니다.")
-
-                                dialog.dismiss()
+                                    // var type = typeEditText.text.toString()
+                                    geoFire.setLocation(userId, GeoLocation(lastKnownLocation.latitude, lastKnownLocation.longitude))
+                                    database.child(userId).child("MD").setValue("")
+                                    database.child(userId).child("PN").setValue(number)
+                                    database.child(userId).child("Destination").setValue(destiniation)
+                                    database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
+                                    database.child(userId).child("DestinationLongiitude").setValue(destinationLongitude)
+                                    toast("요청이 확인되었습니다.")
+                                    dialog.dismiss()
+                                } else if(destiniation == "") {
+                                    toast("목적지를 설정해주세요.")
+                                } else if(number.isEmpty()) {
+                                    toast("탑승객 수를 입력해주세요.")
+                                } else {
+                                    toast("요청 정보를 입력해주세요.")
+                                }
                             }
                         }
                     }
@@ -162,6 +170,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 } else {
                     requestActive = false
                     callBtn.setText("캣카독 부르기")
+                    destiniation = ""
                     geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
                         if (error == null) {
                             Toast.makeText(this@CustomerMapActivity, "취소되었습니다.", Toast.LENGTH_SHORT).show()
@@ -179,12 +188,14 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onPlaceSelected(place: Place) {
                 destiniation = place.name.toString()
                 destinationLatLng = place.latLng
-                toast(destiniation.toString())
+                destinationLatitude = destinationLatLng.latitude
+                destinationLongitude = destinationLatLng.longitude
+
 
             }
 
             override fun onError(status: Status) {
-
+                status.statusMessage
             }
         })
 
@@ -285,7 +296,29 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
+    private inner class SlidingPageAnimationListener : Animation.AnimationListener {
+        /**
+         * 애니메이션이 끝날 때 호출되는 메소드
+         */
+        override fun onAnimationEnd(animation: Animation) {
+            if (isPageOpen == false) {
+                isPageOpen = true
+            } else {
+                isPageOpen = false
+                menuLayout.visibility = View.GONE
+                callBtn.visibility = View.VISIBLE
+            }
+        }
 
+        override fun onAnimationRepeat(animation: Animation) {
+
+        }
+
+        override fun onAnimationStart(animation: Animation) {
+
+        }
+
+    }
 
 
     // oncreate finish
@@ -374,5 +407,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
+    override fun onBackPressed() {
+        if(isPageOpen == true) {
+            menuLayout.startAnimation(translateAnimLeft)
+        } else {
+            super.onBackPressed()
+        }
+    }
 
 }

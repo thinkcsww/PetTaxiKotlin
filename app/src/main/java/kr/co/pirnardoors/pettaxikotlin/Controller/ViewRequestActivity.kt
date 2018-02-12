@@ -33,7 +33,7 @@ class ViewRequestActivity : AppCompatActivity() {
     var request = ArrayList<String>()
     var requestUserId = ArrayList<String>()
     var requestDestinations = ArrayList<String>()
-    var requestTypes = ArrayList<String>()
+    //var requestTypes = ArrayList<String>()
     var requestNumbers = ArrayList<String>()
     var requestLatitudes = ArrayList<Double>()
     var requestLongitudes = ArrayList<Double>()
@@ -112,7 +112,7 @@ class ViewRequestActivity : AppCompatActivity() {
                 if(requestLatitudes.size > i && requestLongitudes.size > i && requestUserId.size > i
                         && lastKnownLocation != null) {
 
-                    var req : Request = Request(0.0,0.0,"",0.0,0.0,"","","")
+                    var req : Request = Request(0.0,0.0,"",0.0,0.0,"","")
                     req.requestLatitude = requestLatitudes[i]
                     req.requestLongitude = requestLongitudes[i]
                     req.driverLatitude = lastKnownLocation!!.latitude
@@ -120,7 +120,7 @@ class ViewRequestActivity : AppCompatActivity() {
                     req.requestUserId = requestUserId[i]
                     req.requestDestination = requestDestinations[i]
                     req.requestNumber = requestNumbers[i]
-                    req.requestType = requestTypes[i]
+                    //req.requestType = requestTypes[i]
 
                     var intent = Intent(this@ViewRequestActivity, DriverMapActivity::class.java)
                     intent.putExtra(EXTRA_REQUEST, req)
@@ -149,7 +149,7 @@ class ViewRequestActivity : AppCompatActivity() {
                 var dataSnapShot = p0
                 if(dataSnapShot != null) {
                     request.clear(); requestLatitudes.clear(); requestLongitudes.clear()
-                    requestDestinations.clear() ; requestNumbers.clear(); requestTypes.clear()
+                    requestDestinations.clear() ; requestNumbers.clear()
                     var children = dataSnapShot.children
                     for (data in children) {
                         var userId = data.key
@@ -158,7 +158,7 @@ class ViewRequestActivity : AppCompatActivity() {
                             var requestLatitude = data.child("l").child("0").getValue()
                             var requestLongitued = data.child("l").child("1").getValue()
                             var requestDestination = data.child("Destination").getValue()
-                            var requestType = data.child("Type").getValue()
+                            //var requestType = data.child("Type").getValue()
                             var requestNumber = data.child("Number").getValue()
                             Log.d(LISTVIEW, userId)
                             Log.d(LISTVIEW, requestLatitude.toString())
@@ -177,7 +177,7 @@ class ViewRequestActivity : AppCompatActivity() {
                                 requestLongitudes.add(requestLongitued.toString().toDouble())
                                 requestUserId.add(userId)
                                 requestDestinations.add(requestDestination.toString())
-                                requestTypes.add(requestType.toString())
+                                //requestTypes.add(requestType.toString())
                                 requestNumbers.add(requestNumber.toString())
                             }
                         }

@@ -62,7 +62,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
         var requestUserId = req.requestUserId
         var requestDestination = req.requestDestination
-        var requestType = req.requestType
+        //var requestType = req.requestType
         var requestNumber = req.requestNumber
 
 
