@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
-            android:text="이동거리 : 0km"
+            android:text="이동거리 : "
             android:textColor="@color/cardview_light_background"
             android:textSize="24sp" />
 
@@ -109,6 +109,22 @@
             android:textAlignment="center"
             android:textColor="@color/cardview_light_background"
             android:visibility="gone" />
+
+        <Button
+            android:id="@+id/startBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:background="@drawable/catcardog_button"
+            android:elevation="0dp"
+            android:fontFamily="@font/marko_one"
+            android:text="출발했으면 눌러주세요!"
+            android:textAlignment="center"
+            android:textColor="@color/cardview_light_background"
+            android:visibility="visible" />
 
     </LinearLayout>
 

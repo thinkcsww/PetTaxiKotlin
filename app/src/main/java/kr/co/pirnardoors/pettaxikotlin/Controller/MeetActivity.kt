@@ -15,11 +15,6 @@ import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
-import com.firebase.geofire.GeoFire
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -31,15 +26,10 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.kakao.kakaonavi.KakaoNaviParams
-import com.kakao.kakaonavi.KakaoNaviService
-import com.kakao.kakaonavi.NaviOptions
-import com.kakao.kakaonavi.options.CoordType
-import com.kakao.kakaonavi.options.RpOption
-import com.kakao.kakaonavi.options.VehicleType
 import kotlinx.android.synthetic.main.activity_meet.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import org.jetbrains.anko.toast
+import java.io.IOException
 
 class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
@@ -57,14 +47,13 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     lateinit var lastKnownLocation : Location
     lateinit var currentLocation : Location
     lateinit var previousLocation : Location
-    lateinit var mLocationRequest :LocationRequest
-    lateinit var mgoogleApiClient: GoogleApiClient
     private var userId = FirebaseAuth.getInstance().currentUser?.uid
     val customerDB = FirebaseDatabase.getInstance().getReference("Request").child(userId)
     var transportActive = false
     var distance : Double = 0.0
     var wage : Int = 5000
     val TAG = "MeetActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_meet)
@@ -76,37 +65,28 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         val destination = intent.getStringExtra("Destination")
         destinationText.text = destination
-        distanceFromDestination()
         askArrivalBtn.setOnClickListener {
-            val simpleAlert = AlertDialog.Builder(this@MeetActivity, R.style.AlertDialogTheme).create()
-            simpleAlert.setTitle("확인")
-            simpleAlert.setMessage("정말 수락하시겠습니까?")
-
-            //Yes Button
-            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
-                dialogInterface, i ->
-                kakaoPay()
-
-            })
-            // No Button
-            simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {
-                dialogInterface, i ->
-                toast("취소되었습니다.")
-            })
-
-            simpleAlert.show()
+            askArrival()
         }
-
+        startBtn.setOnClickListener {
+            startBtn.visibility = View.GONE
+            transportActive = true
+        }
         //update driving distance by 2seconds
-        var thread = Thread(object : Runnable {
+        val thread = Thread(object : Runnable {
             override fun run() {
                 try {
-                    getLastKnownPlace()
                     while (!Thread.interrupted()) {
                         Thread.sleep(2000)
-                        if (transportActive == false){
+                        if (transportActive == true){
                             runOnUiThread(object : Runnable {
                                 override fun run() {
+                                    previousLocation = lastKnownLocation
+                                    try{
+                                        Thread.sleep(2000)
+                                    }catch (e:IOException) {
+                                        e.message
+                                    }
                                     movingDistance()
                                     distanceFromDestination()
                                     Log.d(TAG, "나는 살아있따!!!")
@@ -120,7 +100,9 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
             }
         }).start()
+
     }
+    //oncreate finish
 
     private fun distanceFromDestination() {
         customerDB.addValueEventListener(object : ValueEventListener{
@@ -138,9 +120,9 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     currentPosition?.longitude = destinationLongitude.toString().toDouble()
 
                     if(lastKnownLocation != null) {
-                        var distanceFromDestinationM = lastKnownLocation.distanceTo(currentPosition)
+                        distanceFromDestinationM = lastKnownLocation.distanceTo(currentPosition).toDouble()
                         Log.d(TAG, distanceFromDestinationM.toString())
-                        if(distanceFromDestinationM < 100) {
+                        if(distanceFromDestinationM!! < 100) {
                             askArrivalBtn.visibility = View.VISIBLE
                         }
                     }
@@ -150,6 +132,27 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
     }
 
+
+    private fun askArrival() {
+        val simpleAlert = AlertDialog.Builder(this@MeetActivity, R.style.AlertDialogTheme).create()
+        simpleAlert.setTitle("확인")
+        simpleAlert.setMessage("정말 수락하시겠습니까?")
+
+        //Yes Button
+        simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
+            dialogInterface, i ->
+            transportActive = false
+            kakaoPay()
+
+        })
+        // No Button
+        simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {
+            dialogInterface, i ->
+            toast("취소되었습니다.")
+        })
+
+        simpleAlert.show()
+    }
     private fun kakaoPay() {
         mainWebView = findViewById(R.id.mainWebView) as WebView
         mainWebView!!.setWebViewClient(KakaoWebViewClient(this))
@@ -223,52 +226,24 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     private fun movingDistance() {
 
         if(lastKnownLocation != null) {
-            previousLocation = lastKnownLocation!!
             if(ContextCompat.checkSelfPermission(this@MeetActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ContextCompat.checkSelfPermission(this@MeetActivity, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                 return
             }
             lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            currentLocation = lastKnownLocation!!
+            currentLocation = lastKnownLocation
             var distanceKm = currentLocation.distanceTo(previousLocation)
             distance += distanceKm
             distanceText.text = "이동거리 : ${(distance).toString()}m"
             wage = (distance.toInt()/100) * 100 + 5000
             wageText.text = "요금 : ${wage.toString()}원"
+            Log.d(TAG + "이동거리-", distance.toString())
         }
 
     }
-
-    private fun getLastKnownPlace() {
-        if(locationManager != null) {
-            if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                return
-            }
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-            lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        }
-    }
-
-
-
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            return
-        }
-        if(locationManager != null) {
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-            lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if (lastKnownLocation != null) {
-                var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
-                mMap.clear()
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
-                mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
-            }
-        }
 
         if(locationManager == null) {
             locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -278,6 +253,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             override fun onLocationChanged(p0: Location?) {
                 var location = p0
                 updateMap(location)
+                lastKnownLocation = location as Location
             }
 
             override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
@@ -291,6 +267,21 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             }
 
 
+        }
+
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            return
+        }
+        if(locationManager != null) {
+            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+            lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            if (lastKnownLocation != null) {
+                var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
+                mMap.clear()
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+                mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
+            }
         }
 
 
