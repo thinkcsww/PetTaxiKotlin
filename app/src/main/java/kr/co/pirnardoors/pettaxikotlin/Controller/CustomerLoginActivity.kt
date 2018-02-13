@@ -25,8 +25,10 @@ class CustomerLoginActivity : AppCompatActivity() {
         authStateListener = FirebaseAuth.AuthStateListener {
             var user = FirebaseAuth.getInstance().currentUser
             if (user != null) {
-                val intent = Intent(this, CustomerMapActivity::class.java)
+                val intent = Intent(this, MeetActivity::class.java)
                 startActivity(intent)
+//                val intent = Intent(this, CustomerMapActivity::class.java)
+//                startActivity(intent)
                 finish()
                 return@AuthStateListener
             }

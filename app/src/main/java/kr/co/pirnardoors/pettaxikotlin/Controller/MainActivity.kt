@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 100)
         }
 
+
+
         startBtn.setOnClickListener {
             var intent = Intent(this, StartActivity::class.java)
             startActivity(intent)

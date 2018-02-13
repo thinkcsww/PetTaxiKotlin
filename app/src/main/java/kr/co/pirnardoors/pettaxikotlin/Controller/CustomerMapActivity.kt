@@ -34,13 +34,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_customer_map.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import org.jetbrains.anko.toast
+import java.text.SimpleDateFormat
+import java.util.*
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -56,6 +55,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var lastKnownLocation : Location
     var requestActive : Boolean = false
     var driverActive = false
+    var timeStamp = System.currentTimeMillis()/1000;
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     var driverUserId : String? = ""
     val auth = FirebaseAuth.getInstance()
@@ -67,6 +67,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer_map)
+
 
 
 
@@ -137,7 +138,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     mBuilder.setView(mView)
                     val dialog = mBuilder.create()
                     okBtn.setOnClickListener {
-                        if(lastKnownLocation != null ) {
+
                             if (requestActive == false) {
                                 var number = numberEditText.text.toString()
                                 if (!TextUtils.isEmpty(number) && destiniation != "") {
@@ -150,7 +151,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     database.child(userId).child("PN").setValue(number)
                                     database.child(userId).child("Destination").setValue(destiniation)
                                     database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
-                                    database.child(userId).child("DestinationLongiitude").setValue(destinationLongitude)
+                                    database.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
                                     toast("요청이 확인되었습니다.")
                                     dialog.dismiss()
                                 } else if(destiniation == "") {
@@ -161,7 +162,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     toast("요청 정보를 입력해주세요.")
                                 }
                             }
-                        }
+
                     }
                     noBtn.setOnClickListener {
                        dialog.dismiss()
@@ -239,51 +240,49 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     destination.longitude = driverLongitude.toString().toDouble()
                     var distanceKm = lastKnownLocation.distanceTo(destination) / 1000
                     var distanceRound = Math.round(distanceKm)
+                    var driverDb = FirebaseDatabase.getInstance().getReference("Driver").child(driverUserId)
+                    driverDb.addValueEventListener(object : ValueEventListener {
+                        override fun onCancelled(p0: DatabaseError?) {
+                            if (p0 != null) {
+                                p0.message
+                            }
+                        }
+                        override fun onDataChange(p0: DataSnapshot?) {
+                            var dataSnapshot = p0
+                            if (dataSnapshot != null) {
+                                carNumber = dataSnapshot.child("CarNumber").getValue().toString()
+                                phoneNumber = dataSnapshot.child("PhoneNumber").getValue().toString()
+                            }
+                        }
+                    })
 
                     if(distanceRound < 0.01) {
+
                         var handler = Handler()
+                        requestActive = false
+                        driverActive = false
                         handler.postDelayed(Runnable {
                             callBtn.setVisibility(View.VISIBLE)
                             callBtn.setText("캣카독 부르기")
                             matchText.text = "Driver가 도착하였습니다."
-                            requestActive = false
-                            driverActive = false
                             updateMap(lastKnownLocation)
-                            var driverDb = FirebaseDatabase.getInstance().getReference("Driver").child(driverUserId)
-                            driverDb.addValueEventListener(object : ValueEventListener {
-                                override fun onCancelled(p0: DatabaseError?) {
-                                    if (p0 != null) {
-                                        p0.message
-                                    }
-                                }
 
-                                override fun onDataChange(p0: DataSnapshot?) {
-                                    var dataSnapshot = p0
-                                    if (dataSnapshot != null) {
-                                        carNumber = dataSnapshot.child("CarNumber").getValue().toString()
-                                        phoneNumber = dataSnapshot.child("PhoneNumber").getValue().toString()
-                                    }
-                                }
-
-                            })
-
-
-                            var recordDB = FirebaseDatabase.getInstance().getReference("Record")
+                            var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
                             recordDB.child("customerId").setValue(userId)
-                            if(driverUserId != "null") {
-                                recordDB.child("driverId").setValue(driverUserId)
-                            }
                             recordDB.child("carNumber").setValue(carNumber)
                             recordDB.child("phoneNumber").setValue(phoneNumber)
 
+                            if(driverUserId != "null") {
+                                recordDB.child("driverId").setValue(driverUserId)
+                            }
+
                             matchText.visibility = View.INVISIBLE
 
-                            geoFire.removeLocation(userId)
+//                            geoFire.removeLocation(userId)
                             var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
+                            intentMeet.putExtra("Destination", destination)
                             startActivity(intentMeet)
                         }, 5000)
-
-
 
                     } else {
                         matchText.text = "Driver와 ${distanceRound.toString()}km 거리입니다."
@@ -358,9 +357,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 updateMap(location)
                 checkIfDriverIsMatched()
                 Log.i("Info", driverUserId)
-                if(requestActive == true) {
-
-                }
             }
 
             override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
