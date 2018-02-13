@@ -43,6 +43,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var destinationLatitude : Double? = null
     var destinationLongitude : Double? = null
     var currentPosition : Location? = null
+    var mapIsReady = false
     lateinit var mMap : GoogleMap
     lateinit var lastKnownLocation : Location
     lateinit var currentLocation : Location
@@ -53,9 +54,11 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var distance : Double = 0.0
     var wage : Int = 5000
     val TAG = "MeetActivity"
+    var check = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_meet)
 
 
@@ -72,23 +75,24 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             startBtn.visibility = View.GONE
             transportActive = true
         }
+
+        receiveDestinationInfo()
         //update driving distance by 2seconds
         val thread = Thread(object : Runnable {
             override fun run() {
                 try {
                     while (!Thread.interrupted()) {
-                        Thread.sleep(2000)
+                        if(mapIsReady)previousLocation = lastKnownLocation
+                        Thread.sleep(3000)
                         if (transportActive == true){
                             runOnUiThread(object : Runnable {
                                 override fun run() {
-                                    previousLocation = lastKnownLocation
-                                    try{
-                                        Thread.sleep(2000)
-                                    }catch (e:IOException) {
-                                        e.message
-                                    }
+
                                     movingDistance()
-                                    distanceFromDestination()
+                                    distanceFromDestinationM = lastKnownLocation.distanceTo(currentPosition).toDouble()
+                                    if(distanceFromDestinationM!! < 100) {
+                                        askArrivalBtn.visibility = View.VISIBLE
+                                    }
                                     Log.d(TAG, "나는 살아있따!!!")
                                 }
                             })
@@ -104,7 +108,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     }
     //oncreate finish
 
-    private fun distanceFromDestination() {
+    private fun receiveDestinationInfo() {
         customerDB.addValueEventListener(object : ValueEventListener{
             override fun onCancelled(err: DatabaseError?) {
                 if(err != null) {
@@ -119,13 +123,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     currentPosition?.latitude = destinationLatitude.toString().toDouble()
                     currentPosition?.longitude = destinationLongitude.toString().toDouble()
 
-                    if(lastKnownLocation != null) {
-                        distanceFromDestinationM = lastKnownLocation.distanceTo(currentPosition).toDouble()
-                        Log.d(TAG, distanceFromDestinationM.toString())
-                        if(distanceFromDestinationM!! < 100) {
-                            askArrivalBtn.visibility = View.VISIBLE
-                        }
-                    }
                 }
             }
         })
@@ -253,7 +250,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             override fun onLocationChanged(p0: Location?) {
                 var location = p0
                 updateMap(location)
-                lastKnownLocation = location as Location
+//                lastKnownLocation = location as Location
             }
 
             override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
@@ -283,6 +280,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                 mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
             }
         }
+        mapIsReady = true
 
 
 
