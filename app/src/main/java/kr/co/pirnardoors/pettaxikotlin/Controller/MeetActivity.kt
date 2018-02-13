@@ -54,7 +54,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var distance : Double = 0.0
     var wage : Int = 5000
     val TAG = "MeetActivity"
-    var check = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -181,7 +180,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     "\n" +
                     "//onclick, onload 등 원하는 이벤트에 호출합니다\n" +
                     "IMP.request_pay({\n" +
-                    "    pg : 'inicis', // version 1.1.0부터 지원.\n" +
+                    "    pg : 'kakao', // version 1.1.0부터 지원.\n" +
                     "    pay_method : 'card',\n" +
                     "    merchant_uid : 'merchant_' + new Date().getTime(),\n" +
                     "    name : '캣카톡 결제',\n" +
