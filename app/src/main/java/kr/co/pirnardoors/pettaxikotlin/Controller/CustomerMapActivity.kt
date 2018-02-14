@@ -114,6 +114,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 menuLayout.startAnimation(translateAnimRight)
                 menuLayout.setVisibility(View.VISIBLE)
                 callBtn.visibility = View.INVISIBLE
+                menuBtn.visibility = View.INVISIBLE
             } else {
                 menuLayout.startAnimation(translateAnimLeft)
             }
@@ -206,6 +207,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             auth.signOut()
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            geoFire.removeLocation(userId)
             finish()
             return@setOnClickListener
         }
@@ -255,6 +257,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             }
                         }
                     })
+
 
                     if(distanceRound < 0.01) {
 
@@ -409,6 +412,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onBackPressed() {
         if(isPageOpen == true) {
             menuLayout.startAnimation(translateAnimLeft)
+            menuBtn.visibility = View.VISIBLE
         } else {
             super.onBackPressed()
         }

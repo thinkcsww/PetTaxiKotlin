@@ -3,7 +3,9 @@ package kr.co.pirnardoors.pettaxikotlin.Controller
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -15,14 +17,13 @@ import kr.co.pirnardoors.pettaxikotlin.R
 import java.sql.Driver
 
 class StartActivity : AppCompatActivity() {
-
+    var isReady = false
     var userTypeCustomer : String? = ""
     var userTypeDriver : String? = ""
     var userId : String? = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-
         userId  = FirebaseAuth.getInstance().currentUser?.uid
 
         if(userId == null) {
@@ -35,7 +36,7 @@ class StartActivity : AppCompatActivity() {
             customerDB.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError?) {
                     if (p0 != null) {
-                        Toast.makeText(this@StartActivity, p0.message, Toast.LENGTH_SHORT).show()
+                        p0.message
                     }
                 }
 
@@ -61,6 +62,7 @@ class StartActivity : AppCompatActivity() {
                     }
                 }
             })
+            isReady = true
         }
 
         customerBtn.setOnClickListener {
@@ -83,6 +85,11 @@ class StartActivity : AppCompatActivity() {
                 Toast.makeText(this@StartActivity, "Customer 모드를 로그아웃 해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
+        var handler = Handler()
+        handler.postDelayed(Runnable {
+            progressBar.visibility = View.GONE
+        }, 2000)
+
     }
 
 }

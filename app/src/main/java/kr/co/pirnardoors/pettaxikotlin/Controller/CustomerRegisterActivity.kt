@@ -3,7 +3,9 @@ package kr.co.pirnardoors.pettaxikotlin.Controller
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
@@ -17,7 +19,7 @@ import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
 
 class CustomerRegisterActivity : AppCompatActivity() {
-
+    val handler = Handler()
     val auth = FirebaseAuth.getInstance()
     var authStateListener: FirebaseAuth.AuthStateListener = FirebaseAuth.AuthStateListener { }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +45,10 @@ class CustomerRegisterActivity : AppCompatActivity() {
             Log.d("Info", email)
             Log.d("Info", password)
             if(!email.isEmpty() && !password.isEmpty()) {
+                progressBar.visibility = View.VISIBLE
+                handler.postDelayed(Runnable {
+                    progressBar.visibility = View.GONE
+                }, 2000)
                 auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                     if(task.isSuccessful) {
                         var userId = FirebaseAuth.getInstance().currentUser?.uid
