@@ -8,3 +8,4 @@ const val TAG = "Info: "
 
 const val LISTVIEW = "Info listView"
 const val EXTRA_REQUEST = "request"
+const val EXTRA_CUSTOMER = "customer"

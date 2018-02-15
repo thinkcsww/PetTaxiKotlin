@@ -38,6 +38,7 @@ class DriverLoginActivity : AppCompatActivity() {
                 handler.postDelayed(Runnable {
                     progressBar.visibility = View.GONE
                 }, 2000)
+                handler.removeCallbacksAndMessages(null)
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show()

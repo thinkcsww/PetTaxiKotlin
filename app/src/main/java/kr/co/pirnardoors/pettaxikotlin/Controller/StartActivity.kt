@@ -17,10 +17,12 @@ import kr.co.pirnardoors.pettaxikotlin.R
 import java.sql.Driver
 
 class StartActivity : AppCompatActivity() {
+    lateinit var myRunnable : Runnable
     var isReady = false
     var userTypeCustomer : String? = ""
     var userTypeDriver : String? = ""
     var userId : String? = ""
+    var handler = Handler()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
@@ -85,11 +87,18 @@ class StartActivity : AppCompatActivity() {
                 Toast.makeText(this@StartActivity, "Customer 모드를 로그아웃 해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
-        var handler = Handler()
-        handler.postDelayed(Runnable {
-            progressBar.visibility = View.GONE
-        }, 2000)
+        myRunnable = Runnable {
+            kotlin.run {
+                progressBar.visibility = View.INVISIBLE
+            }
+        }
+        handler.postDelayed(myRunnable, 2000)
 
+    }
+
+    override fun onStop() {
+        super.onStop()
+        handler.removeCallbacks(myRunnable)
     }
 
 }

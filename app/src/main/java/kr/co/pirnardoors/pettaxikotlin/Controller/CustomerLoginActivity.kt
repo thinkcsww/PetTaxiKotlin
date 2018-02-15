@@ -57,6 +57,7 @@ class CustomerLoginActivity : AppCompatActivity() {
                 handler.postDelayed(Runnable {
                     progressBar.visibility = View.GONE
                 },2000)
+                handler.removeCallbacksAndMessages(null)
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                     if(task.isSuccessful) {
                         Toast.makeText(this,"로그인이 성공하였습니다.", Toast.LENGTH_SHORT).show()

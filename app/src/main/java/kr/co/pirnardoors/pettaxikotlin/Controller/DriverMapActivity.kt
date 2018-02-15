@@ -46,10 +46,12 @@ import com.kakao.kakaonavi.KakaoNaviService
 class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     lateinit var mMap: GoogleMap
+    var driverLocation : LatLng? = null
+    var requestLocation : LatLng? = null
+    var requestDestination : String? = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_map)
-
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -58,10 +60,10 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         //intent receive
         var req : Request = intent.getParcelableExtra(EXTRA_REQUEST)
         var driverUserId = FirebaseAuth.getInstance().currentUser?.uid
-        var driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
-        var requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
+         driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
+         requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
         var requestUserId = req.requestUserId
-        var requestDestination = req.requestDestination
+        requestDestination = req.requestDestination
         //var requestType = req.requestType
         var requestNumber = req.requestNumber
 
@@ -78,27 +80,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-        // Double marker driver, and customer
-        val mapLayout = findViewById(R.id.mapRelativeLayout) as RelativeLayout
-        mapLayout.viewTreeObserver.addOnGlobalLayoutListener {
-            val markers = ArrayList<Marker>()
-            if (driverLocation != null && requestLocation != null) {
-                markers.add(mMap.addMarker(MarkerOptions().position(driverLocation).title("Your Location")))
-                markers.add(mMap.addMarker(MarkerOptions().position(requestLocation).title("Request Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))))
-                val builder = LatLngBounds.Builder()
-                for (marker in markers) {
-                    builder.include(marker.position)
-
-                }
-                val bounds = builder.build()
-
-                val padding = 100
-                val cu = CameraUpdateFactory.newLatLngBounds(bounds, padding)
-                mMap.animateCamera(cu)
-            } else {
-                Toast.makeText(this@DriverMapActivity, "GPS 수신 에러입니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-            }
-        }
 
         //accept button -> add data on customer request using customer userId
 
@@ -150,6 +131,29 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
+
+        // Double marker driver, and customer
+        val mapLayout = findViewById(R.id.mapRelativeLayout) as RelativeLayout
+        mapLayout.viewTreeObserver.addOnGlobalLayoutListener {
+            val markers = ArrayList<Marker>()
+            if (driverLocation != null && requestLocation != null) {
+                markers.add(mMap.addMarker(MarkerOptions().position(driverLocation!!).title("Your Location")))
+                markers.add(mMap.addMarker(MarkerOptions().position(requestLocation!!).title("Request Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))))
+                val builder = LatLngBounds.Builder()
+                for (marker in markers) {
+                    builder.include(marker.position)
+
+                }
+                val bounds = builder.build()
+
+                val padding = 100
+                val cu = CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                mMap.animateCamera(cu)
+            } else {
+                Toast.makeText(this@DriverMapActivity, "GPS 수신 에러입니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
 /*
         // Add a marker in Sydney and move the camera
