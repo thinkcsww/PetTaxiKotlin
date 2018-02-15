@@ -12,6 +12,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_start.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import java.sql.Driver
@@ -23,11 +24,14 @@ class StartActivity : AppCompatActivity() {
     var userTypeDriver : String? = ""
     var userId : String? = ""
     var handler = Handler()
+    val user_field : String = "usr"
+    val pwd_field : String = "pwd"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
         userId  = FirebaseAuth.getInstance().currentUser?.uid
 
+        val paper = Paper.init(this@StartActivity)
         if(userId == null) {
             userTypeCustomer =""
             userTypeDriver = ""

@@ -43,6 +43,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var destinationLatitude : Double? = null
     var destinationLongitude : Double? = null
     var currentPosition : Location? = null
+    var destination = ""
     var mapIsReady = false
     lateinit var mMap : GoogleMap
     lateinit var lastKnownLocation : Location
@@ -65,8 +66,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        val destination = intent.getStringExtra("Destination")
-        destinationText.text = destination
         askArrivalBtn.setOnClickListener {
             askArrival()
         }
@@ -118,6 +117,8 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                 if(dataSnapshot != null) {
                     destinationLatitude = dataSnapshot.child("DestinationLatitude").getValue().toString().toDouble()
                     destinationLongitude = dataSnapshot.child("DestinationLongitude").getValue().toString().toDouble()
+                    destination = dataSnapshot.child("Destination").getValue().toString()
+                    destinationText.text = "목적지 : $destination"
                     currentPosition  = Location("currentPosition")
                     currentPosition?.latitude = destinationLatitude.toString().toDouble()
                     currentPosition?.longitude = destinationLongitude.toString().toDouble()

@@ -2,6 +2,7 @@ package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -41,6 +42,8 @@ import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.R.id.callBtn
 import kr.co.pirnardoors.pettaxikotlin.R.id.menuLayout
 import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_CUSTOMER
+import kr.co.pirnardoors.pettaxikotlin.Utilities.REQUEST_ACTIVE
+import org.jetbrains.anko.share
 import org.jetbrains.anko.toast
 import java.text.SimpleDateFormat
 import java.util.*
@@ -56,7 +59,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var destinationLatLng : LatLng
     var destinationLatitude : Double? = null
     var destinationLongitude : Double? = null
-    var destiniation : String? = ""
+    var destination : String? = ""
     var locationManager : LocationManager? = null
     var locationListener : LocationListener? = null
     lateinit var lastKnownLocation : Location
@@ -69,36 +72,24 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     val database = FirebaseDatabase.getInstance().getReference("Request")
     val geoFire = GeoFire(database)
     var isPageOpen = false
-    private var carNumber : String? = null
+    var number = ""
+    val PREF_NAME = "prefs"
+    private var umber : String? = null
     private var phoneNumber : String? = null
-    var customerState = Customer(0.0, 0.0, false, false,
-            "", "", "", "", LatLng(0.0,0.0), "")
-    override fun onSaveInstanceState(outState: Bundle?) {
-        super.onSaveInstanceState(outState)
-        outState?.putParcelable(EXTRA_CUSTOMER, customerState)
-    }
+    var customerState = Customer(false, false,
+            "", "", "")
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        super.onRestoreInstanceState(savedInstanceState)
-        if(savedInstanceState != null) {
-            customerState = savedInstanceState.getParcelable(EXTRA_CUSTOMER)
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer_map)
 
-
-
-
-
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
-        //Thread to check if drvier is matched
 
 
             var thread = Thread(object : Runnable {
@@ -161,24 +152,25 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     okBtn.setOnClickListener {
 
                             if (customerState.requestActive == false) {
-                                   customerState.number = numberEditText.text.toString()
-                                if (!TextUtils.isEmpty(customerState.number) && customerState.destination != "") {
+                                   number = numberEditText.text.toString()
+                                if (!TextUtils.isEmpty(number) && destination != "") {
                                     customerState.requestActive = true
+
                                     callBtn.setText("취소하기")
 
                                     // var type = typeEditText.text.toString()
                                     geoFire.setLocation(userId, GeoLocation(lastKnownLocation.latitude, lastKnownLocation.longitude))
                                     database.child(userId).child("MD").setValue("")
-                                    database.child(userId).child("PN").setValue(customerState.number)
-                                    database.child(userId).child("Destination").setValue(customerState.destination)
-                                    database.child(userId).child("DestinationLatitude").setValue(customerState.destinationLatitude)
-                                    database.child(userId).child("DestinationLongitude").setValue(customerState.destinationLongitude)
-                                    customerState.destination = ""
+                                    database.child(userId).child("PN").setValue(number)
+                                    database.child(userId).child("Destination").setValue(destination)
+                                    database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
+                                    database.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
+                                    destination = ""
                                     toast("요청이 확인되었습니다.")
                                     dialog.dismiss()
-                                } else if(customerState.destination == "") {
+                                } else if(destination == "") {
                                     toast("목적지를 설정해주세요.")
-                                } else if(customerState.number.isEmpty()) {
+                                } else if(number.isEmpty()) {
                                     toast("탑승객 수를 입력해주세요.")
                                 } else {
                                     toast("요청 정보를 입력해주세요.")
@@ -193,7 +185,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 } else {
                     customerState.requestActive = false
                     callBtn.setText("캣카독 부르기")
-                    destiniation = ""
+                    destination = ""
                     geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
                         if (error == null) {
                             Toast.makeText(this@CustomerMapActivity, "취소되었습니다.", Toast.LENGTH_SHORT).show()
@@ -209,12 +201,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
-                customerState.destination = place.name.toString()
+                destination = place.name.toString()
                 destinationLatLng = place.latLng
-                customerState.destinationLatitude = destinationLatLng.latitude
-                customerState.destinationLongitude = destinationLatLng.longitude
+                destinationLatitude = destinationLatLng.latitude
+                destinationLongitude = destinationLatLng.longitude
 
-                customerState.destinationLatLng =destinationLatLng
 
             }
 
@@ -234,10 +225,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             return@setOnClickListener
         }
 
+    }
 
-
-
-
+    private fun reincarnation() {
+        if(requestActive == true){
+            callBtn.text = "취소하기"
+        }
     }
 
     /**
@@ -274,7 +267,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         override fun onDataChange(p0: DataSnapshot?) {
                             var dataSnapshot = p0
                             if (dataSnapshot != null) {
-                                customerState.carNumber = dataSnapshot.child("CarNumber").getValue().toString()
+                                customerState.carInfo = dataSnapshot.child("CarNumber").getValue().toString()
                                 customerState.phoneNumber = dataSnapshot.child("PhoneNumber").getValue().toString()
                             }
                         }
@@ -294,7 +287,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                             var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
                             recordDB.child("customerId").setValue(userId)
-                            recordDB.child("carNumber").setValue(customerState.carNumber)
+                            recordDB.child("carNumber").setValue(customerState.carInfo)
                             recordDB.child("phoneNumber").setValue(customerState.phoneNumber)
 
                             if(customerState.driverUserId != "null") {
@@ -306,7 +299,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 //                            geoFire.removeLocation(userId)
                             var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
                             intentMeet.putExtra("Destination", destination)
-                            //startActivity(intentMeet)
+                            startActivity(intentMeet)
                             handler.removeCallbacks(myRunnable)
                             Log.d(TAG, "나는 살아있다!!!")
                         }
@@ -438,13 +431,27 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if(isPageOpen == true) {
             menuLayout.startAnimation(translateAnimLeft)
             menuBtn.visibility = View.VISIBLE
-        } else if(customerState.requestActive == true) {
-            val intent = Intent(this@CustomerMapActivity, StartActivity::class.java)
-            startActivity(intent)
-        }else {
+        } else {
             super.onBackPressed()
         }
     }
+
+
+
+
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.putParcelable(EXTRA_CUSTOMER, customerState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if(savedInstanceState != null) {
+            customerState = savedInstanceState.getParcelable(EXTRA_CUSTOMER)
+        }
+    }
+
 
 
 }
