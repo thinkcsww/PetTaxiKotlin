@@ -74,7 +74,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var isPageOpen = false
     var number = ""
     var activityOn = true
-    val PREF_NAME = "prefs"
     private var umber : String? = null
     private var phoneNumber : String? = null
 
@@ -341,11 +340,10 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             handler.removeCallbacks(myRunnable)
                             Log.d(TAG, "나는 살아있다!!!")
                             finish()
-
+                            return@Runnable
                         }
                         handler.postDelayed(myRunnable, 5000)
-                        finish()
-                        return
+
 
                     } else {
                         matchText.text = "Driver와 ${distanceRound.toString()}km 거리입니다."

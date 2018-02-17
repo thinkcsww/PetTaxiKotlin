@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
-            android:text="이동거리 : "
+            android:text="출발지 -> 목적지 : "
             android:textColor="@color/cardview_light_background"
             android:textSize="24sp" />
 
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
-            android:text="요금 : 5000원"
+            android:text="요금 :  출발 한 후 책정됩니다."
             android:textColor="@color/cardview_light_background"
             android:textSize="24sp" />
 
@@ -134,4 +134,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Button"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteY="373dp" />
 </android.support.constraint.ConstraintLayout>

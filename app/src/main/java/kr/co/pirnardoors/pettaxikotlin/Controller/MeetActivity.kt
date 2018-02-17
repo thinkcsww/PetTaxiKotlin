@@ -28,6 +28,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_meet.*
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
 import java.io.IOException
 
@@ -42,9 +43,10 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var distanceFromDestinationM : Double? = null
     var destinationLatitude : Double? = null
     var destinationLongitude : Double? = null
-    var currentPosition : Location? = null
+    var destinationLocation : Location? = null
     var destination = ""
     var mapIsReady = false
+    var distanceKm = 0.0
     lateinit var mMap : GoogleMap
     lateinit var lastKnownLocation : Location
     lateinit var currentLocation : Location
@@ -58,13 +60,19 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_meet)
+
+        val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
 
 
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
+        if(transportActive == true) {
+            reincarnation()
+        }
 
         askArrivalBtn.setOnClickListener {
             askArrival()
@@ -72,41 +80,76 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
         startBtn.setOnClickListener {
             startBtn.visibility = View.GONE
             transportActive = true
+            editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
+            editor.apply()
+            caclulateWage()
+        }
+        button2.setOnClickListener {
+            transportActive = false
+            editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
+            editor.apply()
         }
 
         receiveDestinationInfo()
-        //update driving distance by 2seconds
-        val thread = Thread(object : Runnable {
-            override fun run() {
-                try {
-                    while (!Thread.interrupted()) {
-                        if(mapIsReady)previousLocation = lastKnownLocation
-                        Thread.sleep(3000)
-                        if (transportActive == true){
-                            runOnUiThread(object : Runnable {
-                                override fun run() {
+    }
 
-                                    movingDistance()
-                                    distanceFromDestinationM = lastKnownLocation.distanceTo(currentPosition).toDouble()
-                                    if(distanceFromDestinationM!! < 100) {
-                                        askArrivalBtn.visibility = View.VISIBLE
-                                    }
-                                    Log.d(TAG, "나는 살아있따!!!")
-                                }
-                            })
-                        }
-                    }
-                } catch (e: InterruptedException) {
-                    e.message
-                }
+    private fun reincarnation() {
+        val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        destination = sharedPreferences.getString(DESTINATION, destination)
+        wage = sharedPreferences.getInt(WAGE, wage)
+        distanceKm = sharedPreferences.getString(DISTANCE_TO_DESTINATION, "").toDouble()
+        editor.apply()
+        distanceText.text = "목적지까지 직선거리 : ${String.format("%.2f", distanceKm)}km"
+        wageText.text = "요금 : ${wage.toString()}원"
+        transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
+        startBtn.visibility = View.GONE
+    }
 
-            }
-        }).start()
+    private fun caclulateWage() {
 
+
+        val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            return
+        }
+        lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        currentLocation = lastKnownLocation
+        distanceKm = currentLocation.distanceTo(destinationLocation)/ 1000.toDouble()
+        editor.putString(DISTANCE_TO_DESTINATION, distanceKm.toString())
+        distanceText.text = "목적지까지 직선거리 : ${String.format("%.2f", distanceKm)}km"
+        if (distanceKm <= 5.0) {
+            wage = 12500
+        } else if (distanceKm > 5.0 && distanceKm <= 7.5) {
+            wage = 15000
+        } else if (distanceKm > 7.5 && distanceKm <= 10.0) {
+            wage = 17500
+        } else if (distanceKm > 10.0 && distanceKm <= 12.5) {
+            wage = 20000
+        } else if (distanceKm > 12.5 && distanceKm <= 15.0) {
+            wage = 22500
+        } else if (distanceKm > 15.0 && distanceKm <= 17.5) {
+            wage = 25000
+        } else if (distanceKm > 17.5 && distanceKm <= 20.0) {
+            wage = 27500
+        } else if (distanceKm > 20.0 && distanceKm <= 22.5) {
+            wage = 30000
+        } else if (distanceKm > 22.5 && distanceKm <= 25.0) {
+            wage = 32500
+        }
+        editor.putInt(WAGE, wage)
+        editor.apply()
+        wageText.text = "요금 : ${wage.toString()}원"
     }
     //oncreate finish
 
+
     private fun receiveDestinationInfo() {
+
+        val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
         customerDB.addValueEventListener(object : ValueEventListener{
             override fun onCancelled(err: DatabaseError?) {
                 if(err != null) {
@@ -118,10 +161,13 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     destinationLatitude = dataSnapshot.child("DestinationLatitude").getValue().toString().toDouble()
                     destinationLongitude = dataSnapshot.child("DestinationLongitude").getValue().toString().toDouble()
                     destination = dataSnapshot.child("Destination").getValue().toString()
+                    editor.putString(DESTINATION, destination)
+                    editor.apply()
+
                     destinationText.text = "목적지 : $destination"
-                    currentPosition  = Location("currentPosition")
-                    currentPosition?.latitude = destinationLatitude.toString().toDouble()
-                    currentPosition?.longitude = destinationLongitude.toString().toDouble()
+                    destinationLocation  = Location("currentPosition")
+                    destinationLocation?.latitude = destinationLatitude.toString().toDouble()
+                    destinationLocation?.longitude = destinationLongitude.toString().toDouble()
 
                 }
             }
@@ -131,14 +177,22 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
 
     private fun askArrival() {
+
+        val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
         val simpleAlert = AlertDialog.Builder(this@MeetActivity, R.style.AlertDialogTheme).create()
         simpleAlert.setTitle("확인")
         simpleAlert.setMessage("정말 수락하시겠습니까?")
+
 
         //Yes Button
         simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
             dialogInterface, i ->
             transportActive = false
+            editor.putString(DESTINATION, "")
+            editor.putInt(WAGE, 0)
+            editor.putString(DISTANCE_TO_DESTINATION, "")
+            editor.apply()
             kakaoPay()
 
         })
@@ -217,25 +271,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             }
         }
 
-
-    }
-
-    private fun movingDistance() {
-
-        if(lastKnownLocation != null) {
-            if(ContextCompat.checkSelfPermission(this@MeetActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(this@MeetActivity, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                return
-            }
-            lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            currentLocation = lastKnownLocation
-            var distanceKm = currentLocation.distanceTo(previousLocation)
-            distance += distanceKm
-            distanceText.text = "이동거리 : ${(distance).toString()}m"
-            wage = (distance.toInt()/100) * 100 + 5000
-            wageText.text = "요금 : ${wage.toString()}원"
-            Log.d(TAG + "이동거리-", distance.toString())
-        }
 
     }
 
