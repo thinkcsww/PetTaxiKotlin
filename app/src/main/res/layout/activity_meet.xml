@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="10dp"
-            android:text="요금 :  출발 한 후 책정됩니다."
+            android:text="요금 :  출발 후 책정됩니다."
             android:textColor="@color/cardview_light_background"
             android:textSize="24sp" />
 

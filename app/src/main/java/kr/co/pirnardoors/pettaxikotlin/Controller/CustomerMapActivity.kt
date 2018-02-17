@@ -76,6 +76,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var activityOn = true
     private var umber : String? = null
     private var phoneNumber : String? = null
+    var customerMapActive = false
 
     var customerState = Customer(false, false,
             "", "", "", "")
@@ -192,6 +193,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 } else {
                     customerState.requestActive = false
                     editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
+                    editor.putBoolean(DRIVER_ACTIVE, false)
+                    editor.putString(DRIVER_USERID, "")
                     editor.apply()
                     callBtn.setText("캣카독 부르기")
                     destination = ""
@@ -231,6 +234,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             geoFire.removeLocation(userId)
+            editor.putBoolean(REQUEST_ACTIVE, false)
+            editor.putBoolean(DRIVER_ACTIVE, false)
+            editor.putString(DRIVER_USERID, "")
+            editor.putString(CAR_INFO, "")
+            editor.putString(BOARDING_NUMBER, "")
             finish()
             return@setOnClickListener
         }
@@ -258,7 +266,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     /**
-     *  When matching is done get driver's location and erase the request.
+     *  When matching is done get driver's location.
      */
     fun getDriverInformation() {
         callBtn.visibility = View.INVISIBLE
@@ -319,7 +327,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         myRunnable = Runnable {
                             callBtn.setVisibility(View.VISIBLE)
                             callBtn.setText("캣카독 부르기")
-                            matchText.text = "Driver가 도착하였습니다."
                             updateMap(lastKnownLocation)
 
                             var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
@@ -334,6 +341,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             matchText.visibility = View.INVISIBLE
 
 //                            geoFire.removeLocation(userId)
+                            editor.apply()
                             var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
                             intentMeet.putExtra("Destination", destination)
                             startActivity(intentMeet)
@@ -343,6 +351,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             return@Runnable
                         }
                         handler.postDelayed(myRunnable, 5000)
+                        matchText.text = "Driver가 도착하였습니다. 잠시만 기다려주세요.."
 
 
                     } else {

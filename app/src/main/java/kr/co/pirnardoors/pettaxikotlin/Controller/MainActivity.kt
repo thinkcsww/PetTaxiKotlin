@@ -1,6 +1,7 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.support.v7.app.AppCompatActivity
@@ -12,12 +13,39 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_main.*
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.Utilities.MEET_ACTIVITY_ACTIVE
+import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import kr.co.pirnardoors.pettaxikotlin.Utilities.REQUEST_ACTIVE
+import kr.co.pirnardoors.pettaxikotlin.Utilities.TRANSPORT_ACTIVE
+import org.jetbrains.anko.share
+import org.jetbrains.anko.toast
+import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity() {
 
+    var transportActive : Boolean = false
+    var customerMapActive : Boolean = false
+    var meetActivityActive : Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
+        transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
+        customerMapActive = sharedPreferences.getBoolean(REQUEST_ACTIVE, false)
+        meetActivityActive = sharedPreferences.getBoolean(MEET_ACTIVITY_ACTIVE, false)
+        if(transportActive == true || meetActivityActive == true ) {
+            val intent = Intent(this@MainActivity, MeetActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+        if(customerMapActive == true) {
+            val intent = Intent(this@MainActivity, CustomerMapActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
 
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
         && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
@@ -29,6 +57,8 @@ class MainActivity : AppCompatActivity() {
         startBtn.setOnClickListener {
             var intent = Intent(this, StartActivity::class.java)
             startActivity(intent)
+            finish()
+            return@setOnClickListener
 
         }
 

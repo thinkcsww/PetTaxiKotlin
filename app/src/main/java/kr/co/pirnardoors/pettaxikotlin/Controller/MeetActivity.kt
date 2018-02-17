@@ -28,6 +28,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_meet.*
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.R.id.*
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
 import java.io.IOException
@@ -45,8 +46,8 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var destinationLongitude : Double? = null
     var destinationLocation : Location? = null
     var destination = ""
-    var mapIsReady = false
     var distanceKm = 0.0
+    var activityOn = true
     lateinit var mMap : GoogleMap
     lateinit var lastKnownLocation : Location
     lateinit var currentLocation : Location
@@ -54,6 +55,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     private var userId = FirebaseAuth.getInstance().currentUser?.uid
     val customerDB = FirebaseDatabase.getInstance().getReference("Request").child(userId)
     var transportActive = false
+    var meetActivityACtive = true
     var distance : Double = 0.0
     var wage : Int = 5000
     val TAG = "MeetActivity"
@@ -64,8 +66,8 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-
-
+        editor.putBoolean(MEET_ACTIVITY_ACTIVE, true)
+        editor.apply()
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -80,17 +82,47 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
         startBtn.setOnClickListener {
             startBtn.visibility = View.GONE
             transportActive = true
+            meetActivityACtive = false
             editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
+            editor.putBoolean(MEET_ACTIVITY_ACTIVE, meetActivityACtive)
             editor.apply()
             caclulateWage()
         }
         button2.setOnClickListener {
             transportActive = false
+            meetActivityACtive = false
             editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
+            editor.putBoolean(MEET_ACTIVITY_ACTIVE, meetActivityACtive)
             editor.apply()
         }
 
         receiveDestinationInfo()
+
+        Log.d("정보", transportActive.toString())
+        Log.d("정보", activityOn.toString())
+        val thread = Thread(object : Runnable {
+            override fun run() {
+                try {
+                    while (activityOn == true) {
+                        Thread.sleep(1000)
+                        if(transportActive == true) {
+                            runOnUiThread(object : Runnable {
+                                override fun run() {
+                                    distanceFromDestinationM = lastKnownLocation.distanceTo(destinationLocation).toDouble()
+                                    if (distanceFromDestinationM!! < 100) {
+                                        askArrivalBtn.visibility = View.VISIBLE
+                                    }
+                                    Log.d(TAG, "나는 살아있따!!!")
+                                }
+                            })
+                        }
+                    }
+                } catch (e: IOException) {
+                    e.message
+                }
+
+            }
+        }).start()
     }
 
     private fun reincarnation() {
@@ -192,6 +224,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             editor.putString(DESTINATION, "")
             editor.putInt(WAGE, 0)
             editor.putString(DISTANCE_TO_DESTINATION, "")
+            editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
             editor.apply()
             kakaoPay()
 
@@ -315,7 +348,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                 mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
             }
         }
-        mapIsReady = true
 
 
 
@@ -337,6 +369,12 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
         }
 
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activityOn = false
 
     }
 }
