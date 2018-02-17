@@ -28,7 +28,6 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:background="@drawable/text_background"
-        android:text="Driver와 500m 거리입니다."
         android:textAlignment="center"
         android:textColor="@color/common_google_signin_btn_text_dark_focused"
         android:textSize="30sp"

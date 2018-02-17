@@ -8,10 +8,11 @@ import com.google.android.gms.maps.model.LatLng
  * Created by std on 2018-02-06.
  */
 class Customer constructor (var requestActive : Boolean, var driverActive : Boolean, var carInfo : String,
-                            var driverUserId : String, var phoneNumber : String) : Parcelable {
+                            var driverUserId : String, var phoneNumber : String, var number : String) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readByte() != 0.toByte(),
             parcel.readByte() != 0.toByte(),
+            parcel.readString(),
             parcel.readString(),
             parcel.readString(),
             parcel.readString()) {
@@ -23,6 +24,7 @@ class Customer constructor (var requestActive : Boolean, var driverActive : Bool
         parcel.writeString(carInfo)
         parcel.writeString(driverUserId)
         parcel.writeString(phoneNumber)
+        parcel.writeString(number)
     }
 
     override fun describeContents(): Int {

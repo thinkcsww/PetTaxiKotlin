@@ -39,14 +39,14 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_customer_map.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.R.id.callBtn
-import kr.co.pirnardoors.pettaxikotlin.R.id.menuLayout
-import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_CUSTOMER
-import kr.co.pirnardoors.pettaxikotlin.Utilities.REQUEST_ACTIVE
+import kr.co.pirnardoors.pettaxikotlin.R.id.*
+import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.share
 import org.jetbrains.anko.toast
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.thread
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -73,16 +73,17 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     val geoFire = GeoFire(database)
     var isPageOpen = false
     var number = ""
+    var activityOn = true
     val PREF_NAME = "prefs"
     private var umber : String? = null
     private var phoneNumber : String? = null
+
     var customerState = Customer(false, false,
-            "", "", "")
+            "", "", "", "")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer_map)
-
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
 
@@ -90,18 +91,22 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        reincarnation()
 
 
-            var thread = Thread(object : Runnable {
+
+        var thread = Thread(object : Runnable {
                 override fun run() {
                     try {
-                        while (!Thread.interrupted()) {
+                        while (activityOn == true) {
                             Thread.sleep(3000)
                             if (customerState.requestActive == true){
                                 runOnUiThread(object : Runnable {
                                     override fun run() {
                                         if (customerState.driverUserId != "") {
                                             customerState.driverActive = true
+                                            editor.putBoolean(DRIVER_ACTIVE, customerState.driverActive)
+                                            editor.apply()
                                             getDriverInformation()
                                         }
                                         Log.d("InfoMaiton", "나는 살아있따!!!")
@@ -109,7 +114,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                 })
                         }
                         }
-                    } catch (e: InterruptedException) {
+                    } catch (e: IOException) {
                         e.message
                     }
 
@@ -152,10 +157,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     okBtn.setOnClickListener {
 
                             if (customerState.requestActive == false) {
-                                   number = numberEditText.text.toString()
+                                number = numberEditText.text.toString()
+                                editor.putString(BOARDING_NUMBER, customerState.number)
+
                                 if (!TextUtils.isEmpty(number) && destination != "") {
                                     customerState.requestActive = true
-
+                                    editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
+                                    editor.apply()
                                     callBtn.setText("취소하기")
 
                                     // var type = typeEditText.text.toString()
@@ -184,11 +192,14 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     dialog.show()
                 } else {
                     customerState.requestActive = false
+                    editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
+                    editor.apply()
                     callBtn.setText("캣카독 부르기")
                     destination = ""
                     geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
                         if (error == null) {
                             Toast.makeText(this@CustomerMapActivity, "취소되었습니다.", Toast.LENGTH_SHORT).show()
+
                         } else {
                             error.message
                         }
@@ -224,14 +235,28 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             finish()
             return@setOnClickListener
         }
-
+        editor.apply()
     }
 
     private fun reincarnation() {
-        if(requestActive == true){
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        customerState.requestActive = sharedPreferences.getBoolean(REQUEST_ACTIVE, false)
+        customerState.driverActive = sharedPreferences.getBoolean(DRIVER_ACTIVE, false)
+        customerState.driverUserId = sharedPreferences.getString(DRIVER_USERID, "")
+        customerState.number = sharedPreferences.getString(BOARDING_NUMBER, "")
+        customerState.carInfo = sharedPreferences.getString(CAR_INFO, "")
+        if(customerState.requestActive == true) {
             callBtn.text = "취소하기"
         }
+        Log.d("정보 requestActive", customerState.requestActive.toString())
+        Log.d("정보 driverActive", customerState.driverActive.toString())
+        Log.d("정보 driverUserId", customerState.driverUserId)
+        Log.d("정보 number", customerState.number)
+        Log.d("정보 carInfo", customerState.carInfo)
+
+
     }
+
 
     /**
      *  When matching is done get driver's location and erase the request.
@@ -239,6 +264,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     fun getDriverInformation() {
         callBtn.visibility = View.INVISIBLE
         matchText.visibility = View.VISIBLE
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
         var driverDatabase = FirebaseDatabase.getInstance().getReference("Respond").child(customerState.driverUserId)
         driverDatabase.child("l").addValueEventListener(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError?) {
@@ -268,7 +295,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             var dataSnapshot = p0
                             if (dataSnapshot != null) {
                                 customerState.carInfo = dataSnapshot.child("CarNumber").getValue().toString()
+                                editor.putString(CAR_INFO, customerState.carInfo)
+                                editor.commit()
                                 customerState.phoneNumber = dataSnapshot.child("PhoneNumber").getValue().toString()
+                                editor.putString(PHONENUMBER, customerState.phoneNumber)
+                                editor.commit()
+
                             }
                         }
                     })
@@ -278,7 +310,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                         handler = Handler()
                         customerState.requestActive = false
+                        editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
+                        editor.apply()
                         customerState.driverActive = false
+                        editor.putBoolean(DRIVER_ACTIVE, customerState.driverActive)
+                        editor.apply()
+                        editor.putString(DRIVER_USERID, "")
+                        editor.apply()
                         myRunnable = Runnable {
                             callBtn.setVisibility(View.VISIBLE)
                             callBtn.setText("캣카독 부르기")
@@ -302,8 +340,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             startActivity(intentMeet)
                             handler.removeCallbacks(myRunnable)
                             Log.d(TAG, "나는 살아있다!!!")
+                            finish()
+
                         }
                         handler.postDelayed(myRunnable, 5000)
+                        finish()
+                        return
 
                     } else {
                         matchText.text = "Driver와 ${distanceRound.toString()}km 거리입니다."
@@ -347,6 +389,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
      *  Check if driver is matched using Child Md is null or not
      */
     fun checkIfDriverIsMatched() {
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
         var databaseForMatching = FirebaseDatabase.getInstance().getReference("Request").child(userId).child("MD")
         databaseForMatching.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError?) {
@@ -358,7 +402,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 var dataSnapshot = p0
                 if (dataSnapshot != null) {
                     customerState.driverUserId = dataSnapshot.getValue().toString()
-
+                    editor.putString(DRIVER_USERID, customerState.driverUserId)
+                    editor.commit()
                 }
             }
 
@@ -376,6 +421,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onLocationChanged(p0: Location?) {
                 var location = p0
                 updateMap(location)
+
                 checkIfDriverIsMatched()
                 Log.i("Info", customerState.driverUserId)
             }
@@ -450,6 +496,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if(savedInstanceState != null) {
             customerState = savedInstanceState.getParcelable(EXTRA_CUSTOMER)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activityOn = false
     }
 
 
