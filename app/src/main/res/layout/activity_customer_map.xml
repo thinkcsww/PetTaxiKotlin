@@ -15,9 +15,9 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_alignBottom="@+id/matchText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/relativeLayout2"
         tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.CustomerMapActivity" />
 
     <TextView
@@ -33,42 +33,13 @@
         android:textSize="30sp"
         android:visibility="invisible" />
 
-    <RelativeLayout
-        android:id="@+id/relativeLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="1dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="2dp"
-        android:layout_toEndOf="@+id/menuBtn"
-        android:layout_toRightOf="@+id/menuBtn">
-
-        <android.support.v7.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="14dp"
-            android:layout_marginStart="14dp">
-
-            <fragment
-                android:id="@+id/place_autocomplete_fragment"
-                android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_toEndOf="@+id/menuBtn"
-                android:layout_toRightOf="@+id/menuBtn" />
-        </android.support.v7.widget.CardView>
-    </RelativeLayout>
-
     <Button
         android:id="@+id/menuBtn"
         android:layout_width="50dp"
-        android:layout_height="wrap_content"
+        android:layout_height="80dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/map"
+        android:layout_alignParentTop="true"
         android:background="@drawable/ic_menu_black_24dp"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="27dp" />
@@ -83,6 +54,47 @@
         android:background="@drawable/catcardog_button"
         android:text="캣카독 부르기"
         android:textColor="@color/colorAccent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/menuBtn"
+        android:layout_toRightOf="@+id/menuBtn"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/departureText"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/menuBtn"
+            android:layout_toRightOf="@+id/menuBtn"
+            android:background="@drawable/white_border_withblack"
+            android:fontFamily="@font/alfa_slab_one"
+            android:text="출발지를 설정해주세요"
+            android:textAlignment="center"
+            android:textColor="?attr/actionModeSplitBackground"
+            android:textSize="18sp"
+            tools:layout_editor_absoluteY="5dp" />
+
+
+        <TextView
+            android:id="@+id/destinationText"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            android:layout_toEndOf="@+id/menuBtn"
+            android:layout_toRightOf="@+id/menuBtn"
+            android:background="@drawable/white_border_withblack"
+            android:fontFamily="@font/alfa_slab_one"
+            android:text="목적지를 설정해주세요"
+            android:textAlignment="center"
+            android:textColor="?attr/actionModeSplitBackground"
+            android:textSize="18sp"
+            tools:layout_editor_absoluteY="5dp" />
+    </LinearLayout>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/menuLayout"

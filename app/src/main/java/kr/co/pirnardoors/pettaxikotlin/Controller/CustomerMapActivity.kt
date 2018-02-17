@@ -1,8 +1,8 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -14,7 +14,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -23,10 +22,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
-import com.google.android.gms.common.api.Status
-import com.google.android.gms.location.places.Place
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment
-import com.google.android.gms.location.places.ui.PlaceSelectionListener
+import com.google.android.gms.location.places.ui.PlacePicker
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -39,17 +35,14 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_customer_map.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.R.id.*
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
-import org.jetbrains.anko.share
 import org.jetbrains.anko.toast
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.concurrent.thread
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    var departureLatLng : LatLng? = null
+    var departure : String? = ""
     val TAG = "CustomerMapActivity"
     private lateinit var mMap: GoogleMap
     var handler = Handler()
@@ -138,6 +131,19 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         translateAnimLeft.setAnimationListener(animListener)
         translateAnimRight.setAnimationListener(animListener)
 
+        //departure selecting text
+
+        departureText.setOnClickListener {
+            val intentBuilder = PlacePicker.IntentBuilder()
+            val intent = intentBuilder.build(this@CustomerMapActivity)
+            startActivityForResult(intent, PLACEPICKER_DEPARTURE_REQUESTCODE)
+        }
+
+        destinationText.setOnClickListener {
+            val intentBuilder = PlacePicker.IntentBuilder()
+            val intent = intentBuilder.build(this@CustomerMapActivity)
+            startActivityForResult(intent, PLACEPICKER_ARRIVAL_REQUESTCODE)
+        }
 
 
         //call catcardog Button
@@ -160,26 +166,32 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                 number = numberEditText.text.toString()
                                 editor.putString(BOARDING_NUMBER, customerState.number)
 
-                                if (!TextUtils.isEmpty(number) && destination != "") {
+                                if (!TextUtils.isEmpty(number) && destination != "" && departureLatLng != null) {
                                     customerState.requestActive = true
                                     editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
                                     editor.apply()
                                     callBtn.setText("취소하기")
 
                                     // var type = typeEditText.text.toString()
-                                    geoFire.setLocation(userId, GeoLocation(lastKnownLocation.latitude, lastKnownLocation.longitude))
+                                    geoFire.setLocation(userId, GeoLocation(departureLatLng!!.latitude, departureLatLng!!.longitude))
                                     database.child(userId).child("MD").setValue("")
                                     database.child(userId).child("PN").setValue(number)
                                     database.child(userId).child("Destination").setValue(destination)
                                     database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
                                     database.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
+                                    editor.putString(DEPARTURE, departure)
+                                    editor.putString(DESTINATION, destination)
+                                    editor.apply()
                                     destination = ""
+                                    departure = ""
                                     toast("요청이 확인되었습니다.")
                                     dialog.dismiss()
                                 } else if(destination == "") {
                                     toast("목적지를 설정해주세요.")
                                 } else if(number.isEmpty()) {
                                     toast("탑승객 수를 입력해주세요.")
+                                } else if(departure == "") {
+                                    toast("출발지를 설정해주세요.")
                                 } else {
                                     toast("요청 정보를 입력해주세요.")
                                 }
@@ -195,7 +207,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
                     editor.putBoolean(DRIVER_ACTIVE, false)
                     editor.putString(DRIVER_USERID, "")
+                    editor.putString(DEPARTURE, "출발지를 설정해주세요.")
+                    editor.putString(DESTINATION, "목적지를 설정해주세요.")
                     editor.apply()
+                    destinationText.text = "목적지를 설정해주세요."
+                    departureText.text = "출발지를 설정해주세요."
                     callBtn.setText("캣카독 부르기")
                     destination = ""
                     geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
@@ -209,24 +225,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
-
-        val autocompleteFragment = fragmentManager.findFragmentById(R.id.place_autocomplete_fragment) as PlaceAutocompleteFragment
-
-        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
-            override fun onPlaceSelected(place: Place) {
-                destination = place.name.toString()
-                destinationLatLng = place.latLng
-                destinationLatitude = destinationLatLng.latitude
-                destinationLongitude = destinationLatLng.longitude
-
-
-            }
-
-            override fun onError(status: Status) {
-                status.statusMessage
-            }
-        })
-
 
         //Log out
         logoutBtn.setOnClickListener {
@@ -252,6 +250,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         customerState.driverUserId = sharedPreferences.getString(DRIVER_USERID, "")
         customerState.number = sharedPreferences.getString(BOARDING_NUMBER, "")
         customerState.carInfo = sharedPreferences.getString(CAR_INFO, "")
+        destinationText.text = sharedPreferences.getString(DESTINATION, "")
+        departureText.text = sharedPreferences.getString(DEPARTURE, "")
         if(customerState.requestActive == true) {
             callBtn.text = "취소하기"
         }
@@ -415,6 +415,27 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
         })
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PLACEPICKER_DEPARTURE_REQUESTCODE) {
+            if(resultCode == Activity.RESULT_OK) {
+                var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
+                departureLatLng = place.latLng
+                departure = String.format("출발지: ${place.address}")
+                departureText.text = "출발지: ${departure!!.substring(10)}"
+            }
+        } else if (requestCode == PLACEPICKER_ARRIVAL_REQUESTCODE) {
+            if(resultCode == Activity.RESULT_OK) {
+                var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
+                destination = String.format("도착지: ${place.address}")
+                destinationLatLng = place.latLng
+                destinationLatitude = destinationLatLng.latitude
+                destinationLongitude = destinationLatLng.longitude
+                destinationText.text = "도착지: ${destination!!.substring(10)}"
+            }
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

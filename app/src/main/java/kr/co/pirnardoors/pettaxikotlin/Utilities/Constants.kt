@@ -21,3 +21,6 @@ const val WAGE = "wage"
 const val DISTANCE_TO_DESTINATION = "distanceToDestination"
 const val TRANSPORT_ACTIVE = "transportActive"
 const val MEET_ACTIVITY_ACTIVE = "meetActivityActive"
+const val PLACEPICKER_DEPARTURE_REQUESTCODE = 1
+const val PLACEPICKER_ARRIVAL_REQUESTCODE = 2
+const val DEPARTURE = "departure"
