@@ -11,6 +11,7 @@ import android.support.v4.content.ContextCompat
 import android.widget.Toast
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.kakao.kakaonavi.KakaoNaviWebViewActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.MEET_ACTIVITY_ACTIVE
@@ -55,7 +56,8 @@ class MainActivity : AppCompatActivity() {
 
 
         startBtn.setOnClickListener {
-            var intent = Intent(this, StartActivity::class.java)
+//            var intent = Intent(this, StartActivity::class.java)
+            val intent = Intent(this@MainActivity, StartActivity::class.java)
             startActivity(intent)
             finish()
             return@setOnClickListener

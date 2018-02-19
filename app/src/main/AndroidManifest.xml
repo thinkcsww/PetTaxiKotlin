@@ -57,7 +57,7 @@
         <activity
             android:name=".Controller.DriverMapActivity"
             android:label="@string/title_activity_driver_map" />
-        <activity android:name=".Controller.MeetActivity"></activity>
+        <activity android:name=".Controller.MeetActivity" />
     </application>
 
 </manifest>

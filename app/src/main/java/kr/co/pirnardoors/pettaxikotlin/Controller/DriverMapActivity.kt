@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.view.View
 import android.view.ViewTreeObserver
+import android.webkit.WebView
 import android.widget.RelativeLayout
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
@@ -67,6 +68,14 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         //var requestType = req.requestType
         var requestNumber = req.requestNumber
 
+        /**
+         *  WebView kakaonavi
+         */
+
+        val kakaoWebView = findViewById(R.id.webView) as WebView
+//        kakaoWebView.setWebViewClient(kakaoNaviWebViewClient())
+        kakaoWebView.settings.javaScriptEnabled
+        kakaoWebView.loadUrl("http://www.naver.com")
 
         //Kakao navigation
    /*     val options = NaviOptions.newBuilder()

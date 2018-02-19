@@ -237,6 +237,10 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         simpleAlert.show()
     }
+
+    /**
+     * kakaopay !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     */
     private fun kakaoPay() {
         mainWebView = findViewById(R.id.mainWebView) as WebView
         mainWebView!!.setWebViewClient(KakaoWebViewClient(this))
