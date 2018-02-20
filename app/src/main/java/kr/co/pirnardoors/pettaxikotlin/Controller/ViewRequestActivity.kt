@@ -125,8 +125,6 @@ class ViewRequestActivity : AppCompatActivity() {
                     var intent = Intent(this@ViewRequestActivity, DriverMapActivity::class.java)
                     intent.putExtra(EXTRA_REQUEST, req)
                     startActivity(intent)
-                    finish()
-                    return
                 }
             }
 

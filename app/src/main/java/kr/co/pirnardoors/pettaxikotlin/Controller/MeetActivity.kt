@@ -95,7 +95,6 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             editor.putBoolean(MEET_ACTIVITY_ACTIVE, meetActivityACtive)
             editor.apply()
         }
-
         receiveDestinationInfo()
 
         Log.d("정보", transportActive.toString())
@@ -196,7 +195,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     editor.putString(DESTINATION, destination)
                     editor.apply()
 
-                    destinationText.text = "목적지 : $destination"
+                    destinationText.text = "$destination"
                     destinationLocation  = Location("currentPosition")
                     destinationLocation?.latitude = destinationLatitude.toString().toDouble()
                     destinationLocation?.longitude = destinationLongitude.toString().toDouble()

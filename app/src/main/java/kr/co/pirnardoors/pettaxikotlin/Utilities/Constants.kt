@@ -5,7 +5,7 @@ package kr.co.pirnardoors.pettaxikotlin.Utilities
  */
 
 const val TAG = "Info: "
-
+const val DRIVERMAP_STEP2 = "driverMapStep2"
 const val LISTVIEW = "Info listView"
 const val EXTRA_REQUEST = "request"
 const val EXTRA_CUSTOMER = "customer"
@@ -17,6 +17,8 @@ const val CAR_INFO = "carInfo"
 const val PHONENUMBER = "phonenumber"
 const val PREF_NAME = "prefs"
 const val DESTINATION = "destination"
+const val DESTINATION_LATITUDE = "destinationLatitude"
+const val DESTINATION_LONGITUDE = "destinationLongitude"
 const val WAGE = "wage"
 const val DISTANCE_TO_DESTINATION = "distanceToDestination"
 const val TRANSPORT_ACTIVE = "transportActive"

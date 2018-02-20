@@ -29,11 +29,30 @@
         android:text="수락하기"
         android:textColor="@android:color/background_light" />
 
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="match_parent"
-        android:layout_height="500dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true" />
+    <Button
+        android:id="@+id/toDestinationBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/acceptBtn"
+        android:layout_alignBottom="@+id/acceptBtn"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/catcardog_button"
+        android:fontFamily="@font/alfa_slab_one"
+        android:text="목적지로 출발하기"
+        android:textColor="@color/cardview_light_background"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/explainText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/acceptBtn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="44dp"
+        android:text="손님과 만난 후 카카오네비를 종료하고 \nxx화면으로 돌아와주세요"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="24sp"
+        android:visibility="gone" />
+
 </RelativeLayout>

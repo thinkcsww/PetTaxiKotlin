@@ -66,6 +66,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     val geoFire = GeoFire(database)
     var isPageOpen = false
     var number = ""
+    var distanceRound : Double? = null
     var activityOn = true
     private var umber : String? = null
     private var phoneNumber : String? = null
@@ -179,11 +180,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     database.child(userId).child("Destination").setValue(destination)
                                     database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
                                     database.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
+                                    departure = departureText.text.toString()
+                                    destination = destinationText.text.toString()
                                     editor.putString(DEPARTURE, departure)
                                     editor.putString(DESTINATION, destination)
                                     editor.apply()
-                                    destination = ""
-                                    departure = ""
                                     toast("요청이 확인되었습니다.")
                                     dialog.dismiss()
                                 } else if(destination == "") {
@@ -250,8 +251,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         customerState.driverUserId = sharedPreferences.getString(DRIVER_USERID, "")
         customerState.number = sharedPreferences.getString(BOARDING_NUMBER, "")
         customerState.carInfo = sharedPreferences.getString(CAR_INFO, "")
-        destinationText.text = sharedPreferences.getString(DESTINATION, "")
-        departureText.text = sharedPreferences.getString(DEPARTURE, "")
+        if(customerState.requestActive == false) {
+            destinationText.text = "목적지를 설정해주세요."
+            departureText.text = "출발지를 설정해주세요."
+        } else {
+            destinationText.text = sharedPreferences.getString(DESTINATION, "")
+            departureText.text = sharedPreferences.getString(DEPARTURE, "")
+        }
         if(customerState.requestActive == true) {
             callBtn.text = "취소하기"
         }
@@ -290,7 +296,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     destination.latitude = driverLatitude.toString().toDouble()
                     destination.longitude = driverLongitude.toString().toDouble()
                     var distanceKm = lastKnownLocation.distanceTo(destination) / 1000
-                    var distanceRound = Math.round(distanceKm)
+                    distanceRound = Math.round(distanceKm).toDouble()
                     var driverDb = FirebaseDatabase.getInstance().getReference("Driver").child(customerState.driverUserId)
                     driverDb.addValueEventListener(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError?) {
@@ -311,56 +317,55 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             }
                         }
                     })
-
-
-                    if(distanceRound < 0.01) {
-
-                        handler = Handler()
-                        customerState.requestActive = false
-                        editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
-                        editor.apply()
-                        customerState.driverActive = false
-                        editor.putBoolean(DRIVER_ACTIVE, customerState.driverActive)
-                        editor.apply()
-                        editor.putString(DRIVER_USERID, "")
-                        editor.apply()
-                        myRunnable = Runnable {
-                            callBtn.setVisibility(View.VISIBLE)
-                            callBtn.setText("캣카독 부르기")
-                            updateMap(lastKnownLocation)
-
-                            var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
-                            recordDB.child("customerId").setValue(userId)
-                            recordDB.child("carNumber").setValue(customerState.carInfo)
-                            recordDB.child("phoneNumber").setValue(customerState.phoneNumber)
-
-                            if(customerState.driverUserId != "null") {
-                                recordDB.child("driverId").setValue(customerState.driverUserId)
-                            }
-
-                            matchText.visibility = View.INVISIBLE
-
-//                            geoFire.removeLocation(userId)
-                            editor.apply()
-                            var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
-                            intentMeet.putExtra("Destination", destination)
-                            startActivity(intentMeet)
-                            handler.removeCallbacks(myRunnable)
-                            Log.d(TAG, "나는 살아있다!!!")
-                            finish()
-                            return@Runnable
-                        }
-                        handler.postDelayed(myRunnable, 5000)
-                        matchText.text = "Driver가 도착하였습니다. 잠시만 기다려주세요.."
-
-
-                    } else {
-                        matchText.text = "Driver와 ${distanceRound.toString()}km 거리입니다."
-                    }
                 }
             }
         })
+        if(distanceRound != null) {
+            if (distanceRound!! < 0.01) {
 
+                handler = Handler()
+                customerState.requestActive = false
+                editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
+                editor.apply()
+                customerState.driverActive = false
+                editor.putBoolean(DRIVER_ACTIVE, customerState.driverActive)
+                editor.apply()
+                editor.putString(DRIVER_USERID, "")
+                editor.apply()
+                myRunnable = Runnable {
+                    callBtn.setVisibility(View.VISIBLE)
+                    callBtn.setText("캣카독 부르기")
+                    updateMap(lastKnownLocation)
+
+                    var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
+                    recordDB.child("customerId").setValue(userId)
+                    recordDB.child("carNumber").setValue(customerState.carInfo)
+                    recordDB.child("phoneNumber").setValue(customerState.phoneNumber)
+
+                    if (customerState.driverUserId != "null") {
+                        recordDB.child("driverId").setValue(customerState.driverUserId)
+                    }
+
+                    matchText.visibility = View.INVISIBLE
+
+//                            geoFire.removeLocation(userId)
+                    editor.apply()
+                    var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
+                    intentMeet.putExtra("Destination", destination)
+                    startActivity(intentMeet)
+                    handler.removeCallbacks(myRunnable)
+                    Log.d(TAG, "나는 살아있다!!!")
+                    finish()
+                    return@Runnable
+                }
+                handler.postDelayed(myRunnable, 5000)
+                matchText.text = "Driver가 도착하였습니다.\n잠시만 기다려주세요.."
+
+
+            } else {
+                matchText.text = "Driver와 ${distanceRound.toString()}km 거리입니다."
+            }
+        }
     }
 
 
@@ -529,6 +534,10 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onDestroy() {
         super.onDestroy()
         activityOn = false
+        if(requestActive == false) {
+            destination = ""
+            departure = ""
+        }
     }
 
 
