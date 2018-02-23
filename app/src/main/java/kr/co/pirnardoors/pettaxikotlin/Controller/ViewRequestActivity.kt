@@ -11,10 +11,9 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
-import android.widget.Adapter
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -25,8 +24,11 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_view_request.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LOGON
 import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_REQUEST
 import kr.co.pirnardoors.pettaxikotlin.Utilities.LISTVIEW
+import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import org.jetbrains.anko.toast
 import java.util.*
 
 class ViewRequestActivity : AppCompatActivity() {
@@ -34,6 +36,8 @@ class ViewRequestActivity : AppCompatActivity() {
     var requestUserId = ArrayList<String>()
     var requestDestinations = ArrayList<String>()
     //var requestTypes = ArrayList<String>()
+    lateinit var translateAnimRight : Animation
+    lateinit var translateAnimLeft : Animation
     var requestNumbers = ArrayList<String>()
     var requestLatitudes = ArrayList<Double>()
     var requestLongitudes = ArrayList<Double>()
@@ -43,9 +47,14 @@ class ViewRequestActivity : AppCompatActivity() {
     var lastKnownLocation : Location? = null
     var adapter :ArrayAdapter<String>? = null
     var driverUserId : String? = ""
+    var isPageOpen = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_request)
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
+        editor.putBoolean(DRIVER_LOGON, true)
+        editor.apply()
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, request)
         listView.adapter = adapter
 
@@ -93,12 +102,37 @@ class ViewRequestActivity : AppCompatActivity() {
 
         logoutBtn.setOnClickListener {
             auth.signOut()
+            editor.putBoolean(DRIVER_LOGON, false)
+            editor.apply()
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
             return@setOnClickListener
 
         }
+        //refresh Button
+
+        refreshBtn.setOnClickListener {
+            finish();
+            startActivity(getIntent());
+        }
+
+        //menu button animation
+
+        val animListener = SlidingPageAnimationListener()
+        translateAnimRight = AnimationUtils.loadAnimation(this@ViewRequestActivity, R.anim.right_in)
+        translateAnimLeft = AnimationUtils.loadAnimation(this@ViewRequestActivity, R.anim.left_out)
+        menuBtn.setOnClickListener {
+            if (isPageOpen == false) {
+                menuLayout.startAnimation(translateAnimRight)
+                menuLayout.setVisibility(View.VISIBLE)
+                menuBtn.visibility = View.INVISIBLE
+            } else {
+                menuLayout.startAnimation(translateAnimLeft)
+            }
+        }
+        translateAnimLeft.setAnimationListener(animListener)
+        translateAnimRight.setAnimationListener(animListener)
 
         // Listview item clicked listener
         listView.onItemClickListener = object : AdapterView.OnItemClickListener {
@@ -131,6 +165,38 @@ class ViewRequestActivity : AppCompatActivity() {
         }
     }
     //oncreate finish
+
+    private inner class SlidingPageAnimationListener : Animation.AnimationListener {
+        /**
+         * 애니메이션이 끝날 때 호출되는 메소드
+         */
+        override fun onAnimationEnd(animation: Animation) {
+            if (isPageOpen == false) {
+                isPageOpen = true
+            } else {
+                isPageOpen = false
+                menuLayout.visibility = View.GONE
+            }
+        }
+
+        override fun onAnimationRepeat(animation: Animation) {
+
+        }
+
+        override fun onAnimationStart(animation: Animation) {
+
+        }
+
+    }
+
+    override fun onBackPressed() {
+        if(isPageOpen == true) {
+            menuLayout.startAnimation(translateAnimLeft)
+            menuBtn.visibility = View.VISIBLE
+        } else {
+            super.onBackPressed()
+        }
+    }
 
 
     //Read data from firebase to caculate distance

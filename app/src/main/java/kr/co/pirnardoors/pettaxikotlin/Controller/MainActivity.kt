@@ -9,15 +9,13 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.kakao.kakaonavi.KakaoNaviWebViewActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.MEET_ACTIVITY_ACTIVE
-import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
-import kr.co.pirnardoors.pettaxikotlin.Utilities.REQUEST_ACTIVE
-import kr.co.pirnardoors.pettaxikotlin.Utilities.TRANSPORT_ACTIVE
+import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.share
 import org.jetbrains.anko.toast
 import kotlin.system.measureTimeMillis
@@ -27,11 +25,15 @@ class MainActivity : AppCompatActivity() {
     var transportActive : Boolean = false
     var customerMapActive : Boolean = false
     var meetActivityActive : Boolean = false
+    var driverLogon = false
+    var customerLogon = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+        driverLogon = sharedPreferences.getBoolean(DRIVER_LOGON, false)
+        customerLogon = sharedPreferences.getBoolean(CUSTOMER_LOGON, false)
         transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
         customerMapActive = sharedPreferences.getBoolean(REQUEST_ACTIVE, false)
         meetActivityActive = sharedPreferences.getBoolean(MEET_ACTIVITY_ACTIVE, false)
@@ -46,6 +48,19 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
             return
+        }
+        if(FirebaseAuth.getInstance().currentUser != null) {
+            if(driverLogon == true){
+                val intent = Intent(this@MainActivity, ViewRequestActivity::class.java)
+                startActivity(intent)
+                finish()
+                return
+            } else if (customerLogon == true) {7
+                val intent = Intent(this@MainActivity, CustomerMapActivity::class.java)
+                startActivity(intent)
+                finish()
+                return
+            }
         }
 
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED

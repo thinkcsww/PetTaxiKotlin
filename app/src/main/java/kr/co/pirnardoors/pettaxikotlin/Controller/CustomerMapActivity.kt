@@ -87,6 +87,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
         reincarnation()
 
+        editor.putBoolean(CUSTOMER_LOGON, true)
+        editor.apply()
 
 
         var thread = Thread(object : Runnable {
@@ -238,6 +240,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             editor.putString(DRIVER_USERID, "")
             editor.putString(CAR_INFO, "")
             editor.putString(BOARDING_NUMBER, "")
+            editor.putBoolean(CUSTOMER_LOGON,false)
             finish()
             return@setOnClickListener
         }

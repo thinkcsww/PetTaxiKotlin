@@ -26,3 +26,5 @@ const val MEET_ACTIVITY_ACTIVE = "meetActivityActive"
 const val PLACEPICKER_DEPARTURE_REQUESTCODE = 1
 const val PLACEPICKER_ARRIVAL_REQUESTCODE = 2
 const val DEPARTURE = "departure"
+const val CUSTOMER_LOGON = "customerLogOn"
+const val DRIVER_LOGON = "driverLogOn"
