@@ -18,10 +18,7 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_driver_authorizing.*
 import kr.co.pirnardoors.pettaxikotlin.Model.License
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_CUSTOMER
-import kr.co.pirnardoors.pettaxikotlin.Utilities.GALLERY_INTENT
-import kr.co.pirnardoors.pettaxikotlin.Utilities.LICENSE_PARCELABLE
-import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
 import java.io.IOException
 
@@ -50,6 +47,13 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_driver_authorizing)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+
+        nextBtn.setOnClickListener {
+            val intent = Intent(this, DriverCarInfoActivity::class.java)
+            startActivity(intent)
+            finish()
+            return@setOnClickListener
+        }
 
         licenseImageView.setOnClickListener {
             choose()
@@ -110,11 +114,11 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         val intent = Intent()
         intent.setType("image/*")
         intent.setAction(Intent.ACTION_PICK)
-        startActivityForResult(Intent.createChooser(intent,"Select Picture"), GALLERY_INTENT)
+        startActivityForResult(Intent.createChooser(intent,"Select Picture"), LICENSE_IMAGE_INTENT)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if(requestCode == GALLERY_INTENT && resultCode == Activity.RESULT_OK
+        if(requestCode == LICENSE_IMAGE_INTENT && resultCode == Activity.RESULT_OK
         && data != null && data.getData() != null) {
             filePath = data.getData()
             try{

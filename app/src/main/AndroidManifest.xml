@@ -62,7 +62,8 @@
         <activity android:name=".Controller.MeetActivity" />
         <activity android:name=".Controller.DriverAuthorizingActivity" />
         <activity android:name=".Controller.BlockActivity" />
-        <activity android:name=".Controller.DriverCarInfoActivity"></activity>
+        <activity android:name=".Controller.DriverCarInfoActivity" />
+        <activity android:name=".Controller.WaitingAuthActivity"></activity>
     </application>
 
 </manifest>

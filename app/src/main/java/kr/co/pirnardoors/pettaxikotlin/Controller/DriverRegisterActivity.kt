@@ -46,6 +46,7 @@ class DriverRegisterActivity : AppCompatActivity() {
                         var userId = FirebaseAuth.getInstance().currentUser?.uid
                         var database = FirebaseDatabase.getInstance().getReference("Driver")
                         database.child(userId).child("UserType").setValue("Driver")
+                        database.child(userId).child("Auth").setValue("km")
 //                        database.child(userId).child("CarNumber").setValue(carNumber)
 //                        database.child(userId).child("PhoneNumber").setValue(phoneNumber)
                         val intent = Intent(this@DriverRegisterActivity, DriverAuthorizingActivity::class.java)

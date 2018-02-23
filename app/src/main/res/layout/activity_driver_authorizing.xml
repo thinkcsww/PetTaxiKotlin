@@ -72,7 +72,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView14"
+                android:id="@+id/textView20"
                 android:layout_width="97dp"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="3dp"
@@ -100,7 +100,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView14"
+                android:id="@+id/textView22"
                 android:layout_width="98dp"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="3dp"
@@ -128,7 +128,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView14"
+                android:id="@+id/textView16"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="3dp"
@@ -155,7 +155,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView14"
+                android:id="@+id/textView17"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="3dp"
@@ -267,11 +267,13 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout7" />
 
     <Button
-        android:id="@+id/button5"
-        android:layout_width="wrap_content"
+        android:id="@+id/nextBtn"
+        android:layout_width="54dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/left_arrow"
-        tools:layout_editor_absoluteX="307dp"
-        tools:layout_editor_absoluteY="595dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
