@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -58,7 +60,9 @@
             android:name=".Controller.DriverMapActivity"
             android:label="@string/title_activity_driver_map" />
         <activity android:name=".Controller.MeetActivity" />
-        <activity android:name=".Controller.DriverAuthorizingActivity"></activity>
+        <activity android:name=".Controller.DriverAuthorizingActivity" />
+        <activity android:name=".Controller.BlockActivity" />
+        <activity android:name=".Controller.DriverCarInfoActivity"></activity>
     </application>
 
 </manifest>

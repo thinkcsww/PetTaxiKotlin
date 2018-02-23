@@ -20,22 +20,22 @@ class DriverRegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_register)
 
-        authStateListener = FirebaseAuth.AuthStateListener {
-            var user = FirebaseAuth.getInstance().currentUser
-            if (user != null) {
-                var intent = Intent(this, ViewRequestActivity::class.java)
-                startActivity(intent)
-            }
-        }
+//        authStateListener = FirebaseAuth.AuthStateListener {
+//            var user = FirebaseAuth.getInstance().currentUser
+//            if (user != null) {
+//                var intent = Intent(this, ViewRequestActivity::class.java)
+//                startActivity(intent)
+//            }
+//        }
 
         completeBtn.setOnClickListener {
             var email = emailEditText.text.toString().trim()
             var password = passwordEditText.text.toString().trim()
-            var phoneNumber = phoneEditText.text.toString().trim()
-            var carNumber = carEditText.text.toString().trim()
+//            var phoneNumber = phoneEditText.text.toString().trim()
+//            var carNumber = carEditText.text.toString().trim() &&
+//            !TextUtils.isEmpty(phoneNumber) && !TextUtils.isEmpty(carNumber)
 
-            if(!TextUtils.isEmpty(email) && !TextUtils.isEmpty(password) &&
-               !TextUtils.isEmpty(phoneNumber) && !TextUtils.isEmpty(carNumber)) {
+            if(!TextUtils.isEmpty(email) && !TextUtils.isEmpty(password)) {
                 progressBar.visibility = View.VISIBLE
                 handler.postDelayed(Runnable {
                     progressBar.visibility = View.GONE
@@ -46,8 +46,12 @@ class DriverRegisterActivity : AppCompatActivity() {
                         var userId = FirebaseAuth.getInstance().currentUser?.uid
                         var database = FirebaseDatabase.getInstance().getReference("Driver")
                         database.child(userId).child("UserType").setValue("Driver")
-                        database.child(userId).child("CarNumber").setValue(carNumber)
-                        database.child(userId).child("PhoneNumber").setValue(phoneNumber)
+//                        database.child(userId).child("CarNumber").setValue(carNumber)
+//                        database.child(userId).child("PhoneNumber").setValue(phoneNumber)
+                        val intent = Intent(this@DriverRegisterActivity, DriverAuthorizingActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                        return@addOnCompleteListener
                     } else {
                         Toast.makeText(this, "회원가입에 실패하였습니다.",Toast.LENGTH_SHORT).show()
                     }

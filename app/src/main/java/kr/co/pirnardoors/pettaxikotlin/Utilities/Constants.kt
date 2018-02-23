@@ -28,3 +28,6 @@ const val PLACEPICKER_ARRIVAL_REQUESTCODE = 2
 const val DEPARTURE = "departure"
 const val CUSTOMER_LOGON = "customerLogOn"
 const val DRIVER_LOGON = "driverLogOn"
+const val GALLERY_INTENT = 3
+const val DRIVER_LICENSE_AUTHORIZED = "driverLicenseAuthorized"
+const val LICENSE_PARCELABLE = "licenseParcelable"

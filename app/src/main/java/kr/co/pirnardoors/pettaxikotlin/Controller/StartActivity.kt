@@ -1,5 +1,6 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
+import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -15,7 +16,9 @@ import com.google.firebase.database.ValueEventListener
 import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_start.*
 import kr.co.pirnardoors.pettaxikotlin.R
-import java.sql.Driver
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
+import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+
 
 class StartActivity : AppCompatActivity() {
     lateinit var myRunnable : Runnable
@@ -97,12 +100,10 @@ class StartActivity : AppCompatActivity() {
             }
         }
         handler.postDelayed(myRunnable, 2000)
-
     }
 
     override fun onStop() {
         super.onStop()
         handler.removeCallbacks(myRunnable)
     }
-
 }

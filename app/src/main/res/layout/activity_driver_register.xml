@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/start" />
+        app:srcCompat="@drawable/start2" />
 
     <TextView
         android:id="@+id/textView2"
@@ -65,23 +65,6 @@
             android:hint="Password"
             android:inputType="textPersonName" />
 
-        <EditText
-            android:id="@+id/phoneEditText"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:ems="10"
-            android:fontFamily="@font/marko_one"
-            android:hint="010-0000-0000"
-            android:inputType="textPersonName" />
-
-        <EditText
-            android:id="@+id/carEditText"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:ems="10"
-            android:fontFamily="@font/marko_one"
-            android:hint="차량 번호 (ex 48다 5812)"
-            android:inputType="textPersonName" />
     </LinearLayout>
 
     <Button

@@ -1,5 +1,6 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
+import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -10,23 +11,37 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_driver_login.*
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
+import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 
 class DriverLoginActivity : AppCompatActivity() {
     val auth = FirebaseAuth.getInstance()
     var authStateListener = FirebaseAuth.AuthStateListener {  }
     val handler = Handler()
+    var driverAuthorized = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_login)
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
+        driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
+
         authStateListener = FirebaseAuth.AuthStateListener {
             var user = FirebaseAuth.getInstance().currentUser
 
             if (user != null) {
-                var intent = Intent(this, ViewRequestActivity::class.java)
-                startActivity(intent)
-                progressBar.visibility = View.GONE
-                finish()
-                return@AuthStateListener
+                if(driverAuthorized == true) {
+                    val intent = Intent(this, ViewRequestActivity::class.java)
+                    startActivity(intent)
+                    progressBar.visibility = View.GONE
+                    finish()
+                    return@AuthStateListener
+                } else {
+                    val intent = Intent(this@DriverLoginActivity, BlockActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    return@AuthStateListener
+                }
             }
         }
 
@@ -51,6 +66,8 @@ class DriverLoginActivity : AppCompatActivity() {
             }
         }
         registerBtn.setOnClickListener {
+//            var intent = Intent(this, DriverAuthorizingActivity::class.java)
+//            startActivity(intent)
             var intent = Intent(this, DriverRegisterActivity::class.java)
             startActivity(intent)
         }

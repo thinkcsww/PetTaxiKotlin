@@ -27,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     var meetActivityActive : Boolean = false
     var driverLogon = false
     var customerLogon = false
+    var driverAuthorized = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -37,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
         customerMapActive = sharedPreferences.getBoolean(REQUEST_ACTIVE, false)
         meetActivityActive = sharedPreferences.getBoolean(MEET_ACTIVITY_ACTIVE, false)
+        driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
         if(transportActive == true || meetActivityActive == true ) {
             val intent = Intent(this@MainActivity, MeetActivity::class.java)
             startActivity(intent)
@@ -50,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
         if(FirebaseAuth.getInstance().currentUser != null) {
-            if(driverLogon == true){
+            if(driverLogon == true && driverAuthorized == true){
                 val intent = Intent(this@MainActivity, ViewRequestActivity::class.java)
                 startActivity(intent)
                 finish()
@@ -61,10 +64,16 @@ class MainActivity : AppCompatActivity() {
                 finish()
                 return
             }
+//            else if (driverLogon == true && driverAuthorized == false) {
+//                val intent = Intent(this@MainActivity, BlockActivity::class.java)
+//                startActivity(intent)
+//                finish()
+//                return
+//            }
         }
 
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-        && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
             ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 100)
         }
 
