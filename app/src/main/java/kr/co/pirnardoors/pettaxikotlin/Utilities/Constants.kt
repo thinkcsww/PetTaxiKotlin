@@ -33,3 +33,4 @@ const val CAR_IMAGE_INTENT = 4
 const val DRIVER_LICENSE_AUTHORIZED = "driverLicenseAuthorized"
 const val LICENSE_PARCELABLE = "licenseParcelable"
 const val DRIVER_ID = "driverId"
+const val READY_TO_TEST = "readyToTest"

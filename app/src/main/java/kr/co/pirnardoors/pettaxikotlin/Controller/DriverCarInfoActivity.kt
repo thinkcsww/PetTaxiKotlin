@@ -17,6 +17,7 @@ import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.CAR_IMAGE_INTENT
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import kr.co.pirnardoors.pettaxikotlin.Utilities.READY_TO_TEST
 import org.jetbrains.anko.toast
 import java.io.IOException
 
@@ -46,6 +47,7 @@ class DriverCarInfoActivity : AppCompatActivity() {
             driverDB.child("CarColor").setValue(carColor)
             driverDB.child("CarOwner").setValue(carOwner)
             driverDB.child("CarModel").setValue(carModel)
+            driverDB.child("ReadyToTest").setValue("true")
             uploadImage()
         }
     }

@@ -9,6 +9,10 @@ import android.text.TextUtils
 import android.view.View
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_driver_login.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
@@ -20,12 +24,27 @@ class DriverLoginActivity : AppCompatActivity() {
     var authStateListener = FirebaseAuth.AuthStateListener {  }
     val handler = Handler()
     var driverAuthorized = false
+    var userId = FirebaseAuth.getInstance().currentUser?.uid
+    var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_login)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
-        driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
+
+        if(FirebaseAuth.getInstance().currentUser != null) {
+            driverDB.child(userId).addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError?) {
+                    if (p0 != null) p0.message
+                }
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    if (p0 != null) {
+                        driverAuthorized = p0.child("Auth").getValue(String::class.java)!!.toBoolean()
+                    }
+                }
+            })
+        }
 
         authStateListener = FirebaseAuth.AuthStateListener {
             var user = FirebaseAuth.getInstance().currentUser

@@ -18,6 +18,7 @@ import kotlinx.android.synthetic.main.activity_start.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import kr.co.pirnardoors.pettaxikotlin.Utilities.READY_TO_TEST
 
 
 class StartActivity : AppCompatActivity() {
@@ -29,12 +30,15 @@ class StartActivity : AppCompatActivity() {
     var handler = Handler()
     val user_field : String = "usr"
     val pwd_field : String = "pwd"
+    var driverAuthorized = false
+    var readyToTest = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
         userId  = FirebaseAuth.getInstance().currentUser?.uid
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
 
-        val paper = Paper.init(this@StartActivity)
         if(userId == null) {
             userTypeCustomer =""
             userTypeDriver = ""
@@ -57,7 +61,7 @@ class StartActivity : AppCompatActivity() {
 
             })
 
-            var driverDB = FirebaseDatabase.getInstance().getReference("Driver").child(userId).child("UserType")
+            var driverDB = FirebaseDatabase.getInstance().getReference("Driver").child(userId)
             driverDB.addValueEventListener(object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError?) {
                     if (p0 != null) {
@@ -67,7 +71,9 @@ class StartActivity : AppCompatActivity() {
 
                 override fun onDataChange(p0: DataSnapshot?) {
                     if (p0 != null) {
-                        userTypeDriver = p0.getValue(String::class.java)
+                        userTypeDriver = p0.child("UserType").getValue(String::class.java)
+                        driverAuthorized = p0.child("Auth").getValue(String::class.java)!!.toBoolean()
+                        readyToTest = p0.child("ReadyToTest").getValue(String::class.java)!!.toBoolean()
                     }
                 }
             })
@@ -85,12 +91,18 @@ class StartActivity : AppCompatActivity() {
             }
         }
         driverBtn.setOnClickListener {
-            if(userId == null || userTypeDriver.equals("Driver")) {
+            if (driverAuthorized == false && readyToTest == true){
+                val intent = Intent(this@StartActivity, WaitingAuthActivity::class.java)
+                startActivity(intent)
+                finish()
+                return@setOnClickListener
+            } else if(userId == null || userTypeDriver.equals("Driver")) {
                 val intent = Intent(this, DriverLoginActivity::class.java)
                 startActivity(intent)
                 finish()
                 return@setOnClickListener
-            } else if (userTypeDriver == null){
+            }
+            else if (userTypeDriver == null){
                 Toast.makeText(this@StartActivity, "Customer 모드를 로그아웃 해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
