@@ -63,7 +63,21 @@
         <activity android:name=".Controller.DriverAuthorizingActivity" />
         <activity android:name=".Controller.BlockActivity" />
         <activity android:name=".Controller.DriverCarInfoActivity" />
-        <activity android:name=".Controller.WaitingAuthActivity"></activity>
+        <activity android:name=".Controller.WaitingAuthActivity" />
+
+        <service android:name=".Controller.MyFirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
