@@ -2,6 +2,7 @@ package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.Activity
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
@@ -14,6 +15,8 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_driver_car_info.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.CAR_IMAGE_INTENT
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
+import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 import org.jetbrains.anko.toast
 import java.io.IOException
 
@@ -23,19 +26,27 @@ class DriverCarInfoActivity : AppCompatActivity() {
     var mStorage = FirebaseStorage.getInstance().getReference()
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver").child(userId)
+    var Id = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_car_info)
-
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
+        Id = sharedPreferences.getString(DRIVER_ID, "")
         carImageView.setOnClickListener {
             chooseImage()
         }
 
         submitBtn.setOnClickListener {
-            val intent = Intent(this, WaitingAuthActivity::class.java)
-            startActivity(intent)
-            finish()
-            return@setOnClickListener
+            var carNumber = carNumberEditText.text.trim().toString()
+            var carModel = carModelEditText.text.trim().toString()
+            var carOwner = carOwnerEditText.text.trim().toString()
+            var carColor = carColorEditText.text.trim().toString()
+            driverDB.child("CarNumber").setValue(carNumber)
+            driverDB.child("CarColor").setValue(carColor)
+            driverDB.child("CarOwner").setValue(carOwner)
+            driverDB.child("CarModel").setValue(carModel)
+            uploadImage()
         }
     }
 
@@ -61,11 +72,11 @@ class DriverCarInfoActivity : AppCompatActivity() {
     }
 
     private fun uploadImage() {
-        if(filePath != null) {
+        if(filePath != null && Id != "") {
             val progressDialog = ProgressDialog(this)
             progressDialog.setTitle("Uploading...")
             progressDialog.show()
-            mStorage.putFile(filePath).addOnSuccessListener {
+            mStorage.child(Id).child("CarImage").putFile(filePath).addOnSuccessListener {
                 progressDialog.dismiss()
             }.addOnFailureListener {
                         progressDialog.dismiss()
@@ -80,8 +91,6 @@ class DriverCarInfoActivity : AppCompatActivity() {
                             return@addOnProgressListener
                         }
                     }
-
         }
-
     }
 }

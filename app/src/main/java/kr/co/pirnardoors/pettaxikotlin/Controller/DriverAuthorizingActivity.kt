@@ -31,22 +31,13 @@ class DriverAuthorizingActivity : AppCompatActivity() {
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver").child(userId)
     var license  = License("", "", "", "", "")
-
-    override fun onSaveInstanceState(outState: Bundle?) {
-        super.onSaveInstanceState(outState)
-        outState?.putParcelable(LICENSE_PARCELABLE, license)
-    }
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        super.onRestoreInstanceState(savedInstanceState)
-        if(savedInstanceState != null) {
-            license = savedInstanceState.getParcelable(EXTRA_CUSTOMER)
-        }
-    }
+    var Id : String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_authorizing)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+        Id = sharedPreferences.getString(DRIVER_ID, "")
 
         nextBtn.setOnClickListener {
             val intent = Intent(this, DriverCarInfoActivity::class.java)
@@ -87,15 +78,15 @@ class DriverAuthorizingActivity : AppCompatActivity() {
     }
 
     private fun uploadImage() {
-        if(filePath != null) {
+        if(filePath != null && Id != "") {
             val progressDialog = ProgressDialog(this)
             progressDialog.setTitle("Uploading...")
             progressDialog.show()
-            mStorage.child(userId!!).putFile(filePath).addOnSuccessListener {
+            mStorage.child(Id).child("License").putFile(filePath).addOnSuccessListener {
                 progressDialog.dismiss()
             }
                     .addOnFailureListener {
-                        progressDialog.dismiss()
+                        progressDialog.dismiss();
                         toast("업로드 실패")
                     }
                     .addOnProgressListener {
@@ -129,6 +120,17 @@ class DriverAuthorizingActivity : AppCompatActivity() {
                 e.message
             }
 
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.putParcelable(LICENSE_PARCELABLE, license)
+    }
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        if(savedInstanceState != null) {
+            license = savedInstanceState.getParcelable(EXTRA_CUSTOMER)
         }
     }
 }

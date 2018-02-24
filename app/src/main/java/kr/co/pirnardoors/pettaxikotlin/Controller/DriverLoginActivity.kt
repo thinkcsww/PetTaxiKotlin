@@ -11,6 +11,7 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_driver_login.*
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 
@@ -57,6 +58,8 @@ class DriverLoginActivity : AppCompatActivity() {
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(this, "로그인 되었습니다.", Toast.LENGTH_SHORT).show()
+                        editor.putString(DRIVER_ID, email)
+                        editor.apply()
                     } else {
                         Toast.makeText(this, "로그인이 실패하였습니다.", Toast.LENGTH_SHORT).show()
                     }
