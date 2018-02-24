@@ -52,6 +52,7 @@ class DriverRegisterActivity : AppCompatActivity() {
                         database.child(userId).child("UserType").setValue("Driver")
                         database.child(userId).child("Auth").setValue("false")
                         database.child(userId).child("Id").setValue(email)
+                        database.child(userId).child("ReadyToTest").setValue("false")
                         val intent = Intent(this@DriverRegisterActivity, DriverAuthorizingActivity::class.java)
                         startActivity(intent)
                         finish()

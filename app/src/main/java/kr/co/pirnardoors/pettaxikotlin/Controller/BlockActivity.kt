@@ -16,7 +16,8 @@ import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 
 class BlockActivity : AppCompatActivity() {
     var userId = FirebaseAuth.getInstance().currentUser?.uid
-    val driverDB = FirebaseDatabase.getInstance().getReference("Driver").child(userId)
+    val driverDB = FirebaseDatabase.getInstance().getReference("Driver")
+    var readyToTest = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_block)
@@ -24,6 +25,29 @@ class BlockActivity : AppCompatActivity() {
         var editor = sharedPreferences.edit()
         var Id = sharedPreferences.getString(DRIVER_ID, "")
         welcomText.text = "${Id}님\n 반갑습니다!"
+
+
+            driverDB.child(userId).addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError?) {
+                    if (p0 != null) p0.message
+                }
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    if (p0 != null) {
+                        readyToTest = p0.child("ReadyToTest").getValue(String::class.java)!!.toBoolean()
+                        if(readyToTest == true) {
+                            val intent = Intent(this@BlockActivity, WaitingAuthActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                            return
+                        }
+                    }
+                }
+            })
+
+
+
+
 
 
 
