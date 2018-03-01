@@ -1,6 +1,9 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.Activity
+import android.app.DatePickerDialog
+import android.app.PendingIntent.getActivity
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,6 +21,7 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
@@ -36,8 +40,13 @@ import kotlinx.android.synthetic.main.activity_customer_map.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
+import org.jetbrains.anko.AlertDialogBuilder
+import org.jetbrains.anko.find
 import org.jetbrains.anko.toast
 import java.io.IOException
+import java.time.Month
+import java.time.Year
+import java.util.*
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -71,6 +80,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var umber : String? = null
     private var phoneNumber : String? = null
     var customerMapActive = false
+    var year = 0; var month = 0; var day = 0 ; var hour = 0; var minute = 0
 
     var customerState = Customer(false, false,
             "", "", "", "")
@@ -116,6 +126,42 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 }
             }).start()
+        //Reservation Button
+
+        reserveBtn.setOnClickListener {
+            val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
+            val mView = layoutInflater.inflate(R.layout.time_picker_layout, null)
+            mBuilder.setView(mView)
+            val dialog = mBuilder.create()
+            val dateTextView : TextView = mView.findViewById(R.id.dateTextView)
+            val timeTextView : TextView = mView.findViewById(R.id.timeTextView)
+            val timeCompleteBtn : Button = mView.findViewById(R.id.timeCompleteBtn)
+
+            dateTextView.setOnClickListener {
+                val calendar = Calendar.getInstance()
+                year = calendar.get(Calendar.YEAR); month = calendar.get(Calendar.MONTH);
+                day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                val datePickerDialog = DatePickerDialog(this@CustomerMapActivity, DatePickerDialog.OnDateSetListener {
+                    datePicker, year, month, day -> dateTextView.setText("${year.toString()}년 $month 월 $day 일")  }, year, month, day)
+                    datePickerDialog.show()
+            }
+            timeTextView.setOnClickListener {
+                val calendar = Calendar.getInstance()
+                hour = calendar.get(Calendar.HOUR_OF_DAY)
+                minute = calendar.get(Calendar.HOUR_OF_DAY)
+                val timePickerDialog = TimePickerDialog(this@CustomerMapActivity, TimePickerDialog.OnTimeSetListener {
+                    timePicker, hour, minute -> timeTextView.setText("${hour.toString()}시 $minute 분") }, hour, minute, false)
+                timePickerDialog.show()
+            }
+            timeCompleteBtn.setOnClickListener {
+
+                toast("예약되었습니다.")
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        }
         //Menu Button
 
         val animListener = SlidingPageAnimationListener()

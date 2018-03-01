@@ -118,7 +118,7 @@
             android:background="@drawable/catcardog_button"
             android:fontFamily="sans-serif"
             android:text="공지사항"
-            android:textColor="@color/colorAccent"
+            android:textColor="@color/cardview_light_background"
             app:layout_constraintBottom_toTopOf="@+id/customerServiceBtn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
