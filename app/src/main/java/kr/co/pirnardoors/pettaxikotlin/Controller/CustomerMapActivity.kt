@@ -211,6 +211,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             if(lastKnownLocation != null) {
                 if (customerState.requestActive == false) {
 
+                    if(departureText.text == "출발지를 설정해주세요." || destinationText.text == "목적지를 설정해주세요.") {
+                        toast("출발지 또는 목적지를 설정해주세요.")
+                        return@setOnClickListener
+                    }
+
                     val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
                     val mView = layoutInflater.inflate(R.layout.layout_destination, null)
                     val numberSetTextView : TextView = mView.findViewById(R.id.numberSetTextView)
@@ -219,6 +224,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     val okBtn : Button = mView.findViewById(R.id.okBtn)
                     val noBtn : Button = mView.findViewById(R.id.noBtn)
                     val reserveTextView : TextView = mView.findViewById(R.id.reserveTextView)
+                    val timeTextViewInDestinationLayout : TextView = mView.findViewById(R.id.timeTextViewInDestinationlayout)
 
 
                     mBuilder.setView(mView)
@@ -236,6 +242,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         numberPicker.maxValue = 5
                         numberPicker.minValue = 1
                         numberPicker.wrapSelectorWheel = true
+                        number = "1"
                         numberPicker.setOnValueChangedListener { numberPicker, oldval, newval ->
                             number = newval.toString()
                         }
@@ -293,7 +300,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                         timeCompleteBtn.setOnClickListener {
                             timeTextView.text = reserveTime
-                            timeTextViewInDestinationlayout.text = reserveTime
+                            timeTextViewInDestinationLayout.text = reserveTime
                             Log.d("Inf123", calendar.time.toString())
                             dialog.dismiss()
                         }
@@ -304,7 +311,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     okBtn.setOnClickListener {
 
                             if (customerState.requestActive == false) {
-                                number = numberTextView.text.toString()
                                 editor.putString(BOARDING_NUMBER, customerState.number)
 
 
