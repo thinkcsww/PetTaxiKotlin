@@ -32,14 +32,52 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4">
 
-        <EditText
-            android:id="@+id/numberEditText"
+        <TextView
+            android:id="@+id/numberSetTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:background="@drawable/black_border"
+            android:text="탑승인원 설정"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/numberTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="70dp"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/view_btn_background"
+            android:text="인원"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/reserveTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/black_border"
+            android:text="예약시간 설정"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/timeTextViewInDestinationlayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="70dp"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/view_btn_background"
             android:ems="10"
-            android:hint="탑승객 수"
-            android:inputType="textPersonName" />
+            android:hint="Click!"
+            android:inputType="number"
+            android:text="예약시간"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="12sp" />
 
         <LinearLayout
             android:layout_width="match_parent"

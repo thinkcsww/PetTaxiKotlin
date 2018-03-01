@@ -1,9 +1,6 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
-import android.app.Activity
-import android.app.DatePickerDialog
-import android.app.PendingIntent.getActivity
-import android.app.TimePickerDialog
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -20,10 +17,7 @@ import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.places.ui.PlacePicker
@@ -37,19 +31,17 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_customer_map.*
+import kotlinx.android.synthetic.main.layout_destination.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
-import org.jetbrains.anko.AlertDialogBuilder
-import org.jetbrains.anko.find
 import org.jetbrains.anko.toast
 import java.io.IOException
-import java.time.Month
-import java.time.Year
 import java.util.*
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
-
+    var reservation = false
+    var reserveTime = ""
     var departureLatLng : LatLng? = null
     var departure : String? = ""
     val TAG = "CustomerMapActivity"
@@ -81,6 +73,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var phoneNumber : String? = null
     var customerMapActive = false
     var year = 0; var month = 0; var day = 0 ; var hour = 0; var minute = 0
+    val calendar = Calendar.getInstance()
 
     var customerState = Customer(false, false,
             "", "", "", "")
@@ -134,29 +127,47 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             mBuilder.setView(mView)
             val dialog = mBuilder.create()
             val dateTextView : TextView = mView.findViewById(R.id.dateTextView)
-            val timeTextView : TextView = mView.findViewById(R.id.timeTextView)
+            val timeTextView : TextView = mView.findViewById(R.id.timeTextViewInDestinationlayout)
             val timeCompleteBtn : Button = mView.findViewById(R.id.timeCompleteBtn)
 
             dateTextView.setOnClickListener {
-                val calendar = Calendar.getInstance()
-                year = calendar.get(Calendar.YEAR); month = calendar.get(Calendar.MONTH);
+                year = calendar.get(Calendar.YEAR);
+                month = calendar.get(Calendar.MONTH);
                 day = calendar.get(Calendar.DAY_OF_MONTH)
 
                 val datePickerDialog = DatePickerDialog(this@CustomerMapActivity, DatePickerDialog.OnDateSetListener {
-                    datePicker, year, month, day -> dateTextView.setText("${year.toString()}년 $month 월 $day 일")  }, year, month, day)
+                    datePicker, year2, month2, day2 ->
+                    calendar.set(Calendar.YEAR, year2)
+                    calendar.set(Calendar.MONTH, month2)
+                    calendar.set(Calendar.DAY_OF_MONTH, day2)
+                    year = calendar.get(Calendar.YEAR);
+                    month = calendar.get(Calendar.MONTH);
+                    day = calendar.get(Calendar.DAY_OF_MONTH)
+                    dateTextView.setText("${year.toString()}년 ${month + 1}월 ${day}일")
+                    reserveTime = ""
+                    reserveTime = "$year 년 ${month + 1} 월 $day 일 "
+                }, year, month, day)
                     datePickerDialog.show()
+
             }
             timeTextView.setOnClickListener {
-                val calendar = Calendar.getInstance()
                 hour = calendar.get(Calendar.HOUR_OF_DAY)
-                minute = calendar.get(Calendar.HOUR_OF_DAY)
+                minute = calendar.get(Calendar.MINUTE)
                 val timePickerDialog = TimePickerDialog(this@CustomerMapActivity, TimePickerDialog.OnTimeSetListener {
-                    timePicker, hour, minute -> timeTextView.setText("${hour.toString()}시 $minute 분") }, hour, minute, false)
+                    timePicker, hour, minute ->
+                    timeTextView.setText("${hour.toString()}시 ${minute}분")
+                    calendar.set(Calendar.HOUR_OF_DAY, hour)
+                    calendar.set(Calendar.MINUTE, minute)
+                    calendar.set(Calendar.SECOND, 0)
+                    reserveTime = "$year 년 ${month + 1} 월 $day 일 "
+                    reserveTime += "$hour 시 $minute 분 "
+                }, hour, minute, false)
                 timePickerDialog.show()
+
             }
             timeCompleteBtn.setOnClickListener {
-
-                toast("예약되었습니다.")
+                toast(calendar.timeInMillis.toString())
+                Log.d("Inf123", calendar.time.toString())
                 dialog.dismiss()
             }
 
@@ -202,18 +213,102 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
                     val mView = layoutInflater.inflate(R.layout.layout_destination, null)
-                    var numberEditText : TextView = mView.findViewById(R.id.numberEditText)
+                    val numberSetTextView : TextView = mView.findViewById(R.id.numberSetTextView)
+                    val numberTextView : TextView = mView.findViewById(R.id.numberTextView)
                    // var typeEditText : TextView = mView.findViewById(R.id.typeEditText)
                     val okBtn : Button = mView.findViewById(R.id.okBtn)
                     val noBtn : Button = mView.findViewById(R.id.noBtn)
+                    val reserveTextView : TextView = mView.findViewById(R.id.reserveTextView)
+
 
                     mBuilder.setView(mView)
                     val dialog = mBuilder.create()
+
+                    //numberSet TextView
+
+                    numberSetTextView.setOnClickListener {
+                        val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
+                        val mView = layoutInflater.inflate(R.layout.layout_number_picker, null)
+                        mBuilder.setView(mView)
+                        val dialog = mBuilder.create()
+                        val numberPicker : NumberPicker = mView.findViewById(R.id.numberPicker)
+                        val setBtn : Button = mView.findViewById(R.id.setBtn)
+                        numberPicker.maxValue = 5
+                        numberPicker.minValue = 1
+                        numberPicker.wrapSelectorWheel = true
+                        numberPicker.setOnValueChangedListener { numberPicker, oldval, newval ->
+                            number = newval.toString()
+                        }
+                        setBtn.setOnClickListener {
+                            dialog.dismiss()
+                            numberTextView.text = "인원: $number"
+                        }
+                        dialog.show()
+
+                    }
+                    //reserve TextView
+                    reserveTextView.setOnClickListener {
+                        val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
+                        val mView = layoutInflater.inflate(R.layout.time_picker_layout, null)
+                        mBuilder.setView(mView)
+                        val dialog = mBuilder.create()
+                        val dateTextView : TextView = mView.findViewById(R.id.dateTextView)
+                        val timeTextView : TextView = mView.findViewById(R.id.timeTextViewInDestinationlayout)
+                        val timeCompleteBtn : Button = mView.findViewById(R.id.timeCompleteBtn)
+
+                        dateTextView.setOnClickListener {
+                            year = calendar.get(Calendar.YEAR);
+                            month = calendar.get(Calendar.MONTH);
+                            day = calendar.get(Calendar.DAY_OF_MONTH)
+
+                            val datePickerDialog = DatePickerDialog(this@CustomerMapActivity, DatePickerDialog.OnDateSetListener {
+                                datePicker, year2, month2, day2 ->
+                                calendar.set(Calendar.YEAR, year2)
+                                calendar.set(Calendar.MONTH, month2)
+                                calendar.set(Calendar.DAY_OF_MONTH, day2)
+                                year = calendar.get(Calendar.YEAR);
+                                month = calendar.get(Calendar.MONTH);
+                                day = calendar.get(Calendar.DAY_OF_MONTH)
+                                dateTextView.setText("${year.toString()}년 ${month + 1}월 ${day}일")
+                                reserveTime = ""
+                                reserveTime = "$year 년 ${month + 1} 월 $day 일 "
+                            }, year, month, day)
+                            datePickerDialog.show()
+
+                        }
+                        timeTextView.setOnClickListener {
+                            hour = calendar.get(Calendar.HOUR_OF_DAY)
+                            minute = calendar.get(Calendar.MINUTE)
+                            val timePickerDialog = TimePickerDialog(this@CustomerMapActivity, TimePickerDialog.OnTimeSetListener {
+                                timePicker, hour, minute ->
+                                timeTextView.setText("${hour.toString()}시 ${minute}분")
+                                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                calendar.set(Calendar.MINUTE, minute)
+                                calendar.set(Calendar.SECOND, 0)
+                                reserveTime = "$year 년 ${month + 1} 월 $day 일 "
+                                reserveTime += "$hour 시 $minute 분 "
+                            }, hour, minute, false)
+                            timePickerDialog.show()
+
+                        }
+                        timeCompleteBtn.setOnClickListener {
+                            timeTextView.text = reserveTime
+                            timeTextViewInDestinationlayout.text = reserveTime
+                            Log.d("Inf123", calendar.time.toString())
+                            dialog.dismiss()
+                        }
+
+                        dialog.show()
+                    }
+                    // ok Button
                     okBtn.setOnClickListener {
 
                             if (customerState.requestActive == false) {
-                                number = numberEditText.text.toString()
+                                number = numberTextView.text.toString()
                                 editor.putString(BOARDING_NUMBER, customerState.number)
+
+
+
 
                                 if (!TextUtils.isEmpty(number) && destination != "" && departureLatLng != null) {
                                     customerState.requestActive = true
@@ -228,12 +323,19 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     database.child(userId).child("Destination").setValue(destination)
                                     database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
                                     database.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
+                                    database.child(userId).child("Reservation").setValue(calendar.time.toString())
                                     departure = departureText.text.toString()
                                     destination = destinationText.text.toString()
                                     editor.putString(DEPARTURE, departure)
                                     editor.putString(DESTINATION, destination)
                                     editor.apply()
-                                    toast("요청이 확인되었습니다.")
+
+                                    val intent = Intent(this@CustomerMapActivity, NotificationReceiver::class.java)
+                                    val pendingIntent = PendingIntent.getBroadcast(this@CustomerMapActivity, ALARM_BROADCAST, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                                    val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                                    calendar.set(Calendar.HOUR_OF_DAY, hour - 1)
+                                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent)
+                                    Toast.makeText(this@CustomerMapActivity, "${reserveTime}예약되었습니다.", Toast.LENGTH_SHORT).show()
                                     dialog.dismiss()
                                 } else if(destination == "") {
                                     toast("목적지를 설정해주세요.")
@@ -292,6 +394,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         editor.apply()
     }
+
+
 
     private fun reincarnation() {
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
