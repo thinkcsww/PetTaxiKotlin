@@ -49,10 +49,33 @@
         android:layout_above="@+id/acceptBtn"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="44dp"
-        android:text="손님과 만난 후 카카오네비를 종료하고 \nxx화면으로 돌아와주세요"
+        android:text="손님과 만난 후 카카오네비를 종료하고 \n현재 화면으로 돌아와주세요"
         android:textAlignment="center"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="24sp"
         android:visibility="gone" />
+
+    <Button
+        android:id="@+id/departureBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/acceptBtn"
+        android:layout_alignRight="@+id/acceptBtn"
+        android:layout_alignTop="@+id/acceptBtn"
+        android:background="@drawable/catcardog_button"
+        android:text="출발"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/acceptBtn"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/acceptBtn"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="19dp"
+        android:text="Button" />
 
 </RelativeLayout>

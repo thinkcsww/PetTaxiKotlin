@@ -48,6 +48,7 @@ class ViewRequestActivity : AppCompatActivity() {
     var adapter :ArrayAdapter<String>? = null
     var driverUserId : String? = ""
     var isPageOpen = false
+    var reservationTime = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_request)
@@ -223,7 +224,23 @@ class ViewRequestActivity : AppCompatActivity() {
                         if(md == "") {
                             var requestLatitude = data.child("l").child("0").getValue()
                             var requestLongitued = data.child("l").child("1").getValue()
-                            var requestDestination = data.child("Destination").getValue()
+                            var requestDestination = data.child("Destination").getValue().toString()
+                            requestDestination = requestDestination.substring(5)
+                            reservationTime = data.child("Reservation").getValue().toString()
+                            Log.d("RESERVEINFO", reservationTime.substring(8, 10))
+                            Log.d("RESERVEINFO", reservationTime.substring(11, 13))
+                            Log.d("RESERVEINFO", reservationTime.substring(14, 16))
+                            Log.d("RESERVEINFO",reservationTime.substring(30, 34))
+                            Log.d("RESERVEINFO", reservationTime.substring(0, 3))
+                            var reserveDay = reservationTime.substring(8, 10).trim()
+                            var reserveHour = reservationTime.substring(11, 13).trim()
+                            var reserveMinute = reservationTime.substring(14, 16).trim()
+                            var reserveYear = reservationTime.substring(30, 34).trim()
+                            var reserveMonthBeforeFilter = reservationTime.substring(4, 7).trim()
+                            var reserveMonth = monthFilter(reserveMonthBeforeFilter)
+                            var reserveResult = "${reserveYear}년 ${reserveMonth}월 ${reserveDay}일 " +
+                                    "${reserveHour}시 ${reserveMinute}분"
+
                             //var requestType = data.child("Type").getValue()
                             var requestNumber = data.child("PN").getValue()
                             Log.d(LISTVIEW, userId)
@@ -237,8 +254,8 @@ class ViewRequestActivity : AppCompatActivity() {
                             Log.d(LISTVIEW + "distance =", distanceRound.toString())
 
                             if (distanceRound >= 0) {
-                                request.add("${distanceRound.toString()}Km,  " +
-                                        "목적지: $requestDestination, 탑승인원 : $requestNumber")
+                                request.add("현위치로부터 : ${distanceRound.toString()}Km, 탑승인원 : $requestNumber," +
+                                        "\n목적지 : $requestDestination\n예약시간 : $reserveResult")
                                 requestLatitudes.add(requestLatitude.toString().toDouble())
                                 requestLongitudes.add(requestLongitued.toString().toDouble())
                                 requestUserId.add(userId)
@@ -254,5 +271,34 @@ class ViewRequestActivity : AppCompatActivity() {
                 }
                }
         })
+    }
+
+    fun monthFilter(month : String) : Int {
+        if(month == "Jan") {
+            return 1
+        } else if (month == "Feb") {
+            return 2
+        } else if (month == "Mar") {
+            return 3
+        } else if (month == "Apr") {
+            return 4
+        } else if (month == "May") {
+            return 5
+        } else if (month == "Jun") {
+            return 6
+        } else if (month == "Jul") {
+            return 7
+        } else if (month == "Aug") {
+            return 8
+        } else if (month == "Sep") {
+            return 9
+        } else if (month == "Oct") {
+            return 10
+        } else if (month == "Nov") {
+            return 11
+        } else if (month == "Dec") {
+            return 12
+        }
+        return 0
     }
 }

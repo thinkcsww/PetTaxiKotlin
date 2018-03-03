@@ -35,3 +35,5 @@ const val LICENSE_PARCELABLE = "licenseParcelable"
 const val DRIVER_ID = "driverId"
 const val READY_TO_TEST = "readyToTest"
 const val ALARM_BROADCAST = 5
+const val DRIVERMAP_STEP1 = "driverMapStep1"
+const val ALARM_ALERTED = "alarmAlerted"

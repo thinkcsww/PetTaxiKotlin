@@ -41,6 +41,8 @@ class DriverLoginActivity : AppCompatActivity() {
                 override fun onDataChange(p0: DataSnapshot?) {
                     if (p0 != null) {
                         driverAuthorized = p0.child("Auth").getValue(String::class.java)!!.toBoolean()
+                        editor.putBoolean(DRIVER_LICENSE_AUTHORIZED, driverAuthorized)
+                        editor.apply()
                     }
                 }
             })

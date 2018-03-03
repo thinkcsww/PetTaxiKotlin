@@ -10,17 +10,20 @@ import android.os.Build
 import android.support.v4.app.NotificationCompat
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.ALARM_BROADCAST
+import java.util.*
 
 /**
  * Created by std on 2018-03-01.
  */
 class NotificationReceiver : BroadcastReceiver() {
+    val calendar = Calendar.getInstance()
     override fun onReceive(context: Context?, intent: Intent?) {
         val notificationManager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val intent = Intent(context, CustomerMapActivity::class.java)
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(context, ALARM_BROADCAST, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+
             NotificationCompat.Builder(context)
                     .setContentIntent(pendingIntent)
                     .setAutoCancel(true)

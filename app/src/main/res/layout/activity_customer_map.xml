@@ -47,7 +47,7 @@
     <Button
         android:id="@+id/menuBtn"
         android:layout_width="55dp"
-        android:layout_height="40dp"
+        android:layout_height="80dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
@@ -57,16 +57,16 @@
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="27dp" />
 
-    <Button
-        android:id="@+id/reserveBtn"
-        android:layout_width="55dp"
-        android:layout_height="30dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/menuBtn"
-        android:background="@drawable/catcardog_button"
-        android:text="시간예약"
-        android:textColor="@color/cardview_light_background" />
+    <!--<Button-->
+        <!--android:id="@+id/reserveBtn"-->
+        <!--android:layout_width="55dp"-->
+        <!--android:layout_height="30dp"-->
+        <!--android:layout_alignParentEnd="true"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_below="@+id/menuBtn"-->
+        <!--android:background="@drawable/catcardog_button"-->
+        <!--android:text="시간예약"-->
+        <!--android:textColor="@color/cardview_light_background" />-->
 
     <LinearLayout
         android:id="@+id/linearLayout9"
@@ -81,6 +81,8 @@
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:layout_alignParentTop="true"
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="2dp"
             android:layout_toEndOf="@+id/menuBtn"
             android:layout_toRightOf="@+id/menuBtn"
             android:background="@drawable/white_border_withblack"

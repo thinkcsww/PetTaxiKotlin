@@ -65,7 +65,7 @@
             android:textSize="24sp" />
 
         <TextView
-            android:id="@+id/timeTextViewInDestinationlayout"
+            android:id="@+id/timeTextViewInDestinationLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="70dp"

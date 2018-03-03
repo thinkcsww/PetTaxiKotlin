@@ -7,9 +7,11 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
@@ -31,16 +33,16 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_customer_map.*
-import kotlinx.android.synthetic.main.layout_destination.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
+import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
-    var reservation = false
+    var driverDeparture = false
     var reserveTime = ""
     var departureLatLng : LatLng? = null
     var departure : String? = ""
@@ -71,9 +73,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var activityOn = true
     private var umber : String? = null
     private var phoneNumber : String? = null
+    var alarmAlerted = false
     var customerMapActive = false
     var year = 0; var month = 0; var day = 0 ; var hour = 0; var minute = 0
-    val calendar = Calendar.getInstance()
+    var currentYear = 0; var currentMonth = 0; var currentDay = 0 ; var currentHour = 0; var currentMinute = 0
+
+    var calendar = Calendar.getInstance()
 
     var customerState = Customer(false, false,
             "", "", "", "")
@@ -83,7 +88,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_customer_map)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
-
+        //get current date, year , month , hour, day
+        getCurrentDate()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
@@ -92,6 +98,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         editor.putBoolean(CUSTOMER_LOGON, true)
         editor.apply()
+
 
 
         var thread = Thread(object : Runnable {
@@ -107,6 +114,10 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                             editor.putBoolean(DRIVER_ACTIVE, customerState.driverActive)
                                             editor.apply()
                                             getDriverInformation()
+                                            if(driverDeparture == true && alarmAlerted == false) {
+                                                //if driver is coming, let you know by notification alarm.
+                                                notifyDriverDeparture()
+                                            }
                                         }
                                         Log.d("InfoMaiton", "나는 살아있따!!!")
                                     }
@@ -121,7 +132,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }).start()
         //Reservation Button
 
-        reserveBtn.setOnClickListener {
+        /*reserveBtn.setOnClickListener {
             val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
             val mView = layoutInflater.inflate(R.layout.time_picker_layout, null)
             mBuilder.setView(mView)
@@ -172,7 +183,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             dialog.show()
-        }
+        }*/
         //Menu Button
 
         val animListener = SlidingPageAnimationListener()
@@ -224,7 +235,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     val okBtn : Button = mView.findViewById(R.id.okBtn)
                     val noBtn : Button = mView.findViewById(R.id.noBtn)
                     val reserveTextView : TextView = mView.findViewById(R.id.reserveTextView)
-                    val timeTextViewInDestinationLayout : TextView = mView.findViewById(R.id.timeTextViewInDestinationlayout)
+                    val timeTextViewInDestinationLayout : TextView = mView.findViewById(R.id.timeTextViewInDestinationLayout)
 
 
                     mBuilder.setView(mView)
@@ -260,23 +271,24 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         mBuilder.setView(mView)
                         val dialog = mBuilder.create()
                         val dateTextView : TextView = mView.findViewById(R.id.dateTextView)
-                        val timeTextView : TextView = mView.findViewById(R.id.timeTextViewInDestinationlayout)
+                        val timeTextView : TextView = mView.findViewById(R.id.timeTextView)
                         val timeCompleteBtn : Button = mView.findViewById(R.id.timeCompleteBtn)
 
                         dateTextView.setOnClickListener {
+                            calendar = Calendar.getInstance()
                             year = calendar.get(Calendar.YEAR);
                             month = calendar.get(Calendar.MONTH);
                             day = calendar.get(Calendar.DAY_OF_MONTH)
 
                             val datePickerDialog = DatePickerDialog(this@CustomerMapActivity, DatePickerDialog.OnDateSetListener {
-                                datePicker, year2, month2, day2 ->
-                                calendar.set(Calendar.YEAR, year2)
-                                calendar.set(Calendar.MONTH, month2)
-                                calendar.set(Calendar.DAY_OF_MONTH, day2)
-                                year = calendar.get(Calendar.YEAR);
-                                month = calendar.get(Calendar.MONTH);
-                                day = calendar.get(Calendar.DAY_OF_MONTH)
-                                dateTextView.setText("${year.toString()}년 ${month + 1}월 ${day}일")
+                                datePicker, year, month, day ->
+                                calendar.set(Calendar.YEAR, year)
+                                calendar.set(Calendar.MONTH, month)
+                                calendar.set(Calendar.DAY_OF_MONTH, day)
+                                this.year = calendar.get(Calendar.YEAR).toInt()
+                                this.month = calendar.get(Calendar.MONTH).toInt()
+                                this.day = calendar.get(Calendar.DAY_OF_MONTH).toInt()
+                                dateTextView.setText("${this.year.toString()}년 ${this.month + 1}월 ${this.day}일")
                                 reserveTime = ""
                                 reserveTime = "$year 년 ${month + 1} 월 $day 일 "
                             }, year, month, day)
@@ -292,7 +304,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                 calendar.set(Calendar.HOUR_OF_DAY, hour)
                                 calendar.set(Calendar.MINUTE, minute)
                                 calendar.set(Calendar.SECOND, 0)
-                                reserveTime = "$year 년 ${month + 1} 월 $day 일 "
+                                this.hour = calendar.get(Calendar.HOUR_OF_DAY).toInt()
+                                this.minute = calendar.get(Calendar.MINUTE).toInt()
+                                reserveTime = "${this.year} 년 ${this.month + 1} 월 ${this.day} 일 "
                                 reserveTime += "$hour 시 $minute 분 "
                             }, hour, minute, false)
                             timePickerDialog.show()
@@ -301,6 +315,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         timeCompleteBtn.setOnClickListener {
                             timeTextView.text = reserveTime
                             timeTextViewInDestinationLayout.text = reserveTime
+                            hour = calendar.get(Calendar.HOUR_OF_DAY)
+                            minute = calendar.get(Calendar.MINUTE)
+                            year = calendar.get(Calendar.YEAR);
+                            month = calendar.get(Calendar.MONTH);
+                            day = calendar.get(Calendar.DAY_OF_MONTH)
                             Log.d("Inf123", calendar.time.toString())
                             dialog.dismiss()
                         }
@@ -330,6 +349,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
                                     database.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
                                     database.child(userId).child("Reservation").setValue(calendar.time.toString())
+                                    database.child(userId).child("DD").setValue("false")
                                     departure = departureText.text.toString()
                                     destination = destinationText.text.toString()
                                     editor.putString(DEPARTURE, departure)
@@ -339,10 +359,32 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     val intent = Intent(this@CustomerMapActivity, NotificationReceiver::class.java)
                                     val pendingIntent = PendingIntent.getBroadcast(this@CustomerMapActivity, ALARM_BROADCAST, intent, PendingIntent.FLAG_UPDATE_CURRENT)
                                     val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
                                     calendar.set(Calendar.HOUR_OF_DAY, hour - 1)
-                                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent)
-                                    Toast.makeText(this@CustomerMapActivity, "${reserveTime}예약되었습니다.", Toast.LENGTH_SHORT).show()
-                                    dialog.dismiss()
+                                    Log.d("ASASD year : ", calendar.get(Calendar.YEAR).toString())
+                                    Log.d("ASASD currentYear : ", currentYear.toString())
+                                    Log.d("ASASD month : ", (calendar.get(Calendar.MONTH) + 1 ).toString())
+                                    Log.d("ASASD currentMonth : ", currentMonth.toString())
+                                    Log.d("ASASD day : ", calendar.get(Calendar.DAY_OF_MONTH) .toString())
+                                    Log.d("ASASD currentDay : ", (currentDay + 1).toString())
+                                    Log.d("ASASD hour : ", hour.toString())
+
+                                    Log.d("ASASD minute : ", minute.toString())
+                                    Log.d("ASASD Hour: ", calendar.get(Calendar.HOUR_OF_DAY).toString())
+                                    Log.d("ASASD currentHour : ", currentHour.toString())
+                                    if(        currentHour == calendar.get(Calendar.HOUR_OF_DAY) + 1
+                                            && currentYear == calendar.get(Calendar.YEAR)
+                                            && currentMonth == calendar.get(Calendar.MONTH) + 1
+                                            && currentDay + 1 == calendar.get(Calendar.DAY_OF_MONTH)) {
+                                        toast("요청되었습니다.")
+                                        calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                        database.child(userId).child("Reservation").setValue(calendar.time.toString())
+                                        dialog.dismiss()
+                                    } else {
+                                        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+                                        Toast.makeText(this@CustomerMapActivity, "${reserveTime}예약되었습니다.", Toast.LENGTH_SHORT).show()
+                                        dialog.dismiss()
+                                    }
                                 } else if(destination == "") {
                                     toast("목적지를 설정해주세요.")
                                 } else if(number.isEmpty()) {
@@ -401,6 +443,44 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         editor.apply()
     }
 
+    private fun getCurrentDate() {
+        currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        currentYear = calendar.get(Calendar.YEAR)
+        currentDay = calendar.get(Calendar.MONTH)
+        currentMonth = calendar.get(Calendar.DAY_OF_MONTH)
+    }
+
+    private fun notifyDriverDeparture() {
+
+        var editor = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit()
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val intent = Intent(this@CustomerMapActivity, CustomerMapActivity::class.java)
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pendingIntent = PendingIntent.getActivity(this@CustomerMapActivity, ALARM_BROADCAST, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            NotificationCompat.Builder(this@CustomerMapActivity)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .setContentTitle("CatCarDog 알림")
+                    .setContentText("Driver가 출발하였습니다.")
+                    .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                    .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
+                    .setPriority(NotificationManager.IMPORTANCE_HIGH)
+        } else {
+            NotificationCompat.Builder(this@CustomerMapActivity)
+                    .setAutoCancel(true)
+                    .setContentTitle("CatCarDog 알림")
+                    .setContentText("Driver가 출발하였습니다.")
+                    .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                    .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
+                    .setPriority(Notification.PRIORITY_MAX)
+        }
+        notificationManager.notify(ALARM_BROADCAST, builder.build())
+        alarmAlerted = true
+        editor.putBoolean(ALARM_ALERTED, alarmAlerted)
+
+
+    }
 
 
     private fun reincarnation() {
@@ -410,6 +490,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         customerState.driverUserId = sharedPreferences.getString(DRIVER_USERID, "")
         customerState.number = sharedPreferences.getString(BOARDING_NUMBER, "")
         customerState.carInfo = sharedPreferences.getString(CAR_INFO, "")
+        alarmAlerted = sharedPreferences.getBoolean(ALARM_ALERTED, false)
         if(customerState.requestActive == false) {
             destinationText.text = "목적지를 설정해주세요."
             departureText.text = "출발지를 설정해주세요."
@@ -468,10 +549,10 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             if (dataSnapshot != null) {
                                 customerState.carInfo = dataSnapshot.child("CarNumber").getValue().toString()
                                 editor.putString(CAR_INFO, customerState.carInfo)
-                                editor.commit()
+                                editor.apply()
                                 customerState.phoneNumber = dataSnapshot.child("PhoneNumber").getValue().toString()
                                 editor.putString(PHONENUMBER, customerState.phoneNumber)
-                                editor.commit()
+                                editor.apply()
 
                             }
                         }
@@ -479,51 +560,59 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         })
-        if(distanceRound != null) {
-            if (distanceRound!! < 0.01) {
+        if(driverDeparture == true) {
+            if (distanceRound != null) {
+                if (distanceRound!! < 0.00001) {
 
-                handler = Handler()
-                customerState.requestActive = false
-                editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
-                editor.apply()
-                customerState.driverActive = false
-                editor.putBoolean(DRIVER_ACTIVE, customerState.driverActive)
-                editor.apply()
-                editor.putString(DRIVER_USERID, "")
-                editor.apply()
-                myRunnable = Runnable {
-                    callBtn.setVisibility(View.VISIBLE)
-                    callBtn.setText("캣카독 부르기")
-                    updateMap(lastKnownLocation)
+                    handler = Handler()
+                    customerState.requestActive = false
+                    editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
+                    editor.apply()
+                    customerState.driverActive = false
+                    editor.putBoolean(DRIVER_ACTIVE, customerState.driverActive)
+                    editor.apply()
+                    editor.putString(DRIVER_USERID, "")
+                    editor.apply()
+                    myRunnable = Runnable {
+                        callBtn.setVisibility(View.VISIBLE)
+                        callBtn.setText("캣카독 부르기")
+                        updateMap(lastKnownLocation)
 
-                    var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
-                    recordDB.child("customerId").setValue(userId)
-                    recordDB.child("carNumber").setValue(customerState.carInfo)
-                    recordDB.child("phoneNumber").setValue(customerState.phoneNumber)
+                        var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
+                        recordDB.child("customerId").setValue(userId)
+                        recordDB.child("carNumber").setValue(customerState.carInfo)
+                        recordDB.child("phoneNumber").setValue(customerState.phoneNumber)
 
-                    if (customerState.driverUserId != "null") {
-                        recordDB.child("driverId").setValue(customerState.driverUserId)
-                    }
+                        if (customerState.driverUserId != "null") {
+                            recordDB.child("driverId").setValue(customerState.driverUserId)
+                        }
 
-                    matchText.visibility = View.INVISIBLE
+                        matchText.visibility = View.INVISIBLE
 
 //                            geoFire.removeLocation(userId)
-                    editor.apply()
-                    var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
-                    intentMeet.putExtra("Destination", destination)
-                    startActivity(intentMeet)
-                    handler.removeCallbacks(myRunnable)
-                    Log.d(TAG, "나는 살아있다!!!")
-                    finish()
-                    return@Runnable
+                        alarmAlerted = false
+                        editor.putBoolean(ALARM_ALERTED, alarmAlerted)
+                        editor.apply()
+                        var intentMeet = Intent(this@CustomerMapActivity, MeetActivity::class.java)
+                        intentMeet.putExtra("Destination", destination)
+                        startActivity(intentMeet)
+                        handler.removeCallbacks(myRunnable)
+                        Log.d(TAG, "나는 살아있다!!!")
+                        //finish()
+                        return@Runnable
+                    }
+                    handler.postDelayed(myRunnable, 5000)
+                    matchText.text = "Driver가 도착하였습니다.\n잠시만 기다려주세요.."
+
+
+                } else {
+                    matchText.text = "Driver와 ${distanceRound.toString()}km 거리입니다."
                 }
-                handler.postDelayed(myRunnable, 5000)
-                matchText.text = "Driver가 도착하였습니다.\n잠시만 기다려주세요.."
-
-
-            } else {
-                matchText.text = "Driver와 ${distanceRound.toString()}km 거리입니다."
             }
+        } else {
+            matchText.visibility = View.VISIBLE
+
+            matchText.text= "Driver가 매칭되었습니다.\nDriver가 출발하면 알람으로 안내해드리겠습니다."
         }
     }
 
@@ -562,7 +651,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     fun checkIfDriverIsMatched() {
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
-        var databaseForMatching = FirebaseDatabase.getInstance().getReference("Request").child(userId).child("MD")
+        var databaseForMatching = FirebaseDatabase.getInstance().getReference("Request").child(userId)
         databaseForMatching.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError?) {
                 if (p0 != null) {
@@ -572,7 +661,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onDataChange(p0: DataSnapshot?) {
                 var dataSnapshot = p0
                 if (dataSnapshot != null) {
-                    customerState.driverUserId = dataSnapshot.getValue().toString()
+                    customerState.driverUserId = dataSnapshot.child("MD").getValue().toString()
+                    driverDeparture = dataSnapshot.child("DD").getValue().toString().toBoolean()
+                    Log.d("ASDASD", driverDeparture.toString())
                     editor.putString(DRIVER_USERID, customerState.driverUserId)
                     editor.commit()
                 }
@@ -588,7 +679,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
                 departureLatLng = place.latLng
                 departure = String.format("출발지: ${place.address}")
-                departureText.text = "출발지: ${departure!!.substring(10)}"
+//                departureText.text = "출발지: ${departure!!.substring(10)}"
+                departureText.text = departure
             }
         } else if (requestCode == PLACEPICKER_ARRIVAL_REQUESTCODE) {
             if(resultCode == Activity.RESULT_OK) {
@@ -597,7 +689,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 destinationLatLng = place.latLng
                 destinationLatitude = destinationLatLng.latitude
                 destinationLongitude = destinationLatLng.longitude
-                destinationText.text = "도착지: ${destination!!.substring(10)}"
+//                destinationText.text = "도착지: ${destination!!.substring(10)}"
+                destinationText.text = destination
             }
         }
     }

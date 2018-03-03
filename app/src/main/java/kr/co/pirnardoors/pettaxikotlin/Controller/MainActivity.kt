@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     var driverLogon = false
     var customerLogon = false
     var driverAuthorized = false
+    var driverBeforeDeparture = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         customerMapActive = sharedPreferences.getBoolean(REQUEST_ACTIVE, false)
         meetActivityActive = sharedPreferences.getBoolean(MEET_ACTIVITY_ACTIVE, false)
         driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
+        driverBeforeDeparture = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
         if(transportActive == true || meetActivityActive == true ) {
             val intent = Intent(this@MainActivity, MeetActivity::class.java)
             startActivity(intent)
@@ -58,7 +60,12 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
                 return
-            } else if (customerLogon == true) {7
+            } else if (driverLogon == true && driverAuthorized == true && driverBeforeDeparture == true) {
+                val intent = Intent(this@MainActivity, DriverMapActivity::class.java)
+                startActivity(intent)
+                finish()
+                return
+            } else if (customerLogon == true) {
                 val intent = Intent(this@MainActivity, CustomerMapActivity::class.java)
                 startActivity(intent)
                 finish()
