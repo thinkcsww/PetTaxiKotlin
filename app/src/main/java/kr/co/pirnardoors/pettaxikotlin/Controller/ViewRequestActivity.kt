@@ -225,7 +225,6 @@ class ViewRequestActivity : AppCompatActivity() {
                             var requestLatitude = data.child("l").child("0").getValue()
                             var requestLongitued = data.child("l").child("1").getValue()
                             var requestDestination = data.child("Destination").getValue().toString()
-                            requestDestination = requestDestination.substring(5)
                             reservationTime = data.child("Reservation").getValue().toString()
                             Log.d("RESERVEINFO", reservationTime.substring(8, 10))
                             Log.d("RESERVEINFO", reservationTime.substring(11, 13))

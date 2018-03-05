@@ -47,13 +47,16 @@
     <Button
         android:id="@+id/menuBtn"
         android:layout_width="55dp"
-        android:layout_height="80dp"
+        android:layout_height="55dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:background="@drawable/catcardog_button"
-        android:text="메뉴"
+        android:layout_alignTop="@+id/callBtn"
+        android:layout_marginEnd="30dp"
+        android:layout_marginRight="30dp"
+        android:background="@drawable/circle_menu_btn"
+        android:text="+"
         android:textColor="@color/cardview_light_background"
+        android:textSize="36sp"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="27dp" />
 
@@ -70,7 +73,7 @@
 
     <LinearLayout
         android:id="@+id/linearLayout9"
-        android:layout_width="300dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -79,35 +82,34 @@
         <TextView
             android:id="@+id/departureText"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/linearLayout9"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="2dp"
-            android:layout_marginTop="2dp"
-            android:layout_toEndOf="@+id/menuBtn"
-            android:layout_toRightOf="@+id/menuBtn"
-            android:background="@drawable/white_border_withblack"
+            android:layout_alignRight="@+id/linearLayout9"
+            android:layout_margin="2dp"
+            android:background="@drawable/black_border"
             android:fontFamily="@font/alfa_slab_one"
             android:text="출발지를 설정해주세요"
             android:textAlignment="center"
             android:textColor="?attr/actionModeSplitBackground"
-            android:textSize="18sp"
+            android:textSize="24sp"
+            android:typeface="serif"
             tools:layout_editor_absoluteY="5dp" />
 
 
         <TextView
             android:id="@+id/destinationText"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginTop="2dp"
-            android:layout_toEndOf="@+id/menuBtn"
-            android:layout_toRightOf="@+id/menuBtn"
-            android:background="@drawable/white_border_withblack"
+            android:layout_margin="2dp"
+            android:background="@drawable/black_border"
             android:fontFamily="@font/alfa_slab_one"
             android:text="목적지를 설정해주세요"
             android:textAlignment="center"
             android:textColor="?attr/actionModeSplitBackground"
-            android:textSize="18sp"
+            android:textSize="24sp"
+            android:typeface="serif"
             tools:layout_editor_absoluteY="5dp" />
 
     </LinearLayout>

@@ -74,6 +74,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var umber : String? = null
     private var phoneNumber : String? = null
     var alarmAlerted = false
+    var driverMatchedAlarm = false
     var customerMapActive = false
     var year = 0; var month = 0; var day = 0 ; var hour = 0; var minute = 0
     var currentYear = 0; var currentMonth = 0; var currentDay = 0 ; var currentHour = 0; var currentMinute = 0
@@ -374,10 +375,10 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     Log.d("ASASD currentHour : ", currentHour.toString())
                                     if(        currentHour == calendar.get(Calendar.HOUR_OF_DAY) + 1
                                             && currentYear == calendar.get(Calendar.YEAR)
-                                            && currentMonth == calendar.get(Calendar.MONTH) + 1
-                                            && currentDay + 1 == calendar.get(Calendar.DAY_OF_MONTH)) {
+                                            && currentMonth + 1 == calendar.get(Calendar.MONTH) + 1
+                                            && currentDay  == calendar.get(Calendar.DAY_OF_MONTH)) {
                                         toast("요청되었습니다.")
-                                        calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                        calendar.set(Calendar.HOUR_OF_DAY, hour + 1)
                                         database.child(userId).child("Reservation").setValue(calendar.time.toString())
                                         dialog.dismiss()
                                     } else {
@@ -446,8 +447,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun getCurrentDate() {
         currentHour = calendar.get(Calendar.HOUR_OF_DAY)
         currentYear = calendar.get(Calendar.YEAR)
-        currentDay = calendar.get(Calendar.MONTH)
-        currentMonth = calendar.get(Calendar.DAY_OF_MONTH)
+        currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+        currentMonth = calendar.get(Calendar.MONTH)
     }
 
     private fun notifyDriverDeparture() {
@@ -610,9 +611,22 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         } else {
-            matchText.visibility = View.VISIBLE
+            if(driverMatchedAlarm == false) {
+                driverMatchedAlarm = true
+                val driverMatchedBuilder = AlertDialog.Builder(this@CustomerMapActivity)
+                val driverMatchedView = layoutInflater.inflate(R.layout.layout_driver_matched, null)
+                driverMatchedBuilder.setView(driverMatchedView)
+                val okBtn: Button = driverMatchedView.findViewById(R.id.okBtn)
+                val driverMatchedDialog = driverMatchedBuilder.create()
 
-            matchText.text= "Driver가 매칭되었습니다.\nDriver가 출발하면 알람으로 안내해드리겠습니다."
+                okBtn.setOnClickListener {
+                    driverMatchedDialog.dismiss()
+                }
+                driverMatchedDialog.show()
+            } else {
+                matchText.visibility = View.VISIBLE
+                matchText.text = "출발 대기중입니다."
+            }
         }
     }
 
@@ -628,7 +642,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             } else {
                 isPageOpen = false
                 menuLayout.visibility = View.GONE
-                callBtn.visibility = View.VISIBLE
+                if(customerState.driverActive == false) {
+                    callBtn.visibility = View.VISIBLE
+                }
             }
         }
 
@@ -678,19 +694,25 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             if(resultCode == Activity.RESULT_OK) {
                 var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
                 departureLatLng = place.latLng
-                departure = String.format("출발지: ${place.address}")
-//                departureText.text = "출발지: ${departure!!.substring(10)}"
+                if(Character.isDigit(place.name.elementAt(0))) {
+                    departure = String.format("출발지: ${place.address}")
+                } else {
+                    departure = String.format("출발지: ${place.name}")
+                }
                 departureText.text = departure
             }
         } else if (requestCode == PLACEPICKER_ARRIVAL_REQUESTCODE) {
             if(resultCode == Activity.RESULT_OK) {
                 var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
-                destination = String.format("도착지: ${place.address}")
+                if(Character.isDigit(place.name.elementAt(0))){
+                    destination = String.format("${place.address}")
+                } else {
+                    destination = String.format("${place.name}")
+                }
                 destinationLatLng = place.latLng
                 destinationLatitude = destinationLatLng.latitude
                 destinationLongitude = destinationLatLng.longitude
-//                destinationText.text = "도착지: ${destination!!.substring(10)}"
-                destinationText.text = destination
+                destinationText.text = "도착지: $destination"
             }
         }
     }
