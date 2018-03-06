@@ -17,6 +17,7 @@ import android.view.ViewTreeObserver
 import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
@@ -47,6 +48,8 @@ import org.jetbrains.anko.toast
 import java.util.ArrayList
 import com.kakao.kakaonavi.KakaoNaviParams
 import com.kakao.kakaonavi.KakaoNaviService
+import kr.co.pirnardoors.pettaxikotlin.R.id.departureBtn
+import kr.co.pirnardoors.pettaxikotlin.R.id.toDestinationBtn
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 
 
@@ -56,6 +59,8 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var driverLocation : LatLng? = null
     var requestLocation : LatLng? = null
     var requestDestination : String? = ""
+    var requestUserId = ""
+    var driverUserId = ""
     var destinationDatabase = FirebaseDatabase.getInstance().getReference("Request")
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
     lateinit var myRunnable : Runnable
@@ -66,10 +71,13 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var step2 = false
     var step1 = false
     val fragmentManager = supportFragmentManager
+    lateinit var req : Request
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_map)
-
+        reincarnation()
+        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
         /**
          *  step1 = Driver accept request
          *  step2 = Driver departure ; Driver is going to customer
@@ -82,17 +90,33 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         //intent receive
-        var req : Request = intent.getParcelableExtra(EXTRA_REQUEST)
-        var driverUserId = FirebaseAuth.getInstance().currentUser?.uid
-         driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
-         requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
-        var requestUserId = req.requestUserId
-
-        var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        var editor = sharedPreferences.edit()
-        requestDestination = req.requestDestination
-        //var requestType = req.requestType
-        var requestNumber = req.requestNumber
+        if(step1 == false) {
+            req = intent.getParcelableExtra(EXTRA_REQUEST)
+            driverUserId = FirebaseAuth.getInstance().currentUser!!.uid
+            driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
+            requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
+            requestUserId = req.requestUserId
+            editor.putString(DRIVER_MAP_REQUEST_USER_ID, requestUserId)
+            editor.putString(DRIVERMAP_REQUEST_LATITUDE, req.requestLatitude.toString())
+            editor.putString(DRIVERMAP_REQUEST_LONGITUDE, req.requestLongitude.toString())
+            editor.putString(DRIVERMAP_DRIVER_LATITUDE, req.driverLatitude.toString())
+            editor.putString(DRIVERMAP_DRIVER_LONGITUDE, req.driverLongitude.toString())
+            editor.apply()
+            requestDestination = req.requestDestination
+        }
+        if(step1 == true && step2 == false) {
+            departureBtn.visibility = View.VISIBLE
+            acceptBtn.visibility = View.GONE
+        }
+        if(step2 == true && step3 == false) {
+            departureBtn.visibility = View.GONE
+            toDestinationBtn.visibility = View.VISIBLE
+            acceptBtn.visibility = View.GONE
+        }
+        if(step3 == true) {
+            showFinalAlertDialog()
+            return
+        }
 
         button4.setOnClickListener {
             step1 = false
@@ -103,45 +127,37 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         /**
          *  Get Destination LatLng
          */
-        step1 = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
-        step2 = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
-        if(step2 == true) {
-            reincarnation()
-        }
-        if(step1 == true) {
-            departureBtn.visibility = View.VISIBLE
-            acceptBtn.visibility = View.GONE
-        }
-        if(step3 == true) {
-            val intent = Intent(this@DriverMapActivity, DriverFinishActivity::class.java)
-            startActivity(intent)
-            finish()
-            return
-        }
-        destinationDatabase.addValueEventListener(object: ValueEventListener{
-            override fun onCancelled(p0: DatabaseError?) {
-                if(p0 != null) {
-                    p0.message
-                }
-            }
 
-            override fun onDataChange(p0: DataSnapshot?) {
-                var dataSnapshot = p0
-                if (dataSnapshot != null) {
-                    destinationLatitude = dataSnapshot.child(requestUserId).child("DestinationLatitude").getValue().toString().toDouble()
-                    destinationLongitude = dataSnapshot.child(requestUserId).child("DestinationLongitude").getValue().toString().toDouble()
-                    editor.putString(DESTINATION_LATITUDE, destinationLatitude.toString())
-                    editor.putString(DESTINATION_LONGITUDE, destinationLongitude.toString())
-                    editor.apply()
+
+        //First Visit of this activity -> Get info from DB or break using return
+        if(destinationLatitude == 0.0) {
+            if(step1 == true) return
+            destinationDatabase.addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError?) {
+                    if (p0 != null) {
+                        p0.message
+                    }
                 }
-            }
-        })
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    var dataSnapshot = p0
+                    if (dataSnapshot != null) {
+                        destinationLatitude = dataSnapshot.child(requestUserId).child("DestinationLatitude").getValue().toString().toDouble()
+                        destinationLongitude = dataSnapshot.child(requestUserId).child("DestinationLongitude").getValue().toString().toDouble()
+                        editor.putString(DESTINATION_LATITUDE, destinationLatitude.toString())
+                        editor.putString(DESTINATION_LONGITUDE, destinationLongitude.toString())
+                        editor.apply()
+                    }
+                }
+            })
+        }
+
         // Departure Button -> 출발했음을 알림
         departureBtn.setOnClickListener {
             departureBtn.visibility = View.GONE
             val handler = Handler()
             //Write in DB that driver is departure
-            destinationDatabase.child(req.requestUserId).child("DD").setValue("true")
+            destinationDatabase.child(requestUserId).child("DD").setValue("true")
             myRunnable = Runnable {
                 toDestinationBtn.visibility = View.VISIBLE
                 val options = NaviOptions.newBuilder()
@@ -149,7 +165,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         .setVehicleType(VehicleType.FIRST)
                         .setRpOption(RpOption.SHORTEST).build()
 
-                val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
+                val destination = Location.newBuilder("목적지", requestLocation!!.longitude, requestLocation!!.latitude).build()
 
 
                 // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
@@ -181,7 +197,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             editor.putBoolean(DRIVERMAP_STEP3, step3)
             editor.apply()
 
-
             val options = NaviOptions.newBuilder()
                     .setCoordType(CoordType.WGS84)
                     .setVehicleType(VehicleType.FIRST)
@@ -189,7 +204,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             val destination = Location.newBuilder("목적지", destinationLongitude, destinationLatitude).build()
 
-                // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
+            // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
 
             val builder = KakaoNaviParams.newBuilder(destination)
                     .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
@@ -197,9 +212,105 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
             KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
 
+            val transaction = fragmentManager.beginTransaction()
+            val finishFragment = DriverFinishFragment()
+            transaction.replace(R.id.fragmentHolder, finishFragment)
+            transaction.addToBackStack(null)
+            transaction.commit()
+            toDestinationBtn.visibility = View.GONE
+            showFinalAlertDialog()
+            }
+
+
+
+        //accept button -> add data on customer request using customer userId
+
+        acceptBtn.setOnClickListener {
+
+            val simpleAlert = AlertDialog.Builder(this@DriverMapActivity, R.style.AlertDialogTheme).create()
+            simpleAlert.setTitle("확인")
+            simpleAlert.setMessage("정말 수락하시겠습니까?")
+
+            //Yes Button
+            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
+                dialogInterface, i ->
+                departureBtn.visibility = View.VISIBLE
+                acceptBtn.visibility = View.INVISIBLE
+
+//                acceptBtn.visibility = View.INVISIBLE
+                var databaseCustomer = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId)
+                databaseCustomer.child("MD").setValue(driverUserId)
+                step1 = true
+                editor.putBoolean(DRIVERMAP_STEP1, step1)
+                editor.apply()
+                /*    val handler = Handler()
+                    myRunnable = Runnable {
+                        toDestinationBtn.visibility = View.VISIBLE
+                        val options = NaviOptions.newBuilder()
+                                .setCoordType(CoordType.WGS84)
+                                .setVehicleType(VehicleType.FIRST)
+                                .setRpOption(RpOption.SHORTEST).build()
+
+                        val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
+
+
+                        // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
+
+                        val builder = KakaoNaviParams.newBuilder(destination)
+                                .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
+
+                        KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
+                        KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
+                        toDestinationBtn.visibility = View.VISIBLE
+                        explainText.visibility = View.INVISIBLE
+                        handler.removeCallbacks(myRunnable)
+                    }
+                    handler.postDelayed(myRunnable, 5000)
+                    explainText.visibility = View.VISIBLE
+                    acceptBtn.visibility = View.INVISIBLE
+                    step2 = true
+                    editor.putBoolean(DRIVERMAP_STEP2, step2)
+                    editor.apply()*/
+
+                //kakao
+
+            })
+            // No Button
+            simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {
+                dialogInterface, i ->
+                toast("취소되었습니다.")
+            })
+
+            simpleAlert.show()
+
+        }
         }
 
-        /**
+    private fun showFinalAlertDialog() {
+        val editor = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit()
+        val finishAlertDialog = AlertDialog.Builder(this@DriverMapActivity)
+        val finishDialogView = layoutInflater.inflate(R.layout.layout_driver_finish, null)
+        finishAlertDialog.setView(finishDialogView)
+        val okBtn: Button = finishDialogView.findViewById(R.id.okBtn)
+        val dialog = finishAlertDialog.create()
+        dialog.show()
+        okBtn.setOnClickListener {
+            step1 = false; step2 = false; step3 = false;
+            editor.putBoolean(DRIVERMAP_STEP1, step1)
+            editor.putBoolean(DRIVERMAP_STEP2, step2)
+            editor.putBoolean(DRIVERMAP_STEP3, step3)
+            editor.putString(DRIVER_MAP_REQUEST_USER_ID, "")
+            editor.apply()
+            dialog.dismiss()
+            val intent = Intent(this@DriverMapActivity, ViewRequestActivity::class.java)
+            startActivity(intent)
+            finish()
+            return@setOnClickListener
+        }
+    } //oncreate finish
+
+
+    /**
          *  WebView kakaonavi
          */
 
@@ -264,78 +375,37 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-
-
-        //accept button -> add data on customer request using customer userId
-
-        acceptBtn.setOnClickListener {
-
-            val simpleAlert = AlertDialog.Builder(this@DriverMapActivity, R.style.AlertDialogTheme).create()
-            simpleAlert.setTitle("확인")
-            simpleAlert.setMessage("정말 수락하시겠습니까?")
-
-            //Yes Button
-            simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
-                dialogInterface, i ->
-                departureBtn.visibility = View.VISIBLE
-                acceptBtn.visibility = View.INVISIBLE
-
-//                acceptBtn.visibility = View.INVISIBLE
-                var databaseCustomer = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId)
-                databaseCustomer.child("MD").setValue(driverUserId)
-                step1 = true
-                editor.putBoolean(DRIVERMAP_STEP1, step1)
-                editor.apply()
-            /*    val handler = Handler()
-                myRunnable = Runnable {
-                    toDestinationBtn.visibility = View.VISIBLE
-                    val options = NaviOptions.newBuilder()
-                            .setCoordType(CoordType.WGS84)
-                            .setVehicleType(VehicleType.FIRST)
-                            .setRpOption(RpOption.SHORTEST).build()
-
-                    val destination = Location.newBuilder("목적지", req.requestLongitude, req.requestLatitude).build()
-
-
-                    // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
-
-                    val builder = KakaoNaviParams.newBuilder(destination)
-                            .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
-
-                    KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
-                    KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
-                    toDestinationBtn.visibility = View.VISIBLE
-                    explainText.visibility = View.INVISIBLE
-                    handler.removeCallbacks(myRunnable)
-                }
-                handler.postDelayed(myRunnable, 5000)
-                explainText.visibility = View.VISIBLE
-                acceptBtn.visibility = View.INVISIBLE
-                step2 = true
-                editor.putBoolean(DRIVERMAP_STEP2, step2)
-                editor.apply()*/
-
-                //kakao
-
-            })
-            // No Button
-            simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {
-                dialogInterface, i ->
-                toast("취소되었습니다.")
-            })
-
-            simpleAlert.show()
-
-        }
-    } //oncreate finish
-
     private fun reincarnation() {
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        destinationLatitude = sharedPreferences.getString(DESTINATION_LATITUDE, "").toDouble()
-        destinationLongitude = sharedPreferences.getString(DESTINATION_LONGITUDE, "").toDouble()
+        if(sharedPreferences.getString(DESTINATION_LATITUDE, "") == "" ||
+                sharedPreferences.getString(DESTINATION_LONGITUDE, "") == "") {
+            destinationLatitude = 0.0
+            destinationLongitude = 0.0
+        } else {
+            destinationLatitude = sharedPreferences.getString(DESTINATION_LATITUDE, "").toDouble()
+            destinationLongitude = sharedPreferences.getString(DESTINATION_LONGITUDE, "").toDouble()
+            driverLocation = LatLng(
+                    sharedPreferences.getString(DRIVERMAP_DRIVER_LATITUDE,"").toDouble(),
+                    sharedPreferences.getString(DRIVERMAP_DRIVER_LONGITUDE,"").toDouble()
+            )
+            requestLocation = LatLng(
+                    sharedPreferences.getString(DRIVERMAP_REQUEST_LATITUDE,"").toDouble(),
+                    sharedPreferences.getString(DRIVERMAP_REQUEST_LONGITUDE,"").toDouble()
+            )
+
+            requestUserId = sharedPreferences.getString(DRIVER_MAP_REQUEST_USER_ID, "")
+        }
         step1 = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
         step2 = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
         step3 = sharedPreferences.getBoolean(DRIVERMAP_STEP3, false)
+
+        if(step2 == true) {
+            toDestinationBtn.visibility = View.VISIBLE
+            departureBtn.visibility = View.GONE
+        } else if (step1 == true && step2 == false) {
+            toDestinationBtn.visibility = View.GONE
+            departureBtn.visibility = View.VISIBLE
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -371,4 +441,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(requestLocation, 15f))*/
     }
+
+
 }

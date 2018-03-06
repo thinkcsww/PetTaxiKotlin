@@ -129,6 +129,7 @@ class ViewRequestActivity : AppCompatActivity() {
                 menuLayout.startAnimation(translateAnimRight)
                 menuLayout.setVisibility(View.VISIBLE)
                 menuBtn.visibility = View.INVISIBLE
+                refreshBtn.visibility = View.GONE
             } else {
                 menuLayout.startAnimation(translateAnimLeft)
             }
@@ -178,6 +179,7 @@ class ViewRequestActivity : AppCompatActivity() {
             } else {
                 isPageOpen = false
                 menuLayout.visibility = View.GONE
+                refreshBtn.visibility = View.VISIBLE
             }
         }
 

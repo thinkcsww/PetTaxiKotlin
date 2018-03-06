@@ -8,74 +8,111 @@
     android:layout_height="match_parent"
     tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.DriverMapActivity">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.DriverMapActivity" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/acceptBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="51dp"
-        android:background="@drawable/catcardog_button"
-        android:fontFamily="@font/marko_one"
-        android:text="수락하기"
-        android:textColor="@android:color/background_light" />
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent"
+            map:layout_constraintTop_toTopOf="parent"
+            tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.DriverMapActivity" />
 
-    <Button
-        android:id="@+id/toDestinationBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/acceptBtn"
-        android:layout_alignBottom="@+id/acceptBtn"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/catcardog_button"
-        android:fontFamily="@font/alfa_slab_one"
-        android:text="목적지로 출발하기"
-        android:textColor="@color/cardview_light_background"
-        android:visibility="gone" />
+        <FrameLayout
+            android:id="@+id/fragmentHolder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent"
+            map:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/explainText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/acceptBtn"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="44dp"
-        android:text="손님과 만난 후 카카오네비를 종료하고 \n현재 화면으로 돌아와주세요"
-        android:textAlignment="center"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="24sp"
-        android:visibility="gone" />
+        </FrameLayout>
 
-    <Button
-        android:id="@+id/departureBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/acceptBtn"
-        android:layout_alignRight="@+id/acceptBtn"
-        android:layout_alignTop="@+id/acceptBtn"
-        android:background="@drawable/catcardog_button"
-        android:text="출발"
-        android:visibility="gone" />
+        <Button
+            android:id="@+id/departureBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/acceptBtn"
+            android:layout_alignRight="@+id/acceptBtn"
+            android:layout_alignTop="@+id/acceptBtn"
+            android:layout_marginBottom="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/catcardog_button"
+            android:text="출발"
+            android:visibility="gone"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintHorizontal_bias="0.498"
+            map:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/button4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/acceptBtn"
-        android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/acceptBtn"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="19dp"
-        android:text="Button" />
+        <Button
+            android:id="@+id/toDestinationBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/acceptBtn"
+            android:layout_alignBottom="@+id/acceptBtn"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/catcardog_button"
+            android:fontFamily="@font/alfa_slab_one"
+            android:text="목적지로 출발하기"
+            android:textColor="@color/cardview_light_background"
+            android:visibility="invisible"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/explainText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/acceptBtn"
+            android:layout_centerHorizontal="true"
+            android:text="손님과 만난 후 카카오네비를 종료하고 \n현재 화면으로 돌아와주세요"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="24sp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/acceptBtn"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/acceptBtn"
+            android:text="Button"
+            tools:layout_editor_absoluteX="171dp"
+            tools:layout_editor_absoluteY="19dp" />
+
+        <Button
+            android:id="@+id/acceptBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/catcardog_button"
+            android:fontFamily="@font/marko_one"
+            android:text="수락하기"
+            android:textColor="@android:color/background_light"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintHorizontal_bias="0.498"
+            map:layout_constraintStart_toStartOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 
 </RelativeLayout>

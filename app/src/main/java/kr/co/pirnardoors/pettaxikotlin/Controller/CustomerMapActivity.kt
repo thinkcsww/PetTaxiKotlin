@@ -11,6 +11,7 @@ import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.provider.Settings
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
@@ -37,7 +38,6 @@ import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
-import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
 
@@ -367,17 +367,18 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     Log.d("ASASD currentYear : ", currentYear.toString())
                                     Log.d("ASASD month : ", (calendar.get(Calendar.MONTH) + 1 ).toString())
                                     Log.d("ASASD currentMonth : ", currentMonth.toString())
-                                    Log.d("ASASD day : ", calendar.get(Calendar.DAY_OF_MONTH) .toString())
-                                    Log.d("ASASD currentDay : ", (currentDay + 1).toString())
-                                    Log.d("ASASD hour : ", hour.toString())
-
-                                    Log.d("ASASD minute : ", minute.toString())
-                                    Log.d("ASASD Hour: ", calendar.get(Calendar.HOUR_OF_DAY).toString())
+                                    Log.d("ASASD day : ", (calendar.get(Calendar.DAY_OF_MONTH)).toString())
+                                    Log.d("ASASD currentDay : ", (currentDay).toString())
+                                    Log.d("ASASD hour : ", (calendar.get(Calendar.HOUR_OF_DAY) + 1).toString())
                                     Log.d("ASASD currentHour : ", currentHour.toString())
-                                    if(        currentHour == calendar.get(Calendar.HOUR_OF_DAY) + 1
+                                    Log.d("ASASD minute : ", minute.toString())
+                                    if(
+                                            currentHour == calendar.get(Calendar.HOUR_OF_DAY) + 1
                                             && currentYear == calendar.get(Calendar.YEAR)
-                                            && currentMonth + 1 == calendar.get(Calendar.MONTH) + 1
-                                            && currentDay  == calendar.get(Calendar.DAY_OF_MONTH)) {
+                                            && currentMonth == calendar.get(Calendar.MONTH) + 1
+                                            && currentDay  == calendar.get(Calendar.DAY_OF_MONTH)
+                                    )
+                                    {
                                         toast("요청되었습니다.")
                                         calendar.set(Calendar.HOUR_OF_DAY, hour + 1)
                                         database.child(userId).child("Reservation").setValue(calendar.time.toString())
@@ -449,7 +450,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         currentHour = calendar.get(Calendar.HOUR_OF_DAY)
         currentYear = calendar.get(Calendar.YEAR)
         currentDay = calendar.get(Calendar.DAY_OF_MONTH)
-        currentMonth = calendar.get(Calendar.MONTH)
+        currentMonth = calendar.get(Calendar.MONTH) + 1
     }
 
     private fun notifyDriverDeparture() {
@@ -614,11 +615,38 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             if(driverMatchedAlarm == false) {
                 driverMatchedAlarm = true
+
+                //Alarm for driverMatched
+                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val intent = Intent(this@CustomerMapActivity, CustomerMapActivity::class.java)
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                val pendingIntent = PendingIntent.getActivity(this@CustomerMapActivity, ALARM_BROADCAST, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    NotificationCompat.Builder(this@CustomerMapActivity)
+                            .setAutoCancel(true)
+                            .setContentIntent(pendingIntent)
+                            .setContentTitle("CatCarDog 알림")
+                            .setContentText("Driver가 매칭되었습니다.")
+                            .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                            .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
+                            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+                } else {
+                    NotificationCompat.Builder(this@CustomerMapActivity)
+                            .setAutoCancel(true)
+                            .setContentTitle("CatCarDog 알림")
+                            .setContentText("Driver가 매칭되었습니다.")
+                            .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                            .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
+                            .setPriority(Notification.PRIORITY_MAX)
+                }
+                notificationManager.notify(ALARM_BROADCAST, builder.build())
+                //AlertDialog
                 val driverMatchedBuilder = AlertDialog.Builder(this@CustomerMapActivity)
                 val driverMatchedView = layoutInflater.inflate(R.layout.layout_driver_matched, null)
                 driverMatchedBuilder.setView(driverMatchedView)
                 val okBtn: Button = driverMatchedView.findViewById(R.id.okBtn)
                 val driverMatchedDialog = driverMatchedBuilder.create()
+
 
                 okBtn.setOnClickListener {
                     driverMatchedDialog.dismiss()
@@ -713,7 +741,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 destinationLatLng = place.latLng
                 destinationLatitude = destinationLatLng.latitude
                 destinationLongitude = destinationLatLng.longitude
-                destinationText.text = "＊도착지  $destination"
+                destinationText.text = "도착지: $destination"
             }
         }
     }
@@ -721,8 +749,32 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-            locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        var isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        Log.d("GPS", isGPSEnabled.toString())
+        if(isGPSEnabled == false) {
+            val locationAlertBuilder = AlertDialog.Builder(this@CustomerMapActivity)
+            val locationAlertView = layoutInflater.inflate(R.layout.layout_location_setting, null)
+            locationAlertBuilder.setView(locationAlertView)
+            val dialog = locationAlertBuilder.create()
+            val okBtn : Button = locationAlertView.findViewById(R.id.okBtn)
+            val settingBtn : Button = locationAlertView.findViewById(R.id.settingBtn)
 
+            okBtn.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            settingBtn.setOnClickListener {
+                if(isGPSEnabled == false) {
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    intent.addCategory(Intent.CATEGORY_DEFAULT)
+                    startActivity(intent)
+                    dialog.dismiss()
+                    return@setOnClickListener
+                }
+            }
+            dialog.show()
+        }
 
         locationListener = object :LocationListener{
             override fun onLocationChanged(p0: Location?) {
@@ -752,16 +804,15 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return
         }
-        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-        if(locationManager != null) {
-            lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        }
-        if(lastKnownLocation != null) {
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+        if(isGPSEnabled) {
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
             mMap.clear()
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
             mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
         }
+
 
     }
 

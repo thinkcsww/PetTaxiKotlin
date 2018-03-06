@@ -8,15 +8,27 @@
 
     <Button
         android:id="@+id/menuBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/view_btn_background"
-        android:fontFamily="@font/alfa_slab_one"
-        android:text="메뉴"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="18sp"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginBottom="30dp"
+        android:layout_marginEnd="30dp"
+        android:background="@drawable/driver_circle_menu_btn"
+        android:fontFamily="sans-serif"
+        android:text="+"
+        android:textColor="@color/cardview_light_background"
+        android:textSize="36sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/textView2"
+        android:layout_marginRight="30dp" />
+
+    <Button
+        android:id="@+id/refreshBtn"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/ic_popup_sync"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
     <ImageView
         android:id="@+id/imageView4"
@@ -81,7 +93,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginRight="100dp">
 
         <ImageView
             android:id="@+id/imageView3"
@@ -152,14 +165,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView3" />
     </android.support.constraint.ConstraintLayout>
-
-    <Button
-        android:id="@+id/refreshBtn"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/ic_popup_sync"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>

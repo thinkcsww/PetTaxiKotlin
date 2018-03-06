@@ -10,8 +10,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.kakao.kakaonavi.KakaoNaviWebViewActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kr.co.pirnardoors.pettaxikotlin.R
@@ -21,7 +20,6 @@ import org.jetbrains.anko.toast
 import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity() {
-
     var transportActive : Boolean = false
     var customerMapActive : Boolean = false
     var meetActivityActive : Boolean = false
@@ -29,12 +27,13 @@ class MainActivity : AppCompatActivity() {
     var customerLogon = false
     var driverAuthorized = false
     var driverBeforeDeparture = false
-
+    var driverBeforToDestination = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+
         driverLogon = sharedPreferences.getBoolean(DRIVER_LOGON, false)
         customerLogon = sharedPreferences.getBoolean(CUSTOMER_LOGON, false)
         transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
@@ -42,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         meetActivityActive = sharedPreferences.getBoolean(MEET_ACTIVITY_ACTIVE, false)
         driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
         driverBeforeDeparture = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
+        driverBeforToDestination = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
         if(transportActive == true || meetActivityActive == true ) {
             val intent = Intent(this@MainActivity, MeetActivity::class.java)
             startActivity(intent)
@@ -55,12 +55,17 @@ class MainActivity : AppCompatActivity() {
             return
         }
         if(FirebaseAuth.getInstance().currentUser != null) {
-            if(driverLogon == true && driverAuthorized == true){
+            if (driverLogon == true && driverAuthorized == true && driverBeforeDeparture == true ) {
+                val intent = Intent(this@MainActivity, DriverMapActivity::class.java)
+                startActivity(intent)
+                finish()
+                return
+            } else if(driverLogon == true && driverAuthorized == true){
                 val intent = Intent(this@MainActivity, ViewRequestActivity::class.java)
                 startActivity(intent)
                 finish()
                 return
-            } else if (driverLogon == true && driverAuthorized == true && driverBeforeDeparture == true) {
+            } else if (driverLogon == true && driverAuthorized == true && driverBeforeDeparture == true ) {
                 val intent = Intent(this@MainActivity, DriverMapActivity::class.java)
                 startActivity(intent)
                 finish()

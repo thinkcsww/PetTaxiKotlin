@@ -36,7 +36,6 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_authorizing)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        var editor = sharedPreferences.edit()
         Id = sharedPreferences.getString(DRIVER_ID, "")
 
         nextBtn.setOnClickListener {
