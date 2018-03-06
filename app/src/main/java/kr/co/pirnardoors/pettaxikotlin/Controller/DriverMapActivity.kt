@@ -62,11 +62,20 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var destinationLatitude : Double = 0.0
     var destinationLongitude : Double = 0.0
     var userId = FirebaseAuth.getInstance().currentUser?.uid
+    var step3 = false
     var step2 = false
     var step1 = false
+    val fragmentManager = supportFragmentManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_map)
+
+        /**
+         *  step1 = Driver accept request
+         *  step2 = Driver departure ; Driver is going to customer
+         *  step3 = Driver is going to final destination
+         */
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -102,6 +111,12 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if(step1 == true) {
             departureBtn.visibility = View.VISIBLE
             acceptBtn.visibility = View.GONE
+        }
+        if(step3 == true) {
+            val intent = Intent(this@DriverMapActivity, DriverFinishActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
         }
         destinationDatabase.addValueEventListener(object: ValueEventListener{
             override fun onCancelled(p0: DatabaseError?) {
@@ -159,19 +174,20 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         // toDestination button
 
         toDestinationBtn.setOnClickListener {
+
+            editor.putString(DESTINATION_LONGITUDE, "0")
+            editor.putString(DESTINATION_LATITUDE, "0")
+            step3 = true
+            editor.putBoolean(DRIVERMAP_STEP3, step3)
+            editor.apply()
+
+
             val options = NaviOptions.newBuilder()
                     .setCoordType(CoordType.WGS84)
                     .setVehicleType(VehicleType.FIRST)
                     .setRpOption(RpOption.SHORTEST).build()
 
             val destination = Location.newBuilder("목적지", destinationLongitude, destinationLatitude).build()
-            editor.putString(DESTINATION_LONGITUDE, "0")
-            editor.putString(DESTINATION_LATITUDE, "0")
-            step1 = false
-            step2 = false
-            editor.putBoolean(DRIVERMAP_STEP1, step1)
-            editor.putBoolean(DRIVERMAP_STEP2, step2)
-            editor.apply()
 
                 // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
 
@@ -180,12 +196,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
             KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
-            editor.putBoolean(DRIVERMAP_STEP2, false)
-            editor.apply()
-            val intent = Intent(this@DriverMapActivity, DriverFinishActivity::class.java)
-            startActivity(intent)
-            finish()
-            return@setOnClickListener
+
         }
 
         /**
@@ -322,6 +333,9 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         destinationLatitude = sharedPreferences.getString(DESTINATION_LATITUDE, "").toDouble()
         destinationLongitude = sharedPreferences.getString(DESTINATION_LONGITUDE, "").toDouble()
+        step1 = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
+        step2 = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
+        step3 = sharedPreferences.getBoolean(DRIVERMAP_STEP3, false)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

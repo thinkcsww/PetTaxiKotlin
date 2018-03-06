@@ -49,6 +49,7 @@ class ViewRequestActivity : AppCompatActivity() {
     var driverUserId : String? = ""
     var isPageOpen = false
     var reservationTime = ""
+    var reserveResult = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_request)
@@ -226,19 +227,22 @@ class ViewRequestActivity : AppCompatActivity() {
                             var requestLongitued = data.child("l").child("1").getValue()
                             var requestDestination = data.child("Destination").getValue().toString()
                             reservationTime = data.child("Reservation").getValue().toString()
-                            Log.d("RESERVEINFO", reservationTime.substring(8, 10))
-                            Log.d("RESERVEINFO", reservationTime.substring(11, 13))
-                            Log.d("RESERVEINFO", reservationTime.substring(14, 16))
-                            Log.d("RESERVEINFO",reservationTime.substring(30, 34))
-                            Log.d("RESERVEINFO", reservationTime.substring(0, 3))
-                            var reserveDay = reservationTime.substring(8, 10).trim()
-                            var reserveHour = reservationTime.substring(11, 13).trim()
-                            var reserveMinute = reservationTime.substring(14, 16).trim()
-                            var reserveYear = reservationTime.substring(30, 34).trim()
-                            var reserveMonthBeforeFilter = reservationTime.substring(4, 7).trim()
-                            var reserveMonth = monthFilter(reserveMonthBeforeFilter)
-                            var reserveResult = "${reserveYear}년 ${reserveMonth}월 ${reserveDay}일 " +
-                                    "${reserveHour}시 ${reserveMinute}분"
+                            if(reservationTime != "null") {
+                                Log.d("RESERVEINFO", reservationTime)
+                                Log.d("RESERVEINFO", reservationTime.substring(0, 3))
+                                Log.d("RESERVEINFO", reservationTime.substring(8, 10))
+                                Log.d("RESERVEINFO", reservationTime.substring(11, 13))
+                                Log.d("RESERVEINFO", reservationTime.substring(14, 16))
+                                Log.d("RESERVEINFO", reservationTime.substring(30, 34))
+                                var reserveDay = reservationTime.substring(8, 10).trim()
+                                var reserveHour = reservationTime.substring(11, 13).trim()
+                                var reserveMinute = reservationTime.substring(14, 16).trim()
+                                var reserveYear = reservationTime.substring(30, 34).trim()
+                                var reserveMonthBeforeFilter = reservationTime.substring(4, 7).trim()
+                                var reserveMonth = monthFilter(reserveMonthBeforeFilter)
+                                reserveResult = "${reserveYear}년 ${reserveMonth}월 ${reserveDay}일 " +
+                                        "${reserveHour}시 ${reserveMinute}분"
+                            }
 
                             //var requestType = data.child("Type").getValue()
                             var requestNumber = data.child("PN").getValue()

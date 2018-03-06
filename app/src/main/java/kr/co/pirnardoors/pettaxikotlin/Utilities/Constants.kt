@@ -5,7 +5,6 @@ package kr.co.pirnardoors.pettaxikotlin.Utilities
  */
 
 const val TAG = "Info: "
-const val DRIVERMAP_STEP2 = "driverMapStep2"
 const val LISTVIEW = "Info listView"
 const val EXTRA_REQUEST = "request"
 const val EXTRA_CUSTOMER = "customer"
@@ -36,5 +35,7 @@ const val DRIVER_ID = "driverId"
 const val READY_TO_TEST = "readyToTest"
 const val ALARM_BROADCAST = 5
 const val DRIVERMAP_STEP1 = "driverMapStep1"
+const val DRIVERMAP_STEP2 = "driverMapStep2"
+const val DRIVERMAP_STEP3 = "driverMapStep3"
 const val ALARM_ALERTED = "alarmAlerted"
 const val DRIVER_MATCHED_ALARM = "driver_matched_alarm"

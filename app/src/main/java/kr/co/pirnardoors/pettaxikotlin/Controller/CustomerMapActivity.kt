@@ -56,7 +56,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var destinationLatitude : Double? = null
     var destinationLongitude : Double? = null
     var destination : String? = ""
-    var locationManager : LocationManager? = null
+    lateinit var locationManager : LocationManager
     var locationListener : LocationListener? = null
     lateinit var lastKnownLocation : Location
     var requestActive : Boolean = false
@@ -89,6 +89,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_customer_map)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+
         //get current date, year , month , hour, day
         getCurrentDate()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -712,7 +713,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 destinationLatLng = place.latLng
                 destinationLatitude = destinationLatLng.latitude
                 destinationLongitude = destinationLatLng.longitude
-                destinationText.text = "도착지: $destination"
+                destinationText.text = "＊도착지  $destination"
             }
         }
     }
@@ -720,9 +721,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        if(locationManager == null) {
             locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        }
+
 
         locationListener = object :LocationListener{
             override fun onLocationChanged(p0: Location?) {
@@ -745,13 +745,17 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         }
 
+        if(locationManager == null) {
+            Log.d("Lcation", "locationErr")
+        }
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return
         }
         locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
-
-        lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        if(locationManager != null) {
+            lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        }
         if(lastKnownLocation != null) {
             var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
             mMap.clear()

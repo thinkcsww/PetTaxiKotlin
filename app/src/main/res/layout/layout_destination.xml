@@ -93,10 +93,10 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
                 android:layout_weight="1"
-                android:background="@color/hotBlue"
+                android:background="@color/colorPrimaryDark"
                 android:fontFamily="@font/alfa_slab_one"
                 android:text="요청하기"
-                android:textColor="@color/common_google_signin_btn_text_dark_pressed"
+                android:textColor="@color/cardview_light_background"
                 android:textSize="16sp" />
 
             <Button
@@ -107,10 +107,10 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
                 android:layout_weight="1"
-                android:background="@color/hotRed"
+                android:background="@drawable/black_border"
                 android:fontFamily="@font/alfa_slab_one"
                 android:text="돌아가기"
-                android:textColor="@android:color/background_light"
+                android:textColor="@android:color/background_dark"
                 android:textSize="16sp" />
         </LinearLayout>
     </LinearLayout>
