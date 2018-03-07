@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -13,13 +14,18 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.support.v4.content.FileProvider
 import android.text.TextUtils
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_driver_authorizing.*
+import kr.co.pirnardoors.pettaxikotlin.Manifest
 import kr.co.pirnardoors.pettaxikotlin.Model.License
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
@@ -33,7 +39,8 @@ class DriverAuthorizingActivity : AppCompatActivity() {
 
 
 
-    lateinit var filePath: Uri
+    lateinit var pictureUri: Uri
+    lateinit var filePath : Uri
     var mStorage = FirebaseStorage.getInstance().getReference()
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver").child(userId)
@@ -43,16 +50,17 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_authorizing)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        Id = sharedPreferences.getString(DRIVER_ID, "")
+        Id = FirebaseAuth.getInstance().currentUser!!.email!!
 
         nextBtn.setOnClickListener {
-            val intent = Intent(this, DriverCarInfoActivity::class.java)
+            val intent = Intent(this, DriverBusinessActivity::class.java)
             startActivity(intent)
             finish()
             return@setOnClickListener
         }
 
         licenseImageView.setOnClickListener {
+
             val driverAuthAlertDialog = AlertDialog.Builder(this@DriverAuthorizingActivity)
             val driverAuthDialogView = layoutInflater.inflate(R.layout.layout_driver_auth_image_view, null)
             driverAuthAlertDialog.setView(driverAuthDialogView)
@@ -64,9 +72,17 @@ class DriverAuthorizingActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
             takePictureBtn.setOnClickListener {
-                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                startActivityForResult(intent, DRIVER_AUTH_INTENT_CAMERA)
-                dialog.dismiss()
+                if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                        || ContextCompat.checkSelfPermission(this,android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this@DriverAuthorizingActivity,
+                            arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                    android.Manifest.permission.CAMERA),
+                            REQUEST_PERMISSIONS)
+                } else {
+                    invokeCamera()
+                    dialog.dismiss()
+                }
             }
             dialog.show()
 
@@ -97,11 +113,44 @@ class DriverAuthorizingActivity : AppCompatActivity() {
             }
         }
 
+
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_PERMISSIONS) {
+            if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this@DriverAuthorizingActivity, "권한이 주어졌습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this@DriverAuthorizingActivity, "권한이 주어지지 않았습니다. 설정을 변경해주세요.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    private fun invokeCamera() {
+        pictureUri = FileProvider.getUriForFile(this@DriverAuthorizingActivity, applicationContext.packageName + ".provider", createImageFile())
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri)
+
+        intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+        startActivityForResult(intent, DRIVER_AUTH_INTENT_CAMERA)
+    }
+
+    private fun createImageFile(): File {
+        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+
+        val sdf = SimpleDateFormat("yyyyMMdd_HHmmss")
+        var timeStamp = sdf.format(Date())
+
+        val imageFile = File(picturesDirectory, "picture" + timeStamp + ".jpg")
+        return imageFile
     }
 
 
     private fun uploadImage() {
-        if(filePath != null && Id != "") {
+        if(Id != "") {
             val progressDialog = ProgressDialog(this)
             progressDialog.setTitle("Uploading...")
             progressDialog.show()
@@ -116,7 +165,7 @@ class DriverAuthorizingActivity : AppCompatActivity() {
                         var progress = (100 * it.bytesTransferred / it.totalByteCount).toInt()
                         progressDialog.setMessage("$progress%" )
                         if(progress > 99) {
-                            val intent = Intent(this@DriverAuthorizingActivity, DriverCarInfoActivity::class.java)
+                            val intent = Intent(this@DriverAuthorizingActivity, DriverBusinessActivity::class.java)
                             startActivity(intent)
                         }
                     }
@@ -143,20 +192,28 @@ class DriverAuthorizingActivity : AppCompatActivity() {
                 e.message
             }
 
-        } else if (requestCode == DRIVER_AUTH_INTENT_CAMERA && resultCode == Activity.RESULT_OK
-                && data != null && data.getData() != null){
-            filePath = data!!.getData()
+        } else if (requestCode == DRIVER_AUTH_INTENT_CAMERA && resultCode == Activity.RESULT_OK){
+            toast("Saved")
+            filePath = pictureUri
+            try{
+                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
+                licenseImageView.setImageBitmap(bitmap)
+                licenseImageView.setScaleType(ImageView.ScaleType.FIT_XY)
+            } catch (e : IOException) {
+                e.message
+            }
+//            filePath = data!!.getData()
 //            val bundle = data!!.extras
 //            val bitmap = bundle.get("data") as Bitmap
 //            licenseImageView.setImageBitmap(bitmap)
 //            licenseImageView.scaleType = ImageView.ScaleType.FIT_XY
-            try{
-                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
-                licenseImageView.setImageBitmap(bitmap)
-                licenseImageView.scaleType = ImageView.ScaleType.FIT_XY
-            } catch (e : IOException) {
-                e.message
-            }
+//            try{
+//                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
+//                licenseImageView.setImageBitmap(bitmap)
+//                licenseImageView.scaleType = ImageView.ScaleType.FIT_XY
+//            } catch (e : IOException) {
+//                e.message
+//            }
         }
     }
 

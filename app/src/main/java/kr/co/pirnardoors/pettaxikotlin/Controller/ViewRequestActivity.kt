@@ -109,6 +109,7 @@ class ViewRequestActivity : AppCompatActivity() {
         logoutBtn.setOnClickListener {
             auth.signOut()
             editor.putBoolean(DRIVER_LOGON, false)
+            editor.putBoolean(DRIVER_LICENSE_AUTHORIZED,false)
             editor.apply()
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)

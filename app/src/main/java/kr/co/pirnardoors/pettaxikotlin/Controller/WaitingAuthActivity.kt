@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_waiting_auth.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LOGON
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 
 class WaitingAuthActivity : AppCompatActivity() {
@@ -39,18 +40,21 @@ class WaitingAuthActivity : AppCompatActivity() {
                     if(driverAuthorized == true) {
                         editor.putBoolean(DRIVER_LICENSE_AUTHORIZED, true)
                         editor.apply()
-                        val intent = Intent(this@WaitingAuthActivity, ViewRequestActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        return
                     }
                 }
             }
 
         })
+        if(driverAuthorized == true) {
+            val intent = Intent(this@WaitingAuthActivity, ViewRequestActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
 
         button3.setOnClickListener {
             auth.signOut()
+            editor.putBoolean(DRIVER_LOGON,false)
             editor.putBoolean(DRIVER_LICENSE_AUTHORIZED, false)
             editor.apply()
             val intent = Intent(this, MainActivity::class.java)

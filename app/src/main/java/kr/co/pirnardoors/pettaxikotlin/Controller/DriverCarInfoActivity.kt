@@ -1,29 +1,35 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
+import android.media.Image
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.support.v4.content.FileProvider
+import android.widget.Button
 import android.widget.ImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_driver_car_info.*
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.CAR_IMAGE_INTENT
-import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
-import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
-import kr.co.pirnardoors.pettaxikotlin.Utilities.READY_TO_TEST
+import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
+import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DriverCarInfoActivity : AppCompatActivity() {
 
     lateinit var filePath : Uri
+    lateinit var pictureUri : Uri
     var mStorage = FirebaseStorage.getInstance().getReference()
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver").child(userId)
@@ -35,7 +41,21 @@ class DriverCarInfoActivity : AppCompatActivity() {
         var editor = sharedPreferences.edit()
         Id = sharedPreferences.getString(DRIVER_ID, "")
         carImageView.setOnClickListener {
-            chooseImage()
+            val carInfoAlerDialog = AlertDialog.Builder(this@DriverCarInfoActivity)
+            val carInfoDialogView = layoutInflater.inflate(R.layout.layout_driver_auth_image_view, null)
+            carInfoAlerDialog.setView(carInfoDialogView)
+            val takePictureBtn : Button = carInfoDialogView.findViewById(R.id.takePictureBtn)
+            val selectPictureBtn : Button = carInfoDialogView.findViewById(R.id.selectPictureBtn)
+            val dialog = carInfoAlerDialog.create()
+            selectPictureBtn.setOnClickListener {
+                chooseImage()
+                dialog.dismiss()
+            }
+            takePictureBtn.setOnClickListener {
+                invokeCamera()
+                dialog.dismiss()
+            }
+            dialog.show()
         }
 
         submitBtn.setOnClickListener {
@@ -50,6 +70,24 @@ class DriverCarInfoActivity : AppCompatActivity() {
             driverDB.child("ReadyToTest").setValue("true")
             uploadImage()
         }
+    }
+
+    private fun invokeCamera() {
+        pictureUri = FileProvider.getUriForFile(this@DriverCarInfoActivity, applicationContext.packageName + ".provider", createImageFile())
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri)
+        intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        startActivityForResult(intent, DRIVER_AUTH_INTENT_CAMERA)
+    }
+
+    private fun createImageFile(): File {
+        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val sdf = SimpleDateFormat("yyyyMMdd_HHmmss")
+        var timestamp = sdf.format(Date())
+
+        val imageFile = File(picturesDirectory, "picture $timestamp.jpg")
+        return imageFile
     }
 
     private fun chooseImage() {
@@ -68,6 +106,15 @@ class DriverCarInfoActivity : AppCompatActivity() {
                 carImageView.setImageBitmap(bitmap)
                 carImageView.scaleType = ImageView.ScaleType.FIT_XY
             } catch (e : IOException) {
+                e.message
+            }
+        } else if (resultCode == Activity.RESULT_OK && requestCode == DRIVER_AUTH_INTENT_CAMERA) {
+            filePath = pictureUri
+            try{
+                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
+                carImageView.setImageBitmap(bitmap)
+                carImageView.scaleType = ImageView.ScaleType.FIT_XY
+            } catch (e: IOException) {
                 e.message
             }
         }

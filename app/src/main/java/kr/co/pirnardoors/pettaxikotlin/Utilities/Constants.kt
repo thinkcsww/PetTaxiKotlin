@@ -23,6 +23,7 @@ const val TRANSPORT_ACTIVE = "transportActive"
 const val MEET_ACTIVITY_ACTIVE = "meetActivityActive"
 const val PLACEPICKER_DEPARTURE_REQUESTCODE = 1
 const val PLACEPICKER_ARRIVAL_REQUESTCODE = 2
+const val REQUEST_PERMISSIONS = 100
 ///////////////////////////////////////////
 
 //MeetActivity
@@ -59,3 +60,4 @@ const val LICENSE_PARCELABLE = "licenseParcelable"
 const val LICENSE_IMAGE_INTENT = 3
 const val CAR_IMAGE_INTENT = 4
 const val DRIVER_AUTH_INTENT_CAMERA = 8
+const val BUSINESS_IMAGE_INTENT = 10
