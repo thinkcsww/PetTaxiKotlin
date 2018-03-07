@@ -4,13 +4,16 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.provider.Settings
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
@@ -42,6 +45,7 @@ import java.io.IOException
 import java.util.*
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
+    lateinit var profileImagefilePath: Uri
     var driverDeparture = false
     var reserveTime = ""
     var departureLatLng : LatLng? = null
@@ -186,7 +190,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             dialog.show()
         }*/
-        //Menu Button
+
+
+        //Menu Button || Animation
 
         val animListener = SlidingPageAnimationListener()
         translateAnimRight = AnimationUtils.loadAnimation(this@CustomerMapActivity, R.anim.right_in)
@@ -444,7 +450,42 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             return@setOnClickListener
         }
         editor.apply()
+
+        // MenuLayout setting!
+
+        imageSelectBtn.setOnClickListener {
+
+            val profileAlertDialogBuilder = AlertDialog.Builder(this@CustomerMapActivity)
+            val customerProfileDialogView = layoutInflater.inflate(R.layout.layout_customer_profile_imageview, null)
+            profileAlertDialogBuilder.setView(customerProfileDialogView)
+            val takePicutreBtn : Button = customerProfileDialogView.findViewById(R.id.takePictureBtn)
+            val selectPicutreBtn : Button = customerProfileDialogView.findViewById(R.id.selectPictureBtn)
+            val basicImageBtn : Button = customerProfileDialogView.findViewById(R.id.basicImageBtn)
+            val dialog = profileAlertDialogBuilder.create()
+            takePicutreBtn.setOnClickListener {
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                startActivityForResult(intent, CUSTOMERMAP_INTENT_CAMERA)
+                dialog.dismiss()
+            }
+            selectPicutreBtn.setOnClickListener {
+                val intent = Intent()
+                intent.setType("image/*")
+                intent.setAction(Intent.ACTION_PICK)
+                startActivityForResult(intent, CUSTOMERMAP_INTENT_CHOOSER)
+                dialog.dismiss()
+            }
+            basicImageBtn.setOnClickListener {
+                profileImageView.setImageResource(R.mipmap.ic_launcher)
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        }
     }
+
+    /**
+     *  onCreate Finish
+     */
 
     private fun getCurrentDate() {
         currentHour = calendar.get(Calendar.HOUR_OF_DAY)
@@ -742,6 +783,24 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 destinationLatitude = destinationLatLng.latitude
                 destinationLongitude = destinationLatLng.longitude
                 destinationText.text = "도착지: $destination"
+            }
+        } else if (requestCode == CUSTOMERMAP_INTENT_CAMERA) {
+            if(resultCode == Activity.RESULT_OK) {
+                val bundle = data!!.extras
+                val bitmap = bundle.get("data") as Bitmap
+                profileImageView.setImageBitmap(bitmap)
+                profileImageView.scaleType = ImageView.ScaleType.FIT_XY
+            }
+        } else if (requestCode == CUSTOMERMAP_INTENT_CHOOSER) {
+            if (resultCode == Activity.RESULT_OK) {
+                profileImagefilePath = data!!.data
+                try {
+                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, profileImagefilePath)
+                    profileImageView.setImageBitmap(bitmap)
+                    profileImageView.setScaleType(ImageView.ScaleType.FIT_XY)
+                } catch ( e: IOException) {
+                    e.message
+                }
             }
         }
     }

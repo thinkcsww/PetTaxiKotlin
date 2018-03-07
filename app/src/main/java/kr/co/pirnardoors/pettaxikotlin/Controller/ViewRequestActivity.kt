@@ -1,37 +1,41 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Toast
+import android.widget.*
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
+import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_view_request.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LOGON
-import kr.co.pirnardoors.pettaxikotlin.Utilities.EXTRA_REQUEST
-import kr.co.pirnardoors.pettaxikotlin.Utilities.LISTVIEW
-import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
+import java.io.IOException
+import java.net.URI
 import java.util.*
 
 class ViewRequestActivity : AppCompatActivity() {
+    lateinit var profileImagefilePath : Uri
     var request = ArrayList<String>()
     var requestUserId = ArrayList<String>()
     var requestDestinations = ArrayList<String>()
@@ -166,7 +170,39 @@ class ViewRequestActivity : AppCompatActivity() {
             }
 
         }
+        /**
+         *  Menu layout Setting!
+         */
+        imageSelectBtn.setOnClickListener {
+
+            val profileAlertDialogBuilder = AlertDialog.Builder(this@ViewRequestActivity)
+            val customerProfileDialogView = layoutInflater.inflate(R.layout.layout_customer_profile_imageview, null)
+            profileAlertDialogBuilder.setView(customerProfileDialogView)
+            val takePicutreBtn : Button = customerProfileDialogView.findViewById(R.id.takePictureBtn)
+            val selectPicutreBtn : Button = customerProfileDialogView.findViewById(R.id.selectPictureBtn)
+            val basicImageBtn : Button = customerProfileDialogView.findViewById(R.id.basicImageBtn)
+            val dialog = profileAlertDialogBuilder.create()
+            takePicutreBtn.setOnClickListener {
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                startActivityForResult(intent, CUSTOMERMAP_INTENT_CAMERA)
+                dialog.dismiss()
+            }
+            selectPicutreBtn.setOnClickListener {
+                val intent = Intent()
+                intent.setType("image/*")
+                intent.setAction(Intent.ACTION_PICK)
+                startActivityForResult(intent, CUSTOMERMAP_INTENT_CHOOSER)
+                dialog.dismiss()
+            }
+            basicImageBtn.setOnClickListener {
+                profileImageView.setImageResource(R.mipmap.ic_launcher)
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        }
     }
+
     //oncreate finish
 
     private inner class SlidingPageAnimationListener : Animation.AnimationListener {
@@ -199,6 +235,29 @@ class ViewRequestActivity : AppCompatActivity() {
             menuBtn.visibility = View.VISIBLE
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CUSTOMERMAP_INTENT_CAMERA) {
+            if(resultCode == Activity.RESULT_OK) {
+                val bundle = data!!.extras
+                val bitmap = bundle.get("data") as Bitmap
+                profileImageView.setImageBitmap(bitmap)
+                profileImageView.scaleType = ImageView.ScaleType.FIT_XY
+            }
+        } else if (requestCode == CUSTOMERMAP_INTENT_CHOOSER) {
+            if (resultCode == Activity.RESULT_OK) {
+                profileImagefilePath = data!!.data
+                try {
+                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, profileImagefilePath)
+                    profileImageView.setImageBitmap(bitmap)
+                    profileImageView.setScaleType(ImageView.ScaleType.FIT_XY)
+                } catch ( e: IOException) {
+                    e.message
+                }
+            }
         }
     }
 

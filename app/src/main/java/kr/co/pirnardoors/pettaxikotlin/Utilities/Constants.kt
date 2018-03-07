@@ -41,6 +41,8 @@ const val DRIVER_USERID = "driverUserId"
 const val BOARDING_NUMBER = "number"
 const val CAR_INFO = "carInfo"
 const val PHONENUMBER = "phonenumber"
+const val CUSTOMERMAP_INTENT_CHOOSER = 7
+const val CUSTOMERMAP_INTENT_CAMERA =6
 //DriverMapActivity
 const val DRIVER_MAP_REQUEST_USER_ID = "driverMapRequestUserId"
 const val DRIVERMAP_STEP1 = "driverMapStep1"
@@ -56,3 +58,4 @@ const val DRIVERMAP_REQUEST_LONGITUDE = "driverMapCustomerLongitude"
 const val LICENSE_PARCELABLE = "licenseParcelable"
 const val LICENSE_IMAGE_INTENT = 3
 const val CAR_IMAGE_INTENT = 4
+const val DRIVER_AUTH_INTENT_CAMERA = 8

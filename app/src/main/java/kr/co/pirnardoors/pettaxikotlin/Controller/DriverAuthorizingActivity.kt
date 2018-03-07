@@ -1,16 +1,20 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextUtils
+import android.widget.Button
 import android.widget.ImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -20,7 +24,10 @@ import kr.co.pirnardoors.pettaxikotlin.Model.License
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
+import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DriverAuthorizingActivity : AppCompatActivity() {
 
@@ -46,7 +53,23 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         }
 
         licenseImageView.setOnClickListener {
-            choose()
+            val driverAuthAlertDialog = AlertDialog.Builder(this@DriverAuthorizingActivity)
+            val driverAuthDialogView = layoutInflater.inflate(R.layout.layout_driver_auth_image_view, null)
+            driverAuthAlertDialog.setView(driverAuthDialogView)
+            val selectPictureBtn : Button = driverAuthDialogView.findViewById(R.id.selectPictureBtn)
+            val takePictureBtn : Button = driverAuthDialogView.findViewById(R.id.takePictureBtn)
+            val dialog = driverAuthAlertDialog.create()
+            selectPictureBtn.setOnClickListener {
+                choose()
+                dialog.dismiss()
+            }
+            takePictureBtn.setOnClickListener {
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                startActivityForResult(intent, DRIVER_AUTH_INTENT_CAMERA)
+                dialog.dismiss()
+            }
+            dialog.show()
+
         }
         uploadBtn.setOnClickListener {
             license.licenseNumber = licenseNumberEditText.text.trim().toString()
@@ -75,6 +98,7 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         }
 
     }
+
 
     private fun uploadImage() {
         if(filePath != null && Id != "") {
@@ -119,6 +143,20 @@ class DriverAuthorizingActivity : AppCompatActivity() {
                 e.message
             }
 
+        } else if (requestCode == DRIVER_AUTH_INTENT_CAMERA && resultCode == Activity.RESULT_OK
+                && data != null && data.getData() != null){
+            filePath = data!!.getData()
+//            val bundle = data!!.extras
+//            val bitmap = bundle.get("data") as Bitmap
+//            licenseImageView.setImageBitmap(bitmap)
+//            licenseImageView.scaleType = ImageView.ScaleType.FIT_XY
+            try{
+                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
+                licenseImageView.setImageBitmap(bitmap)
+                licenseImageView.scaleType = ImageView.ScaleType.FIT_XY
+            } catch (e : IOException) {
+                e.message
+            }
         }
     }
 

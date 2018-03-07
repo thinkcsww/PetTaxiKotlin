@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView26"
+        android:layout_width="0dp"
+        android:layout_height="53dp"
+        android:background="@drawable/bottom_stroke_for_customer_profile"
+        android:fontFamily="sans-serif-smallcaps"
+        android:gravity="start"
+        android:paddingBottom="10dp"
+        android:paddingLeft="18dp"
+        android:paddingTop="12dp"
+        android:text="프로필"
+        android:textAlignment="viewStart"
+        android:textColor="@color/yellow"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/takePictureBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/transparent_black_border"
+        android:gravity="start"
+        android:paddingBottom="8dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="12dp"
+        android:text="사진 촬영"
+        android:textAlignment="viewStart"
+        android:textColor="@color/place_autocomplete_prediction_secondary_text"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView26" />
+
+    <Button
+        android:id="@+id/selectPictureBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/transparent_black_border"
+        android:gravity="start"
+        android:paddingBottom="8dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="12dp"
+        android:text="앨범에서 사진 선택"
+        android:textAlignment="viewStart"
+        android:textColor="@color/place_autocomplete_prediction_secondary_text"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/takePictureBtn" />
+
+    <Button
+        android:id="@+id/basicImageBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/cardview_light_background"
+        android:gravity="start"
+        android:paddingBottom="8dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="12dp"
+        android:text="기본 이미지 선택"
+        android:textAlignment="viewStart"
+        android:textColor="@color/place_autocomplete_prediction_secondary_text"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/selectPictureBtn"
+        app:layout_constraintVertical_bias="0.0" />
+
+</android.support.constraint.ConstraintLayout>
