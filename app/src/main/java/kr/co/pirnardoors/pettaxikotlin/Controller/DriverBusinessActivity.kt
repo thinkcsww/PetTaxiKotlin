@@ -18,6 +18,7 @@ import android.widget.ImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_driver_business.*
+import kotlinx.android.synthetic.main.fragment_business_explain_fragment1.*
 
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.BUSINESS_IMAGE_INTENT
@@ -77,6 +78,9 @@ class DriverBusinessActivity : AppCompatActivity() {
             transaction.commit()
             uploadBtn.visibility = View.GONE
         }
+        val businessExplainFragment2 =  BusinessExplainFragment2()
+
+
     }
 
     private fun invokeCamera() {
