@@ -127,9 +127,12 @@
 
         <TextView
             android:id="@+id/textView28"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             android:layout_width="0dp"
             android:layout_height="54dp"
-            android:layout_marginEnd="2dp"
+            android:layout_marginEnd="1dp"
             android:background="@drawable/yellow_radius"
             android:fontFamily="@font/marko_one"
             android:paddingTop="10dp"
@@ -137,7 +140,6 @@
             android:textAlignment="center"
             android:textColor="@color/cardview_light_background"
             android:textSize="24sp"
-            android:visibility="gone"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toTopOf="parent" />
@@ -170,12 +172,12 @@
         <ImageView
             android:id="@+id/profileImageView"
             android:layout_width="0dp"
-            android:layout_height="210dp"
+            android:layout_height="105dp"
             android:background="@drawable/transparent_black_border"
             android:paddingBottom="5dp"
             android:scaleType="fitXY"
             map:layout_constraintEnd_toEndOf="parent"
-            map:layout_constraintHorizontal_bias="1.0"
+            map:layout_constraintHorizontal_bias="0.0"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toBottomOf="@+id/textView28"
             map:srcCompat="@drawable/block" />
