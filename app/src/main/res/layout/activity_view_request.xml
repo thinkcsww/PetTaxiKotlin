@@ -73,7 +73,7 @@
         android:id="@+id/textView5"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/text_background"
+        android:background="@drawable/transparent_bottom_border_view_request"
         android:fontFamily="@font/marko_one"
         android:text="대기 목록"
         android:textAlignment="center"
@@ -114,12 +114,13 @@
             android:id="@+id/profileImageView"
             android:layout_width="0dp"
             android:layout_height="210dp"
-            android:background="@drawable/block"
+            android:background="@drawable/transparent_bottom_border"
             android:scaleType="fitXY"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView28" />
+            app:layout_constraintTop_toBottomOf="@+id/textView28"
+            app:srcCompat="@drawable/profile" />
 
         <Button
             android:id="@+id/customerServiceBtn"

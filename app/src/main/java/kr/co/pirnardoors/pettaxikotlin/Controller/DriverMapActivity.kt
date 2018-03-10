@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.ActivityCompat
+import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.webkit.CookieManager
@@ -19,6 +20,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.Button
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
@@ -55,7 +57,15 @@ import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 
 class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
+
+    val recordDB = FirebaseDatabase.getInstance().getReference("Record")
     lateinit var mMap: GoogleMap
+    var distance = ""
+    var wage = 0
+    var driveTime = 0
+    var earn = 0
+    var timeStamp = ""
+    var handler = Handler()
     var driverLocation : LatLng? = null
     var requestLocation : LatLng? = null
     var requestDestination : String? = ""
@@ -190,7 +200,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         // toDestination button
 
         toDestinationBtn.setOnClickListener {
-
+            handler = Handler()
             editor.putString(DESTINATION_LONGITUDE, "0")
             editor.putString(DESTINATION_LATITUDE, "0")
             step3 = true
@@ -212,13 +222,20 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
             KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
 
-            val transaction = fragmentManager.beginTransaction()
-            val finishFragment = DriverFinishFragment()
-            transaction.replace(R.id.fragmentHolder, finishFragment)
-            transaction.addToBackStack(null)
-            transaction.commit()
-            toDestinationBtn.visibility = View.GONE
-            showFinalAlertDialog()
+
+
+            myRunnable = Runnable {
+                val transaction = fragmentManager.beginTransaction()
+                val finishFragment = DriverFinishFragment()
+                transaction.replace(R.id.fragmentHolder, finishFragment)
+                transaction.addToBackStack(null)
+                transaction.commit()
+                toDestinationBtn.visibility = View.GONE
+                showFinalAlertDialog()
+                handler.removeCallbacks(myRunnable)
+            }
+
+            handler.postDelayed(myRunnable, 2000)
             }
 
 
@@ -292,7 +309,47 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val finishDialogView = layoutInflater.inflate(R.layout.layout_driver_finish, null)
         finishAlertDialog.setView(finishDialogView)
         val okBtn: Button = finishDialogView.findViewById(R.id.okBtn)
+        val distanceTextView : TextView = finishDialogView.findViewById(R.id.distanceTextView)
+        val wageTextView : TextView = finishDialogView.findViewById(R.id.wageTextView)
+        val driveTimesTextView : TextView = finishDialogView.findViewById(R.id.driveTimesTextView)
+        val earnTextView : TextView = finishDialogView.findViewById(R.id.earnTextView)
         val dialog = finishAlertDialog.create()
+
+        driverDB.child(driverUserId).addValueEventListener(object : ValueEventListener{
+            override fun onCancelled(p0: DatabaseError?) {
+                if (p0 != null) p0.message
+            }
+
+            override fun onDataChange(dataSnapshot: DataSnapshot?) {
+                if (dataSnapshot != null) {
+                    timeStamp = dataSnapshot.child("TimeStamp").getValue().toString()
+                    Log.d("WHATTHEHELL", timeStamp)
+                    driveTime = dataSnapshot.child("DriveTime").getValue().toString().toInt()
+                    Log.d("WHATTHEHELL", driveTime.toString())
+                    if(timeStamp != "") {
+                        recordDB.addValueEventListener(object: ValueEventListener{
+                            override fun onCancelled(p0: DatabaseError?) {
+                                if (p0 != null) p0.message
+                            }
+
+                            override fun onDataChange(dataSnapshot: DataSnapshot?) {
+                                if (dataSnapshot != null) {
+                                    wage = dataSnapshot.child(timeStamp).child("Wage").getValue().toString().toInt()
+                                    distance = dataSnapshot.child(timeStamp).child("Distance").getValue().toString()
+                                    wageTextView.text = "운행요금 : ${wage}원"
+                                    driveTimesTextView.text = "이번 달 운행 횟수 : ${driveTime + 1}"
+                                    earnTextView.text = "이번 달 소득 : ${earn + wage}"
+                                    distanceTextView.text = "운행거리(직선) : $distance "
+
+                                }
+                            }
+                        })
+                    }
+                }
+            }
+
+        })
+
         dialog.show()
         okBtn.setOnClickListener {
             step1 = false; step2 = false; step3 = false;

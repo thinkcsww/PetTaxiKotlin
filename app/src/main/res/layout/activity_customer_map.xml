@@ -116,20 +116,21 @@
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/menuLayout"
-        android:layout_width="300dp"
+        android:layout_width="250dp"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignTop="@+id/map"
         android:background="@drawable/white_border"
         android:orientation="vertical"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/textView28"
             android:layout_width="0dp"
             android:layout_height="54dp"
             android:layout_marginEnd="1dp"
+            android:layout_marginRight="1dp"
             android:background="@drawable/yellow_radius"
             android:fontFamily="@font/marko_one"
             android:paddingTop="10dp"
@@ -169,15 +170,15 @@
         <ImageView
             android:id="@+id/profileImageView"
             android:layout_width="0dp"
-            android:layout_height="105dp"
-            android:background="@drawable/transparent_black_border"
+            android:layout_height="200dp"
+            android:background="@drawable/transparent_bottom_border"
             android:paddingBottom="5dp"
             android:scaleType="fitXY"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintHorizontal_bias="0.0"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toBottomOf="@+id/textView28"
-            map:srcCompat="@drawable/block" />
+            map:srcCompat="@drawable/profile" />
 
         <TextView
             android:id="@+id/textView6"
@@ -216,8 +217,19 @@
             android:padding="5dp"
             map:layout_constraintBottom_toBottomOf="@+id/profileImageView"
             map:layout_constraintEnd_toEndOf="parent"
-            map:srcCompat="@drawable/choose_image"
-            android:layout_marginRight="8dp" />
+            map:srcCompat="@drawable/choose_image" />
+
+        <Button
+            android:id="@+id/driverInfoBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/catcardog_button"
+            android:text="운전자 정보"
+            android:textColor="@color/cardview_light_background"
+            map:layout_constraintBottom_toTopOf="@+id/noticeBtn"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent" />
 
     </android.support.constraint.ConstraintLayout>
 

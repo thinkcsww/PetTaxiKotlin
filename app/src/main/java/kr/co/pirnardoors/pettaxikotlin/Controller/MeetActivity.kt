@@ -32,12 +32,23 @@ import kr.co.pirnardoors.pettaxikotlin.R.id.*
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
 import java.io.IOException
+import java.text.Format
 
 class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
+
+    var timeStamp = System.currentTimeMillis()/1000;
+    var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
+    var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
+    val customerDB = FirebaseDatabase.getInstance().getReference("Request")
+
+
+    var carNumber = "1"
+    var carColor = ""
+    var carModel = ""
+    var driverId = ""
     private var mainWebView: WebView? = null
     private val APP_SCHEME = "iamporttest://"
-
     val database = FirebaseDatabase.getInstance().getReference("Request")
     var locationManager : LocationManager? = null
     var locationListener : LocationListener? = null
@@ -53,7 +64,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     lateinit var currentLocation : Location
     lateinit var previousLocation : Location
     private var userId = FirebaseAuth.getInstance().currentUser?.uid
-    val customerDB = FirebaseDatabase.getInstance().getReference("Request").child(userId)
+    var driverUserId = ""
     var transportActive = false
     var meetActivityACtive = true
     var distance : Double = 0.0
@@ -71,6 +82,9 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+
+
         transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
         if(transportActive == true) {
             reincarnation()
@@ -87,6 +101,19 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             editor.putBoolean(MEET_ACTIVITY_ACTIVE, meetActivityACtive)
             editor.apply()
             caclulateWage()
+
+
+            recordDB.child("CustomerId").setValue(userId)
+            recordDB.child("CarNumber").setValue(carNumber)
+            recordDB.child("PhoneNumber").setValue("")
+            recordDB.child("Wage").setValue(wage.toString())
+            recordDB.child("Distance").setValue(String.format("%.2f", distanceKm))
+
+
+            if (driverUserId != "null") {
+                recordDB.child("DriverId").setValue(driverUserId)
+                driverDB.child(driverUserId).child("TimeStamp").setValue(timeStamp.toString())
+            }
         }
         button2.setOnClickListener {
             transportActive = false
@@ -99,6 +126,8 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         Log.d("정보", transportActive.toString())
         Log.d("정보", activityOn.toString())
+
+
         val thread = Thread(object : Runnable {
             override fun run() {
                 try {
@@ -122,6 +151,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
             }
         }).start()
+
     }
 
     private fun reincarnation() {
@@ -181,7 +211,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        customerDB.addValueEventListener(object : ValueEventListener{
+        customerDB.child(userId).addValueEventListener(object : ValueEventListener{
             override fun onCancelled(err: DatabaseError?) {
                 if(err != null) {
                     err.message
@@ -192,6 +222,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     destinationLatitude = dataSnapshot.child("DestinationLatitude").getValue().toString().toDouble()
                     destinationLongitude = dataSnapshot.child("DestinationLongitude").getValue().toString().toDouble()
                     destination = dataSnapshot.child("Destination").getValue().toString()
+                    driverUserId = dataSnapshot.child("MD").getValue().toString()
                     editor.putString(DESTINATION, destination)
                     editor.apply()
 
@@ -200,10 +231,39 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     destinationLocation?.latitude = destinationLatitude.toString().toDouble()
                     destinationLocation?.longitude = destinationLongitude.toString().toDouble()
 
+                    if(driverUserId != "") {
+                        getDriverInfo()
+                    }
+
                 }
             }
         })
 
+    }
+
+    private fun getDriverInfo() {
+        //get Driver Information !
+        driverDB.child(driverUserId).addValueEventListener(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError?) {
+                if (p0 != null) {
+                    p0.message
+                }
+            }
+            override fun onDataChange(p0: DataSnapshot?) {
+                var dataSnapshot = p0
+                if (dataSnapshot != null) {
+
+                    carNumber = dataSnapshot.child("CarNumber").getValue().toString()
+                    carColor = dataSnapshot.child("CarColor").getValue().toString()
+                    carModel = dataSnapshot.child("CarModel").getValue().toString()
+                    driverId = dataSnapshot.child("Id").getValue().toString()
+                    Log.d("CarNumber", carNumber)
+
+                }
+            }
+        })
+
+        /////////
     }
 
 

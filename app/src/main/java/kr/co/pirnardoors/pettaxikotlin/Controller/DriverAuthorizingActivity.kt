@@ -202,18 +202,6 @@ class DriverAuthorizingActivity : AppCompatActivity() {
             } catch (e : IOException) {
                 e.message
             }
-//            filePath = data!!.getData()
-//            val bundle = data!!.extras
-//            val bitmap = bundle.get("data") as Bitmap
-//            licenseImageView.setImageBitmap(bitmap)
-//            licenseImageView.scaleType = ImageView.ScaleType.FIT_XY
-//            try{
-//                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
-//                licenseImageView.setImageBitmap(bitmap)
-//                licenseImageView.scaleType = ImageView.ScaleType.FIT_XY
-//            } catch (e : IOException) {
-//                e.message
-//            }
         }
     }
 

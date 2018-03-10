@@ -54,6 +54,7 @@ class CustomerRegisterActivity : AppCompatActivity() {
                         var userId = FirebaseAuth.getInstance().currentUser?.uid
                         var database = FirebaseDatabase.getInstance().getReference("Customer")
                         database.child(userId).child("UserType").setValue("Customer")
+                        database.child(userId).child("Profile").setValue("")
                     } else {
                         Toast.makeText(this, "로그인 실패, 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
 

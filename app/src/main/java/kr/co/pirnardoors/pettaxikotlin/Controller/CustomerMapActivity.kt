@@ -4,7 +4,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
+import android.graphics.*
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -12,11 +12,15 @@ import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.provider.MediaStore
 import android.provider.Settings
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.FileProvider
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.util.Log
@@ -24,6 +28,8 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.BitmapImageViewTarget
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.places.ui.PlacePicker
@@ -36,16 +42,39 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.storage.FirebaseStorage
+import jp.wasabeef.glide.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.activity_customer_map.*
+import kotlinx.android.synthetic.main.layout_driver_info.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
+import org.jetbrains.anko.find
 import org.jetbrains.anko.toast
+import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
+
+    //DB ZONE
+    var Id = FirebaseAuth.getInstance().currentUser!!.email!!
+    val mStorage = FirebaseStorage.getInstance().getReference()
+    val customerDB = FirebaseDatabase.getInstance().getReference("Customer")
+    var respondDB = FirebaseDatabase.getInstance().getReference("Respond")
+    var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
+    val requestDB = FirebaseDatabase.getInstance().getReference("Request")
+    val geoFire = GeoFire(requestDB)
+    var driverProfileImageUrl = ""
+    var profileImageUrl = ""
+    lateinit var pictureUri : Uri
     lateinit var profileImagefilePath: Uri
+
+    var carNumber = ""
+    var carColor = ""
+    var carModel = ""
+    var driverId = ""
     var driverDeparture = false
     var reserveTime = ""
     var departureLatLng : LatLng? = null
@@ -65,18 +94,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var lastKnownLocation : Location
     var requestActive : Boolean = false
     var driverActive = false
-    var timeStamp = System.currentTimeMillis()/1000;
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     var driverUserId : String? = ""
     val auth = FirebaseAuth.getInstance()
-    val database = FirebaseDatabase.getInstance().getReference("Request")
-    val geoFire = GeoFire(database)
     var isPageOpen = false
     var number = ""
     var distanceRound : Double? = null
     var activityOn = true
-    private var umber : String? = null
-    private var phoneNumber : String? = null
     var alarmAlerted = false
     var driverMatchedAlarm = false
     var customerMapActive = false
@@ -84,7 +108,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var currentYear = 0; var currentMonth = 0; var currentDay = 0 ; var currentHour = 0; var currentMinute = 0
 
     var calendar = Calendar.getInstance()
-
     var customerState = Customer(false, false,
             "", "", "", "")
 
@@ -93,6 +116,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_customer_map)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+
 
         //get current date, year , month , hour, day
         getCurrentDate()
@@ -104,6 +128,31 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         editor.putBoolean(CUSTOMER_LOGON, true)
         editor.apply()
+
+        //get ProfileUrl image from Firebase
+        customerDB.addValueEventListener(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError?) {
+                if(p0 != null)p0.message
+            }
+
+            override fun onDataChange(dataSnapshot: DataSnapshot?) {
+                if(dataSnapshot != null) {
+                    profileImageUrl = dataSnapshot.child(userId).child("Profile").getValue().toString()
+                    if(profileImageUrl != "") {
+                        Glide.with(this@CustomerMapActivity).load(profileImageUrl)
+                                .centerCrop()
+                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                                .into(profileImageView)
+                    } else {
+                        Glide.with(this@CustomerMapActivity).load(R.drawable.profile)
+                                .centerCrop()
+                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                                .into(profileImageView)
+                    }
+                }
+            }
+        })
+
 
 
 
@@ -136,6 +185,47 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 }
             }).start()
+
+        // Driver Info Button when driver is matched
+
+        driverInfoBtn.setOnClickListener {
+            if(customerState.driverActive == true ) {
+                val driverInfoAlertDialog = AlertDialog.Builder(this@CustomerMapActivity)
+                val driverInfoDialogView = layoutInflater.inflate(R.layout.layout_driver_info, null)
+                driverInfoAlertDialog.setView(driverInfoDialogView)
+                val dialog = driverInfoAlertDialog.create()
+                val okBtn : Button = driverInfoDialogView.findViewById(R.id.okBtn)
+                val driverProfileImageView : ImageView = driverInfoDialogView.findViewById(R.id.driverProfileImageView)
+                val driverCarNumberTextView : TextView = driverInfoDialogView.findViewById(R.id.driverCarNumberTextView)
+                val driverCarTextView : TextView = driverInfoDialogView.findViewById(R.id.driverCarTextView)
+                val driverIdTextView : TextView = driverInfoDialogView.findViewById(R.id.driverIdTextView)
+
+                if (driverProfileImageUrl != "") {
+                    Glide.with(this@CustomerMapActivity).load(driverProfileImageUrl)
+                            .centerCrop()
+                            .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                            .into(driverProfileImageView)
+                } else {
+                    Glide.with(this@CustomerMapActivity).load(R.drawable.profile)
+                            .centerCrop()
+                            .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                            .into(driverProfileImageView)
+                }
+                driverIdTextView.text = driverId
+                driverCarTextView.text = carColor + carModel
+                driverCarNumberTextView.text = carNumber
+                okBtn.setOnClickListener {
+
+
+                    dialog.dismiss()
+                }
+
+                dialog.show()
+
+            } else {
+                toast("매칭된 Driver가 없습니다.")
+            }
+        }
         //Reservation Button
 
         /*reserveBtn.setOnClickListener {
@@ -351,13 +441,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                                     // var type = typeEditText.text.toString()
                                     geoFire.setLocation(userId, GeoLocation(departureLatLng!!.latitude, departureLatLng!!.longitude))
-                                    database.child(userId).child("MD").setValue("")
-                                    database.child(userId).child("PN").setValue(number)
-                                    database.child(userId).child("Destination").setValue(destination)
-                                    database.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
-                                    database.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
-                                    database.child(userId).child("Reservation").setValue(calendar.time.toString())
-                                    database.child(userId).child("DD").setValue("false")
+                                    requestDB.child(userId).child("MD").setValue("")
+                                    requestDB.child(userId).child("PN").setValue(number)
+                                    requestDB.child(userId).child("Destination").setValue(destination)
+                                    requestDB.child(userId).child("DestinationLatitude").setValue(destinationLatitude)
+                                    requestDB.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
+                                    requestDB.child(userId).child("Reservation").setValue(calendar.time.toString())
+                                    requestDB.child(userId).child("DD").setValue("false")
                                     departure = departureText.text.toString()
                                     destination = destinationText.text.toString()
                                     editor.putString(DEPARTURE, departure)
@@ -387,7 +477,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     {
                                         toast("요청되었습니다.")
                                         calendar.set(Calendar.HOUR_OF_DAY, hour + 1)
-                                        database.child(userId).child("Reservation").setValue(calendar.time.toString())
+                                        requestDB.child(userId).child("Reservation").setValue(calendar.time.toString())
                                         dialog.dismiss()
                                     } else {
                                         alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
@@ -446,6 +536,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             editor.putString(CAR_INFO, "")
             editor.putString(BOARDING_NUMBER, "")
             editor.putBoolean(CUSTOMER_LOGON,false)
+            customerDB.child(userId).child("Profile").setValue("")
             finish()
             return@setOnClickListener
         }
@@ -463,8 +554,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             val basicImageBtn : Button = customerProfileDialogView.findViewById(R.id.basicImageBtn)
             val dialog = profileAlertDialogBuilder.create()
             takePicutreBtn.setOnClickListener {
-                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                startActivityForResult(intent, CUSTOMERMAP_INTENT_CAMERA)
+                invokeCamera()
                 dialog.dismiss()
             }
             selectPicutreBtn.setOnClickListener {
@@ -475,12 +565,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 dialog.dismiss()
             }
             basicImageBtn.setOnClickListener {
-                profileImageView.setImageResource(R.mipmap.ic_launcher)
+                profileImageView.setImageResource(R.drawable.profile)
                 dialog.dismiss()
             }
 
             dialog.show()
         }
+
     }
 
     /**
@@ -528,6 +619,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private fun reincarnation() {
+
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         customerState.requestActive = sharedPreferences.getBoolean(REQUEST_ACTIVE, false)
         customerState.driverActive = sharedPreferences.getBoolean(DRIVER_ACTIVE, false)
@@ -563,8 +655,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         matchText.visibility = View.VISIBLE
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
-        var driverDatabase = FirebaseDatabase.getInstance().getReference("Respond").child(customerState.driverUserId)
-        driverDatabase.child("l").addValueEventListener(object : ValueEventListener{
+        respondDB.child(customerState.driverUserId).child("l").addValueEventListener(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError?) {
                 if (p0 != null) {
                     p0.message
@@ -581,8 +672,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     destination.longitude = driverLongitude.toString().toDouble()
                     var distanceKm = lastKnownLocation.distanceTo(destination) / 1000
                     distanceRound = Math.round(distanceKm).toDouble()
-                    var driverDb = FirebaseDatabase.getInstance().getReference("Driver").child(customerState.driverUserId)
-                    driverDb.addValueEventListener(object : ValueEventListener {
+                    driverDB.child(customerState.driverUserId).addValueEventListener(object : ValueEventListener {
                         override fun onCancelled(p0: DatabaseError?) {
                             if (p0 != null) {
                                 p0.message
@@ -591,12 +681,18 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         override fun onDataChange(p0: DataSnapshot?) {
                             var dataSnapshot = p0
                             if (dataSnapshot != null) {
-                                customerState.carInfo = dataSnapshot.child("CarNumber").getValue().toString()
-                                editor.putString(CAR_INFO, customerState.carInfo)
-                                editor.apply()
-                                customerState.phoneNumber = dataSnapshot.child("PhoneNumber").getValue().toString()
-                                editor.putString(PHONENUMBER, customerState.phoneNumber)
-                                editor.apply()
+//                                customerState.carInfo = dataSnapshot.child("CarNumber").getValue().toString()
+//                                editor.putString(CAR_INFO, customerState.carInfo)
+//                                editor.apply()
+//                                customerState.phoneNumber = dataSnapshot.child("PhoneNumber").getValue().toString()
+//                                editor.putString(PHONENUMBER, customerState.phoneNumber)
+//                                editor.apply()
+                                driverProfileImageUrl = dataSnapshot.child("Profile").getValue().toString()
+
+                                carNumber = dataSnapshot.child("CarNumber").getValue().toString()
+                                carColor = dataSnapshot.child("CarColor").getValue().toString()
+                                carModel = dataSnapshot.child("CarModel").getValue().toString()
+                                driverId = dataSnapshot.child("Id").getValue().toString()
 
                             }
                         }
@@ -621,15 +717,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         callBtn.setVisibility(View.VISIBLE)
                         callBtn.setText("캣카독 부르기")
                         updateMap(lastKnownLocation)
-
-                        var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
-                        recordDB.child("customerId").setValue(userId)
-                        recordDB.child("carNumber").setValue(customerState.carInfo)
-                        recordDB.child("phoneNumber").setValue(customerState.phoneNumber)
-
-                        if (customerState.driverUserId != "null") {
-                            recordDB.child("driverId").setValue(customerState.driverUserId)
-                        }
 
                         matchText.visibility = View.INVISIBLE
 
@@ -786,22 +873,80 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         } else if (requestCode == CUSTOMERMAP_INTENT_CAMERA) {
             if(resultCode == Activity.RESULT_OK) {
-                val bundle = data!!.extras
-                val bitmap = bundle.get("data") as Bitmap
-                profileImageView.setImageBitmap(bitmap)
-                profileImageView.scaleType = ImageView.ScaleType.FIT_XY
+                profileImagefilePath = pictureUri
+                try{
+                    Glide.with(this@CustomerMapActivity).load(profileImagefilePath)
+                            .centerCrop()
+                            .bitmapTransform(CropCircleTransformation(this))
+                            .into(profileImageView)
+                    uploadImage()
+                } catch (e : IOException) {
+                    e.message
+                }
+
             }
         } else if (requestCode == CUSTOMERMAP_INTENT_CHOOSER) {
             if (resultCode == Activity.RESULT_OK) {
                 profileImagefilePath = data!!.data
                 try {
-                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, profileImagefilePath)
-                    profileImageView.setImageBitmap(bitmap)
-                    profileImageView.setScaleType(ImageView.ScaleType.FIT_XY)
+                    Glide.with(this@CustomerMapActivity).load(profileImagefilePath).centerCrop().bitmapTransform(CropCircleTransformation(this))
+                            .into(profileImageView)
+                    uploadImage()
                 } catch ( e: IOException) {
                     e.message
                 }
             }
+        }
+
+    }
+
+    //Profile Part
+    private fun invokeCamera() {
+        pictureUri = FileProvider.getUriForFile(
+                this@CustomerMapActivity,
+                applicationContext.packageName + ".provider",
+                createImageFile())
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri)
+
+        intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+        startActivityForResult(intent, CUSTOMERMAP_INTENT_CAMERA)
+    }
+
+    private fun createImageFile(): File {
+        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+
+        val sdf = SimpleDateFormat("yyyyMMdd_HHmmss")
+        var timeStamp = sdf.format(Date())
+
+        val imageFile = File(picturesDirectory, "picture" + timeStamp + ".jpg")
+        return imageFile
+    }
+
+
+    private fun uploadImage() {
+        if(Id != "") {
+            val progressDialog = ProgressDialog(this)
+            progressDialog.setTitle("잠시만 기다려주세요...")
+            progressDialog.show()
+            mStorage.child(Id).child("Profile").putFile(profileImagefilePath).addOnSuccessListener {
+                profileImageUrl = it.downloadUrl.toString()
+                customerDB.child(userId).child("Profile").setValue(profileImageUrl)
+
+                progressDialog.dismiss()
+            }
+                    .addOnFailureListener {
+                        progressDialog.dismiss();
+                        toast("업로드 실패")
+                    }
+                    .addOnProgressListener {
+                        var progress = (100 * it.bytesTransferred / it.totalByteCount).toInt()
+                        progressDialog.setMessage("$progress%" )
+                    }
+
         }
     }
 

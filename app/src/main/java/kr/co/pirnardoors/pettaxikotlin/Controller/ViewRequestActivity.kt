@@ -1,6 +1,7 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,31 +12,42 @@ import android.location.LocationManager
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
+import com.bumptech.glide.Glide
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.storage.FirebaseStorage
+import jp.wasabeef.glide.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.activity_view_request.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
+import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.text.SimpleDateFormat
 import java.util.*
 
 class ViewRequestActivity : AppCompatActivity() {
     lateinit var profileImagefilePath : Uri
+    lateinit var pictureUri : Uri
+    val mStorage = FirebaseStorage.getInstance().getReference()
+    val driverDB = FirebaseDatabase.getInstance().getReference("Driver")
+    var profileImageUrl = ""
     var request = ArrayList<String>()
     var requestUserId = ArrayList<String>()
     var requestDestinations = ArrayList<String>()
@@ -54,6 +66,7 @@ class ViewRequestActivity : AppCompatActivity() {
     var isPageOpen = false
     var reservationTime = ""
     var reserveResult = ""
+    var Id = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_request)
@@ -64,9 +77,35 @@ class ViewRequestActivity : AppCompatActivity() {
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, request)
         listView.adapter = adapter
 
-        driverUserId = FirebaseAuth.getInstance().currentUser?.uid
+        driverUserId = FirebaseAuth.getInstance().currentUser!!.uid
+        Id = FirebaseAuth.getInstance().currentUser!!.email!!
 
 
+        //Get Profile info from firebase
+
+        driverDB.addValueEventListener(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError?) {
+                if(p0 != null)p0.message
+            }
+
+            override fun onDataChange(dataSnapshot: DataSnapshot?) {
+                if(dataSnapshot != null) {
+                    profileImageUrl = dataSnapshot.child(driverUserId).child("Profile").getValue().toString()
+                    if(profileImageUrl != "") {
+                        Glide.with(this@ViewRequestActivity).load(profileImageUrl)
+                                .centerCrop()
+                                .bitmapTransform(CropCircleTransformation(this@ViewRequestActivity))
+                                .into(profileImageView)
+                    } else {
+                        Glide.with(this@ViewRequestActivity).load(R.drawable.profile)
+                                .centerCrop()
+                                .bitmapTransform(CropCircleTransformation(this@ViewRequestActivity))
+                                .into(profileImageView)
+                    }
+                    Log.d("PROFILE", profileImageUrl)
+                }
+            }
+        })
         // Find driver location
         if (locationManager == null) {
             locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -243,18 +282,26 @@ class ViewRequestActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == CUSTOMERMAP_INTENT_CAMERA) {
             if(resultCode == Activity.RESULT_OK) {
-                val bundle = data!!.extras
-                val bitmap = bundle.get("data") as Bitmap
-                profileImageView.setImageBitmap(bitmap)
-                profileImageView.scaleType = ImageView.ScaleType.FIT_XY
+                profileImagefilePath = pictureUri
+                try{
+                    Glide.with(this@ViewRequestActivity).load(profileImagefilePath)
+                            .centerCrop()
+                            .bitmapTransform(CropCircleTransformation(this))
+                            .into(profileImageView)
+                    uploadImage()
+                } catch (e : IOException) {
+                    e.message
+                }
             }
         } else if (requestCode == CUSTOMERMAP_INTENT_CHOOSER) {
             if (resultCode == Activity.RESULT_OK) {
                 profileImagefilePath = data!!.data
                 try {
-                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, profileImagefilePath)
-                    profileImageView.setImageBitmap(bitmap)
-                    profileImageView.setScaleType(ImageView.ScaleType.FIT_XY)
+                    Glide.with(this@ViewRequestActivity)
+                            .load(profileImagefilePath).centerCrop()
+                            .bitmapTransform(CropCircleTransformation(this))
+                            .into(profileImageView)
+                    uploadImage()
                 } catch ( e: IOException) {
                     e.message
                 }
@@ -366,4 +413,54 @@ class ViewRequestActivity : AppCompatActivity() {
         }
         return 0
     }
+    //Profile Part
+    private fun invokeCamera() {
+        pictureUri = FileProvider.getUriForFile(
+                this@ViewRequestActivity,
+                applicationContext.packageName + ".provider",
+                createImageFile())
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri)
+
+        intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
+        startActivityForResult(intent, CUSTOMERMAP_INTENT_CAMERA)
+    }
+
+    private fun createImageFile(): File {
+        val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+
+        val sdf = SimpleDateFormat("yyyyMMdd_HHmmss")
+        var timeStamp = sdf.format(Date())
+
+        val imageFile = File(picturesDirectory, "picture" + timeStamp + ".jpg")
+        return imageFile
+    }
+
+
+    private fun uploadImage() {
+        if(Id != "") {
+            val progressDialog = ProgressDialog(this)
+            progressDialog.setTitle("잠시만 기다려주세요...")
+            progressDialog.show()
+            mStorage.child(Id).child("Profile").putFile(profileImagefilePath).addOnSuccessListener {
+                profileImageUrl = it.downloadUrl.toString()
+                driverDB.child(driverUserId).child("Profile").setValue(profileImageUrl)
+
+                progressDialog.dismiss()
+            }
+                    .addOnFailureListener {
+                        progressDialog.dismiss();
+                        toast("업로드 실패")
+                    }
+                    .addOnProgressListener {
+                        var progress = (100 * it.bytesTransferred / it.totalByteCount).toInt()
+                        progressDialog.setMessage("$progress%" )
+                    }
+
+        }
+    }
+
 }
