@@ -70,7 +70,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var profileImageUrl = ""
     lateinit var pictureUri : Uri
     lateinit var profileImagefilePath: Uri
-
+///
+    val fragmentManager = supportFragmentManager
     var carNumber = ""
     var carColor = ""
     var carModel = ""
@@ -544,6 +545,13 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         editor.apply()
 
         // Show Profile image bigger in Fragment
+        profileImageView.setOnClickListener {
+            val transaction = fragmentManager.beginTransaction()
+            val profileImageViewFragment = ProfileImageFragment()
+            transaction.replace(R.id.profileHolder, profileImageViewFragment)
+            transaction.addToBackStack(null)
+            transaction.commit()
+        }
         // MenuLayout setting!
 
         imageSelectBtn.setOnClickListener {
@@ -624,6 +632,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun reincarnation() {
 
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        var editor = sharedPreferences.edit()
         customerState.requestActive = sharedPreferences.getBoolean(REQUEST_ACTIVE, false)
         customerState.driverActive = sharedPreferences.getBoolean(DRIVER_ACTIVE, false)
         customerState.driverUserId = sharedPreferences.getString(DRIVER_USERID, "")
@@ -633,6 +642,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if(customerState.requestActive == false) {
             destinationText.text = "목적지를 설정해주세요."
             departureText.text = "출발지를 설정해주세요."
+            editor.putBoolean(ALARM_ALERTED, false)
         } else {
             destinationText.text = sharedPreferences.getString(DESTINATION, "")
             departureText.text = sharedPreferences.getString(DEPARTURE, "")
