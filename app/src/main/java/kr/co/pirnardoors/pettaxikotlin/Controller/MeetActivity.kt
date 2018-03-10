@@ -40,7 +40,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var timeStamp = System.currentTimeMillis()/1000;
     var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
-    val customerDB = FirebaseDatabase.getInstance().getReference("Request")
+    val requestDB = FirebaseDatabase.getInstance().getReference("Request")
 
 
     var carNumber = "1"
@@ -103,13 +103,13 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             caclulateWage()
 
 
+
             recordDB.child("CustomerId").setValue(userId)
             recordDB.child("CarNumber").setValue(carNumber)
             recordDB.child("PhoneNumber").setValue("")
             recordDB.child("Wage").setValue(wage.toString())
             recordDB.child("Distance").setValue(String.format("%.2f", distanceKm))
-
-
+            requestDB.child(userId).child("TD").setValue("true")
             if (driverUserId != "null") {
                 recordDB.child("DriverId").setValue(driverUserId)
                 driverDB.child(driverUserId).child("TimeStamp").setValue(timeStamp.toString())
@@ -211,7 +211,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        customerDB.child(userId).addValueEventListener(object : ValueEventListener{
+        requestDB.child(userId).addValueEventListener(object : ValueEventListener{
             override fun onCancelled(err: DatabaseError?) {
                 if(err != null) {
                     err.message

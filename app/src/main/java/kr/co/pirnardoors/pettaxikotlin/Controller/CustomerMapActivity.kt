@@ -448,6 +448,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     requestDB.child(userId).child("DestinationLongitude").setValue(destinationLongitude)
                                     requestDB.child(userId).child("Reservation").setValue(calendar.time.toString())
                                     requestDB.child(userId).child("DD").setValue("false")
+                                    requestDB.child(userId).child("TD").setValue("false")
                                     departure = departureText.text.toString()
                                     destination = destinationText.text.toString()
                                     editor.putString(DEPARTURE, departure)
@@ -542,6 +543,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         editor.apply()
 
+        // Show Profile image bigger in Fragment
         // MenuLayout setting!
 
         imageSelectBtn.setOnClickListener {
@@ -613,6 +615,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         notificationManager.notify(ALARM_BROADCAST, builder.build())
         alarmAlerted = true
         editor.putBoolean(ALARM_ALERTED, alarmAlerted)
+        editor.apply()
 
 
     }
