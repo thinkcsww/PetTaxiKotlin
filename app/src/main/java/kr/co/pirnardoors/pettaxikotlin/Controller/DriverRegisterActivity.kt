@@ -14,11 +14,16 @@ import kotlinx.android.synthetic.main.activity_driver_register.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import java.util.*
 
 class DriverRegisterActivity : AppCompatActivity() {
     val handler = Handler()
     var authStateListener = FirebaseAuth.AuthStateListener { }
     val auth = FirebaseAuth.getInstance()
+    val calendar = Calendar.getInstance()
+    var year = calendar.get(Calendar.YEAR).toString()
+    var month = (calendar.get(Calendar.MONTH) + 1).toString()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_register)
@@ -55,8 +60,10 @@ class DriverRegisterActivity : AppCompatActivity() {
                         database.child(userId).child("ReadyToTest").setValue("false")
                         database.child(userId).child("Departure").setValue("false")
                         database.child(userId).child("Profile").setValue("")
-                        database.child(userId).child("DriveTime").setValue("0")
-                        database.child(userId).child("Earn").setValue("0")
+                        database.child(userId).child("TimeStamp").setValue("")
+                        database.child(userId).child(year + month).child("DriveTime").setValue("0")
+                        database.child(userId).child(year + month).child("Earn").setValue("0")
+
                         val intent = Intent(this@DriverRegisterActivity, DriverAuthorizingActivity::class.java)
                         startActivity(intent)
                         finish()

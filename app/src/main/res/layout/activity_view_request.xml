@@ -99,7 +99,7 @@
             android:id="@+id/textView28"
             android:layout_width="0dp"
             android:layout_height="54dp"
-            android:background="@drawable/yellow_radius"
+            android:background="@drawable/blue_radius"
             android:fontFamily="@font/marko_one"
             android:paddingTop="10dp"
             android:text="PROFILE"
@@ -129,7 +129,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:background="@drawable/catcardog_button"
+            android:background="@color/blue"
             android:fontFamily="sans-serif"
             android:text="고객센터"
             android:textColor="@color/cardview_light_background"
@@ -144,12 +144,29 @@
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:background="@drawable/catcardog_button"
+            android:background="@color/blue"
             android:fontFamily="sans-serif"
             android:text="공지사항"
             android:textColor="@color/cardview_light_background"
             app:layout_constraintBottom_toTopOf="@+id/customerServiceBtn"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/monthlyDataBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:background="@color/blue"
+            android:fontFamily="sans-serif"
+            android:text="월간보고"
+            android:textColor="@color/cardview_light_background"
+            app:layout_constraintBottom_toTopOf="@+id/noticeBtn"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent" />
 
         <Button
@@ -159,7 +176,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:background="@drawable/catcardog_button"
+            android:background="@color/blue"
             android:fontFamily="sans-serif"
             android:text="로그아웃"
             android:textColor="@color/cardview_light_background"
@@ -178,6 +195,7 @@
             android:textColor="@color/cardview_dark_background"
             android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/profileImageView" />
 
@@ -187,13 +205,24 @@
             android:layout_height="30dp"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:background="@drawable/white_circle"
+            android:background="@drawable/blue_circle"
             android:padding="5dp"
             app:layout_constraintBottom_toBottomOf="@+id/profileImageView"
             app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/choose_image" />
+            app:srcCompat="@android:drawable/ic_menu_camera" />
+
     </android.support.constraint.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/profileHolder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
 
 
 </android.support.constraint.ConstraintLayout>

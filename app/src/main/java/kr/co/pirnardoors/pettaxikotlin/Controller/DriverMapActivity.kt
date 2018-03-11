@@ -47,18 +47,20 @@ import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.toast
-import java.util.ArrayList
 import com.kakao.kakaonavi.KakaoNaviParams
 import com.kakao.kakaonavi.KakaoNaviService
 import kr.co.pirnardoors.pettaxikotlin.R.id.departureBtn
 import kr.co.pirnardoors.pettaxikotlin.R.id.toDestinationBtn
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import java.io.IOException
+import java.util.*
 
 
 class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
-
+    var calendar = Calendar.getInstance()
+    var year = calendar.get(Calendar.YEAR).toString()
+    var month = (calendar.get(Calendar.MONTH) + 1).toString()
     val recordDB = FirebaseDatabase.getInstance().getReference("Record")
     lateinit var mMap: GoogleMap
     var distance = ""
@@ -71,7 +73,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var requestLocation : LatLng? = null
     var requestDestination : String? = ""
     var requestUserId = ""
-    var driverUserId = ""
+    var driverUserId = FirebaseAuth.getInstance().currentUser!!.uid
     var destinationDatabase = FirebaseDatabase.getInstance().getReference("Request")
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
     lateinit var myRunnable : Runnable
@@ -110,9 +112,9 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                          if (step1 == true && step2 == true) {
                              runOnUiThread(object : Runnable {
                                  override fun run() {
-                                     if (customerToDestination == true) {
-                                         activityOn = false
-                                         getFinalInformationForDriver()
+                                     getFinalInformationForDriver()
+                                     if(customerToDestination == true && step3 == true) {
+                                         showFinalAlertDialog()
                                      }
                                      Log.d("WHATTHEHELL", "나는 살아있다!!")
                                  }
@@ -186,6 +188,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         destinationLatitude = dataSnapshot.child(requestUserId).child("DestinationLatitude").getValue().toString().toDouble()
                         destinationLongitude = dataSnapshot.child(requestUserId).child("DestinationLongitude").getValue().toString().toDouble()
                         customerToDestination = dataSnapshot.child(requestUserId).child("TD").getValue().toString().toBoolean()
+                        editor.putBoolean(CUSTOMER_TO_DESTINATION, customerToDestination)
                         editor.putString(DESTINATION_LATITUDE, destinationLatitude.toString())
                         editor.putString(DESTINATION_LONGITUDE, destinationLongitude.toString())
                         editor.apply()
@@ -325,7 +328,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 transaction.addToBackStack(null)
                 transaction.commit()
                 toDestinationBtn.visibility = View.GONE
-                showFinalAlertDialog()
                 handler.removeCallbacks(myRunnable)
             }
 
@@ -335,21 +337,19 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     } // Oncreate finish
 
     private fun getFinalInformationForDriver() {
-        activityOn = false
-        Log.d("WHATTHEHELL", driverUserId)
         driverDB.child(driverUserId).addValueEventListener(object : ValueEventListener{
             override fun onCancelled(p0: DatabaseError?) {
                 if (p0 != null) p0.message
             }
-
             override fun onDataChange(dataSnapshot: DataSnapshot?) {
                 if (dataSnapshot != null) {
                     timeStamp = dataSnapshot.child("TimeStamp").getValue().toString()
-                    Log.d("WHATTHEHELL", timeStamp)
-                    driveTime = dataSnapshot.child("DriveTime").getValue().toString().toInt()
-                    Log.d("WHATTHEHELL", driveTime.toString())
-                    earn = dataSnapshot.child("Earn").getValue().toString().toInt()
+                    Log.d("WHATTHE timestamp : ", timeStamp + "??")
+                    driveTime = dataSnapshot.child(year + month).child("DriveTime").getValue().toString().toInt()
+                    Log.d("WHATTHE driveTime ", driveTime.toString())
+                    earn = dataSnapshot.child(year + month).child("Earn").getValue().toString().toInt()
                     if(timeStamp != "") {
+                        customerToDestination = true
                         recordDB.addValueEventListener(object: ValueEventListener{
                             override fun onCancelled(p0: DatabaseError?) {
                                 if (p0 != null) p0.message
@@ -357,8 +357,10 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                             override fun onDataChange(dataSnapshot: DataSnapshot?) {
                                 if (dataSnapshot != null) {
-                                    wage = dataSnapshot.child(timeStamp).child("Wage").getValue().toString().toInt()
-                                    distance = dataSnapshot.child(timeStamp).child("Distance").getValue().toString()
+                                    if(timeStamp != "") {
+                                        wage = dataSnapshot.child(timeStamp).child("Wage").getValue().toString().toInt()
+                                        distance = dataSnapshot.child(timeStamp).child("Distance").getValue().toString()
+                                    }
                                 }
                             }
                         })
@@ -381,6 +383,10 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val earnTextView : TextView = finishDialogView.findViewById(R.id.earnTextView)
         val dialog = finishAlertDialog.create()
 
+        activityOn = false
+        calendar = Calendar.getInstance()
+        year = calendar.get(Calendar.YEAR).toString()
+        month = (calendar.get(Calendar.MONTH) + 1).toString()
 
         distanceTextView.text = "운행거리 : ${distance}"
         wageTextView.text = "운행요금(수수료 처리 전) : ${wage}"
@@ -389,12 +395,14 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         dialog.show()
         okBtn.setOnClickListener {
 
-            driverDB.child(driverUserId).child("DriveTime").setValue(driveTime + 1)
-            driverDB.child(driverUserId).child("Earn").setValue(earn + wage)
-            step1 = false; step2 = false; step3 = false;
+            driverDB.child(driverUserId).child(year + month).child("DriveTime").setValue(driveTime + 1)
+            driverDB.child(driverUserId).child(year + month).child("Earn").setValue(earn + wage)
+            driverDB.child(driverUserId).child("TimeStamp").setValue("")
+            step1 = false; step2 = false; step3 = false; customerToDestination = false
             editor.putBoolean(DRIVERMAP_STEP1, step1)
             editor.putBoolean(DRIVERMAP_STEP2, step2)
             editor.putBoolean(DRIVERMAP_STEP3, step3)
+            editor.putBoolean(CUSTOMER_TO_DESTINATION, customerToDestination)
             editor.putString(DRIVER_MAP_REQUEST_USER_ID, "")
             editor.apply()
             dialog.dismiss()
@@ -402,6 +410,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(intent)
             finish()
             return@setOnClickListener
+
         }
 
     }

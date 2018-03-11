@@ -9,7 +9,7 @@ const val READY_TO_TEST = "readyToTest"
 /**
  * Common
  */
-
+const val PROFILEURL = "profileUrl"
 const val DESTINATION = "destination"
 const val EXTRA_CUSTOMER = "customer"
 const val DRIVER_LICENSE_AUTHORIZED = "driverLicenseAuthorized"
@@ -55,6 +55,7 @@ const val DRIVERMAP_DRIVER_LATITUDE = "driverMapDriverLatitude"
 const val DRIVERMAP_DRIVER_LONGITUDE = "driverMapDriverLongitude"
 const val DRIVERMAP_REQUEST_LATITUDE = "driverMapCustomerLatitude"
 const val DRIVERMAP_REQUEST_LONGITUDE = "driverMapCustomerLongitude"
+const val CUSTOMER_TO_DESTINATION = "customerToDestination"
 //DriverAuthorActivity
 const val LICENSE_PARCELABLE = "licenseParcelable"
 const val LICENSE_IMAGE_INTENT = 3

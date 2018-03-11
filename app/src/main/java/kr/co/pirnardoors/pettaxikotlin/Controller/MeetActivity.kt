@@ -120,6 +120,9 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             meetActivityACtive = false
             editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
             editor.putBoolean(MEET_ACTIVITY_ACTIVE, meetActivityACtive)
+            editor.putBoolean(DRIVER_MATCHED_ALARM, false)
+            editor.putBoolean(ALARM_ALERTED, false)
+
             editor.apply()
         }
         receiveDestinationInfo()

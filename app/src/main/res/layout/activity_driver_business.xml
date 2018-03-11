@@ -155,7 +155,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:background="@drawable/circle_menu_btn"
+            android:background="@drawable/customer_menu_btn"
             android:padding="8dp"
             android:text="설명보기"
             android:textColor="@color/cardview_light_background"

@@ -14,12 +14,14 @@
 
         <TextView
             android:id="@+id/textView13"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_width="0dp"
+            android:layout_height="73dp"
+            android:background="@color/cardview_dark_background"
             android:fontFamily="@font/marko_one"
+            android:paddingTop="16dp"
             android:text="사업자 등록 설명"
-            android:textColor="@color/com_kakao_button_text_press"
+            android:textAlignment="center"
+            android:textColor="@color/cardview_light_background"
             android:textSize="24sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.481"
@@ -43,25 +45,42 @@
 
         <Button
             android:id="@+id/nextBtn"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="32dp"
-            android:background="@drawable/left_arrow"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/ic_close_black_24dp"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginRight="32dp" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/backBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
-            android:text="Button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="32dp"
+            android:background="@drawable/ic_arrow_back_black_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout11"
+            android:layout_width="395dp"
+            android:layout_height="433dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginLeft="8dp" />
+            app:layout_constraintTop_toBottomOf="@+id/textView13">
+
+            <TextView
+                android:id="@+id/textView39"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1면에서 작성하신 서류를 해당 관할 세무서에 신청하면 완료됩니다. \n 소요시간은 짧게는 1일 ~ 3일이 소요될 수 있습니다." />
+        </LinearLayout>
 
     </android.support.constraint.ConstraintLayout>
 </FrameLayout>

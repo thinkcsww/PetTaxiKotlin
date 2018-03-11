@@ -6,7 +6,8 @@
     <color name="hotBlue">#0101DF</color>
     <color name="hotRed">#FF0040</color>
     <color name="blue">#4298da</color>
-    <color name="pink">#ea6baa</color>
+    <color name="pink">#ff2d96</color>
     <color name="yellow">#938f2b</color>
     <color name="realYellow">#ffff00</color>
+    <color name="light_pink">#ff5387</color>
 </resources>

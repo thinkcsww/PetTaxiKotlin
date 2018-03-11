@@ -13,6 +13,7 @@ import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -43,6 +44,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ViewRequestActivity : AppCompatActivity() {
+    val calendar = Calendar.getInstance()
+    var year = calendar.get(Calendar.YEAR).toString()
+    var month = (calendar.get(Calendar.MONTH) + 1).toString()
     lateinit var profileImagefilePath : Uri
     lateinit var pictureUri : Uri
     val mStorage = FirebaseStorage.getInstance().getReference()
@@ -52,6 +56,7 @@ class ViewRequestActivity : AppCompatActivity() {
     var requestUserId = ArrayList<String>()
     var requestDestinations = ArrayList<String>()
     //var requestTypes = ArrayList<String>()
+    lateinit var profileImageViewFragment : ProfileImageFragment
     lateinit var translateAnimRight : Animation
     lateinit var translateAnimLeft : Animation
     var requestNumbers = ArrayList<String>()
@@ -63,10 +68,12 @@ class ViewRequestActivity : AppCompatActivity() {
     var lastKnownLocation : Location? = null
     var adapter :ArrayAdapter<String>? = null
     var driverUserId : String? = ""
+    var profileFragmentIsOn = false
     var isPageOpen = false
     var reservationTime = ""
     var reserveResult = ""
     var Id = ""
+    val fragmentManager = supportFragmentManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_request)
@@ -106,6 +113,8 @@ class ViewRequestActivity : AppCompatActivity() {
                 }
             }
         })
+
+
         // Find driver location
         if (locationManager == null) {
             locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -241,6 +250,44 @@ class ViewRequestActivity : AppCompatActivity() {
 
             dialog.show()
         }
+
+        //profile ImageView Fragment to show bigger size
+
+        profileImageView.setOnClickListener {
+            profileFragmentIsOn = true
+            val transaction = fragmentManager.beginTransaction()
+            profileImageViewFragment = ProfileImageFragment()
+            val bundle = Bundle()
+            bundle.putString(PROFILEURL, profileImageUrl)
+            profileImageViewFragment.arguments = bundle
+            transaction.replace(R.id.profileHolder, profileImageViewFragment)
+            transaction.addToBackStack(null)
+            transaction.commit()
+        }
+
+        //Make storage for next month !
+        if(month.toInt() != 12) {
+            driverDB.child(driverUserId).child(year + (month.toInt() + 1).toString()).child("DriveTime").setValue(0)
+            driverDB.child(driverUserId).child(year + (month.toInt() + 1).toString()).child("Earn").setValue(0)
+        } else if (month.toInt() == 12) {
+            driverDB.child(driverUserId).child((year.toInt() + 1).toString() + "1").child("DriveTime").setValue(0)
+            driverDB.child(driverUserId).child((year.toInt() + 1).toString() + "1").child("Earn").setValue(0)
+        }
+
+        //Button to show how much money i earn this month
+        monthlyDataBtn.setOnClickListener {
+            val monthlyDataAlertDialog = AlertDialog.Builder(this@ViewRequestActivity)
+            val monthlyDataDialogView = layoutInflater.inflate(R.layout.layout_monthly_data, null)
+            monthlyDataAlertDialog.setView(monthlyDataDialogView)
+            val okBtn : Button = monthlyDataDialogView.findViewById(R.id.okBtn)
+            val dialog = monthlyDataAlertDialog.create()
+
+            okBtn.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
+        }
+
     }
 
     //oncreate finish
@@ -270,7 +317,12 @@ class ViewRequestActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if(isPageOpen == true) {
+        if (profileFragmentIsOn == true && isPageOpen == true) {
+            profileFragmentIsOn = false
+            val transaction = fragmentManager.beginTransaction()
+            transaction.remove(profileImageViewFragment)
+            transaction.commit()
+        } else if(isPageOpen == true) {
             menuLayout.startAnimation(translateAnimLeft)
             menuBtn.visibility = View.VISIBLE
         } else {
@@ -448,7 +500,6 @@ class ViewRequestActivity : AppCompatActivity() {
             mStorage.child(Id).child("Profile").putFile(profileImagefilePath).addOnSuccessListener {
                 profileImageUrl = it.downloadUrl.toString()
                 driverDB.child(driverUserId).child("Profile").setValue(profileImageUrl)
-
                 progressDialog.dismiss()
             }
                     .addOnFailureListener {

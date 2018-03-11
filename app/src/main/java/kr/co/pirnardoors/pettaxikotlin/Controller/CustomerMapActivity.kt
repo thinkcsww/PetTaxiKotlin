@@ -14,8 +14,10 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
+import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.provider.Settings
+import android.support.constraint.ConstraintLayout
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
@@ -83,6 +85,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     val TAG = "CustomerMapActivity"
     private lateinit var mMap: GoogleMap
     var handler = Handler()
+    lateinit var profileImageViewFragment : ProfileImageFragment
     lateinit var myRunnable: Runnable
     lateinit var translateAnimRight : Animation
     lateinit var translateAnimLeft : Animation
@@ -107,6 +110,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var customerMapActive = false
     var year = 0; var month = 0; var day = 0 ; var hour = 0; var minute = 0
     var currentYear = 0; var currentMonth = 0; var currentDay = 0 ; var currentHour = 0; var currentMinute = 0
+    var profileFragmentIsOn = false
 
     var calendar = Calendar.getInstance()
     var customerState = Customer(false, false,
@@ -200,7 +204,18 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 val driverCarNumberTextView : TextView = driverInfoDialogView.findViewById(R.id.driverCarNumberTextView)
                 val driverCarTextView : TextView = driverInfoDialogView.findViewById(R.id.driverCarTextView)
                 val driverIdTextView : TextView = driverInfoDialogView.findViewById(R.id.driverIdTextView)
-
+                driverInfoDialogView.setOnClickListener {
+                    dialog.dismiss()
+                    profileFragmentIsOn = true
+                    val transaction = fragmentManager.beginTransaction()
+                    profileImageViewFragment = ProfileImageFragment()
+                    val bundle = Bundle()
+                    bundle.putString(PROFILEURL, driverProfileImageUrl)
+                    profileImageViewFragment.arguments = bundle
+                    transaction.replace(R.id.profileHolder, profileImageViewFragment)
+                    transaction.addToBackStack(null)
+                    transaction.commit()
+                }
                 if (driverProfileImageUrl != "") {
                     Glide.with(this@CustomerMapActivity).load(driverProfileImageUrl)
                             .centerCrop()
@@ -213,7 +228,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             .into(driverProfileImageView)
                 }
                 driverIdTextView.text = driverId
-                driverCarTextView.text = carColor + carModel
+                driverCarTextView.text = carColor + " " + carModel
                 driverCarNumberTextView.text = carNumber
                 okBtn.setOnClickListener {
 
@@ -509,6 +524,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     editor.putString(DRIVER_USERID, "")
                     editor.putString(DEPARTURE, "출발지를 설정해주세요.")
                     editor.putString(DESTINATION, "목적지를 설정해주세요.")
+                    editor.putBoolean(DRIVER_MATCHED_ALARM, false)
+                    editor.putBoolean(ALARM_ALERTED, false)
                     editor.apply()
                     destinationText.text = "목적지를 설정해주세요."
                     departureText.text = "출발지를 설정해주세요."
@@ -546,8 +563,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Show Profile image bigger in Fragment
         profileImageView.setOnClickListener {
+            profileFragmentIsOn = true
             val transaction = fragmentManager.beginTransaction()
-            val profileImageViewFragment = ProfileImageFragment()
+            profileImageViewFragment = ProfileImageFragment()
+            val bundle = Bundle()
+            bundle.putString(PROFILEURL, profileImageUrl)
+            profileImageViewFragment.arguments = bundle
             transaction.replace(R.id.profileHolder, profileImageViewFragment)
             transaction.addToBackStack(null)
             transaction.commit()
@@ -639,6 +660,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         customerState.number = sharedPreferences.getString(BOARDING_NUMBER, "")
         customerState.carInfo = sharedPreferences.getString(CAR_INFO, "")
         alarmAlerted = sharedPreferences.getBoolean(ALARM_ALERTED, false)
+        driverMatchedAlarm = sharedPreferences.getBoolean(DRIVER_MATCHED_ALARM, false)
         if(customerState.requestActive == false) {
             destinationText.text = "목적지를 설정해주세요."
             departureText.text = "출발지를 설정해주세요."
@@ -756,7 +778,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             if(driverMatchedAlarm == false) {
                 driverMatchedAlarm = true
-
+                editor.putBoolean(DRIVER_MATCHED_ALARM, driverMatchedAlarm)
+                editor.apply()
                 //Alarm for driverMatched
                 val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 val intent = Intent(this@CustomerMapActivity, CustomerMapActivity::class.java)
@@ -1053,7 +1076,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onBackPressed() {
-        if(isPageOpen == true) {
+        if (profileFragmentIsOn == true && isPageOpen == true) {
+            profileFragmentIsOn = false
+            val transaction = fragmentManager.beginTransaction()
+            transaction.remove(profileImageViewFragment)
+            transaction.commit()
+        } else if(isPageOpen == true) {
             menuLayout.startAnimation(translateAnimLeft)
             menuBtn.visibility = View.VISIBLE
         } else {
