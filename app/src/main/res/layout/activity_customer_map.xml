@@ -1,4 +1,4 @@
-<RelativeLayout
+<android.support.constraint.ConstraintLayout
 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -13,12 +13,36 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignBottom="@+id/matchText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_above="@+id/callBtn"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        map:layout_constraintBottom_toTopOf="@+id/callBtn"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/curLocationTextView"
         tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.CustomerMapActivity" />
+
+    <TextView
+        android:id="@+id/textView41"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/pink"
+        android:fontFamily="@font/marko_one"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:text="CatCarDog"
+        android:textAlignment="center"
+        android:textColor="@color/cardview_light_background"
+        android:textSize="30sp"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintHorizontal_bias="0.0"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/matchText"
@@ -27,38 +51,45 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:background="@drawable/text_background"
+        android:background="@color/pink"
         android:textAlignment="center"
-        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textColor="@color/cardview_light_background"
         android:textSize="30sp"
-        android:visibility="invisible" />
+        android:visibility="gone"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/callBtn"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="57dp"
-        android:background="@drawable/catcardog_button"
+        android:background="@color/pink"
         android:text="캣카독 부르기"
-        android:textColor="@color/cardview_light_background" />
+        android:textColor="@color/cardview_light_background"
+        android:textSize="18sp"
+        android:visibility="visible"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/menuBtn"
         android:layout_width="55dp"
         android:layout_height="55dp"
+        android:layout_above="@+id/callBtn"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/callBtn"
-        android:layout_marginEnd="30dp"
-        android:layout_marginRight="30dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/customer_menu_btn"
         android:text="+"
         android:textColor="@color/cardview_light_background"
         android:textSize="36sp"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="27dp" />
+        map:layout_constraintBottom_toBottomOf="@+id/map"
+        map:layout_constraintEnd_toEndOf="@+id/map" />
 
     <!--<Button-->
         <!--android:id="@+id/reserveBtn"-->
@@ -75,9 +106,12 @@
         android:id="@+id/linearLayout9"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/map"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:orientation="vertical">
+        android:layout_below="@+id/textView41"
+        android:orientation="vertical"
+        map:layout_constraintTop_toBottomOf="@+id/textView41">
 
         <TextView
             android:id="@+id/departureText"
@@ -87,8 +121,9 @@
             android:layout_alignParentTop="true"
             android:layout_alignRight="@+id/linearLayout9"
             android:layout_margin="2dp"
-            android:background="@drawable/black_border"
+            android:background="@drawable/transparent_bottom_border"
             android:fontFamily="@font/alfa_slab_one"
+            android:paddingBottom="4dp"
             android:text="출발지를 설정해주세요"
             android:textAlignment="center"
             android:textColor="?attr/actionModeSplitBackground"
@@ -103,8 +138,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_margin="2dp"
-            android:background="@drawable/black_border"
+            android:background="@drawable/transparent_bottom_border"
             android:fontFamily="@font/alfa_slab_one"
+            android:paddingBottom="4dp"
             android:text="목적지를 설정해주세요"
             android:textAlignment="center"
             android:textColor="?attr/actionModeSplitBackground"
@@ -233,6 +269,19 @@
 
     </android.support.constraint.ConstraintLayout>
 
+    <TextView
+        android:id="@+id/curLocationTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/light_pink"
+        android:text="주소 검색중..."
+        android:textAlignment="center"
+        android:textColor="@color/cardview_light_background"
+        android:textSize="20sp"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/linearLayout9" />
+
     <FrameLayout
         android:id="@+id/profileHolder"
         android:layout_width="match_parent"
@@ -244,4 +293,4 @@
     </FrameLayout>
 
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

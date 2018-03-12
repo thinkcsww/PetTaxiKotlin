@@ -9,5 +9,6 @@
     <color name="pink">#ff2d96</color>
     <color name="yellow">#938f2b</color>
     <color name="realYellow">#ffff00</color>
-    <color name="light_pink">#ff5387</color>
+    <color name="light_pink">#64ff5387</color>
+    <color name="light_blue">#6ab1e7</color>
 </resources>

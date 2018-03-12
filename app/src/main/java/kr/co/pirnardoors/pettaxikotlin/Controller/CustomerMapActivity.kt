@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
+import android.location.*
 import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
@@ -73,6 +71,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var pictureUri : Uri
     lateinit var profileImagefilePath: Uri
 ///
+    lateinit var geocoder : Geocoder
     val fragmentManager = supportFragmentManager
     var carNumber = ""
     var carColor = ""
@@ -122,7 +121,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
 
-
+        geocoder = Geocoder(this@CustomerMapActivity, Locale.getDefault())
         //get current date, year , month , hour, day
         getCurrentDate()
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -1051,6 +1050,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             mMap.clear()
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
             mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
+            val curAddress : List<Address> = geocoder.getFromLocation(lastKnownLocation.latitude, lastKnownLocation.longitude, 1)
+            Log.d("Address : : ", curAddress.get(0).getAddressLine(0))
+            curLocationTextView.text = curAddress.get(0).getAddressLine(0).substring(5)
         }
 
 
