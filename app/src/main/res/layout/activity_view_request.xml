@@ -30,18 +30,18 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <ImageView
-        android:id="@+id/imageView4"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/view_request" />
+    <!--<ImageView-->
+        <!--android:id="@+id/imageView4"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="0dp"-->
+        <!--android:scaleType="fitXY"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--app:layout_constraintHorizontal_bias="0.0"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintTop_toTopOf="parent"-->
+        <!--app:layout_constraintVertical_bias="1.0"-->
+        <!--app:srcCompat="@drawable/view_request" />-->
 
     <ListView
         android:id="@+id/listView"
@@ -98,7 +98,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginRight="100dp">
 
         <TextView
             android:id="@+id/textView28"
@@ -214,7 +215,8 @@
             android:padding="5dp"
             app:layout_constraintBottom_toBottomOf="@+id/profileImageView"
             app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@android:drawable/ic_menu_camera" />
+            app:srcCompat="@android:drawable/ic_menu_camera"
+            android:layout_marginRight="8dp" />
 
     </android.support.constraint.ConstraintLayout>
 

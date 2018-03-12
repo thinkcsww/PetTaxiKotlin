@@ -1,36 +1,25 @@
 package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.AlertDialog
-import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
-import android.view.ViewTreeObserver
-import android.webkit.CookieManager
-import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
-import com.firebase.geofire.GeoFire
-import com.firebase.geofire.GeoLocation
-import com.google.android.gms.common.api.GoogleApi
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.internal.IGoogleMapDelegate
 import com.google.android.gms.maps.model.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -45,12 +34,9 @@ import com.kakao.kakaonavi.options.VehicleType
 import kotlinx.android.synthetic.main.activity_driver_map.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
-import org.jetbrains.anko.alert
 import org.jetbrains.anko.toast
 import com.kakao.kakaonavi.KakaoNaviParams
 import com.kakao.kakaonavi.KakaoNaviService
-import kr.co.pirnardoors.pettaxikotlin.R.id.departureBtn
-import kr.co.pirnardoors.pettaxikotlin.R.id.toDestinationBtn
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import java.io.IOException
 import java.util.*
@@ -146,6 +132,9 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             editor.putString(DRIVERMAP_DRIVER_LONGITUDE, req.driverLongitude.toString())
             editor.apply()
             requestDestination = req.requestDestination
+            toCustomerTextView.text = "손님까지: ${req.requestDistance}km"
+            destinationTextView.text = "손님의 목적지: ${req.requestDestination.substring(5)}"
+            earnTextView.text = "예상 요금: ${caclulateWage()}"
         }
         if(step1 == true && step2 == false) {
             departureBtn.visibility = View.VISIBLE
@@ -546,6 +535,31 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.addMarker(MarkerOptions().position(requestLocation).title("당신의 위치입니다."))
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(requestLocation, 15f))*/
+    }
+
+    private fun caclulateWage() : Int {
+
+        var fare = 0
+        if (req.requestDistance<= 5.0) {
+            fare = 12500
+        } else if (req.requestDistance > 5.0 && req.requestDistance <= 7.5) {
+            fare = 15000
+        } else if (req.requestDistance > 7.5 && req.requestDistance <= 10.0) {
+            fare = 17500
+        } else if (req.requestDistance > 10.0 && req.requestDistance <= 12.5) {
+            fare = 20000
+        } else if (req.requestDistance > 12.5 && req.requestDistance <= 15.0) {
+            fare = 22500
+        } else if (req.requestDistance > 15.0 && req.requestDistance <= 17.5) {
+            fare = 25000
+        } else if (req.requestDistance > 17.5 && req.requestDistance <= 20.0) {
+            fare = 27500
+        } else if (req.requestDistance > 20.0 && req.requestDistance <= 22.5) {
+            fare = 30000
+        } else if (req.requestDistance > 22.5 && req.requestDistance <= 25.0) {
+            fare = 32500
+        }
+        return fare
     }
 
     override fun onDestroy() {

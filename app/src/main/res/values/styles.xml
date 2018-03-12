@@ -15,6 +15,10 @@
         <item name="buttonBarButtonStyle">@style/DialogButtonStyle</item>
     </style>
 
+    <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">#ffaaaf</item>
+    </style>
+
     // button's dialog style
     <style name="DialogButtonStyle" parent="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog">
         <item name="android:textColor">@color/colorPrimary</item>
