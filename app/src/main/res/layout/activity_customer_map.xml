@@ -8,22 +8,6 @@
     android:layout_height="match_parent"
     tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.CustomerMapActivity">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_above="@+id/callBtn"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        map:layout_constraintBottom_toTopOf="@+id/callBtn"
-        map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintStart_toStartOf="parent"
-        map:layout_constraintTop_toBottomOf="@+id/curLocationTextView"
-        tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.CustomerMapActivity" />
-
     <TextView
         android:id="@+id/textView41"
         android:layout_width="match_parent"
@@ -60,20 +44,18 @@
         map:layout_constraintEnd_toEndOf="parent"
         map:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/callBtn"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/curLocationTextView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:background="@color/pink"
-        android:text="캣카독 부르기"
+        android:background="@color/light_pink"
+        android:text="주소 검색중..."
+        android:textAlignment="center"
         android:textColor="@color/cardview_light_background"
-        android:textSize="18sp"
-        android:visibility="visible"
-        map:layout_constraintBottom_toBottomOf="parent"
+        android:textSize="20sp"
         map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintStart_toStartOf="parent" />
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/linearLayout9" />
 
     <Button
         android:id="@+id/menuBtn"
@@ -102,6 +84,45 @@
         <!--android:text="시간예약"-->
         <!--android:textColor="@color/cardview_light_background" />-->
 
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_above="@+id/linearLayout1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        map:layout_constraintBottom_toTopOf="@+id/linearLayout1"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@+id/curLocationTextView"
+        tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.CustomerMapActivity" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/callBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_weight="1"
+            android:background="@color/pink"
+            android:foregroundGravity="top|bottom"
+            android:text="캣카독 부르기"
+            android:textColor="@color/cardview_light_background"
+            android:textSize="18sp"
+            android:visibility="visible"
+            tools:layout_editor_absoluteY="610dp" />
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/linearLayout9"
         android:layout_width="match_parent"
@@ -111,6 +132,8 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/textView41"
         android:orientation="vertical"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
         map:layout_constraintTop_toBottomOf="@+id/textView41">
 
         <TextView
@@ -269,26 +292,17 @@
 
     </android.support.constraint.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/curLocationTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/light_pink"
-        android:text="주소 검색중..."
-        android:textAlignment="center"
-        android:textColor="@color/cardview_light_background"
-        android:textSize="20sp"
-        map:layout_constraintEnd_toEndOf="parent"
-        map:layout_constraintStart_toStartOf="parent"
-        map:layout_constraintTop_toBottomOf="@+id/linearLayout9" />
-
     <FrameLayout
         android:id="@+id/profileHolder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true">
+        android:layout_alignParentTop="true"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
 

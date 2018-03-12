@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.activity_driver_login.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LOGON
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 
 class DriverLoginActivity : AppCompatActivity() {
@@ -52,6 +53,7 @@ class DriverLoginActivity : AppCompatActivity() {
             var user = FirebaseAuth.getInstance().currentUser
 
             if (user != null) {
+                editor.putBoolean(DRIVER_LOGON, true)
                 if(driverAuthorized == true) {
                     val intent = Intent(this, ViewRequestActivity::class.java)
                     startActivity(intent)

@@ -24,11 +24,14 @@ class WaitingAuthActivity : AppCompatActivity() {
     val driverDB = FirebaseDatabase.getInstance().getReference("Driver")
     var userId = FirebaseAuth.getInstance().currentUser!!.uid
     var driverAuthorized = false
+    var authChecked = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_waiting_auth)
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+
+
         driverDB.addValueEventListener(object :ValueEventListener{
             override fun onCancelled(p0: DatabaseError?) {
                 if(p0 != null) p0.message
@@ -37,20 +40,26 @@ class WaitingAuthActivity : AppCompatActivity() {
             override fun onDataChange(dataSnapshot: DataSnapshot?) {
                 if(dataSnapshot != null) {
                     driverAuthorized = dataSnapshot.child(userId).child("Auth").getValue().toString().toBoolean()
-                    if(driverAuthorized == true) {
+                    if(driverAuthorized == true && authChecked == false) {
+                        authChecked = true
                         editor.putBoolean(DRIVER_LICENSE_AUTHORIZED, true)
                         editor.apply()
+                        val intent = Intent(this@WaitingAuthActivity, ViewRequestActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                        return
+
                     }
                 }
             }
 
         })
-        if(driverAuthorized == true) {
-            val intent = Intent(this@WaitingAuthActivity, ViewRequestActivity::class.java)
-            startActivity(intent)
-            finish()
-            return
-        }
+//        if(driverAuthorized == true) {
+//            val intent = Intent(this@WaitingAuthActivity, ViewRequestActivity::class.java)
+//            startActivity(intent)
+//            finish()
+//            return
+//        }
 
         button3.setOnClickListener {
             auth.signOut()

@@ -4,7 +4,6 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.*
 import android.location.*
 import android.net.Uri
 import android.os.Build
@@ -12,15 +11,11 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
-import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.provider.Settings
-import android.support.constraint.ConstraintLayout
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.FileProvider
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.util.Log
@@ -29,7 +24,6 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.BitmapImageViewTarget
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.places.ui.PlacePicker
@@ -45,11 +39,9 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import jp.wasabeef.glide.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.activity_customer_map.*
-import kotlinx.android.synthetic.main.layout_driver_info.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
-import org.jetbrains.anko.find
 import org.jetbrains.anko.toast
 import java.io.File
 import java.io.IOException
@@ -97,7 +89,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var lastKnownLocation : Location
     var requestActive : Boolean = false
     var driverActive = false
-    var userId = FirebaseAuth.getInstance().currentUser?.uid
+    var userId = FirebaseAuth.getInstance().currentUser!!.uid
     var driverUserId : String? = ""
     val auth = FirebaseAuth.getInstance()
     var isPageOpen = false
@@ -132,34 +124,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         editor.putBoolean(CUSTOMER_LOGON, true)
         editor.apply()
-
-        //get ProfileUrl image from Firebase
-        customerDB.addValueEventListener(object: ValueEventListener{
-            override fun onCancelled(p0: DatabaseError?) {
-                if(p0 != null)p0.message
-            }
-
-            override fun onDataChange(dataSnapshot: DataSnapshot?) {
-                if(dataSnapshot != null) {
-                    profileImageUrl = dataSnapshot.child(userId).child("Profile").getValue().toString()
-                    if(profileImageUrl != "") {
-                        Glide.with(this@CustomerMapActivity).load(profileImageUrl)
-                                .centerCrop()
-                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
-                                .into(profileImageView)
-                    } else {
-                        Glide.with(this@CustomerMapActivity).load(R.drawable.profile)
-                                .centerCrop()
-                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
-                                .into(profileImageView)
-                    }
-                }
-            }
-        })
-
-
-
-
         var thread = Thread(object : Runnable {
                 override fun run() {
                     try {
@@ -306,7 +270,6 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             if (isPageOpen == false) {
                 menuLayout.startAnimation(translateAnimRight)
                 menuLayout.setVisibility(View.VISIBLE)
-                callBtn.visibility = View.INVISIBLE
                 menuBtn.visibility = View.INVISIBLE
             } else {
                 menuLayout.startAnimation(translateAnimLeft)
@@ -341,7 +304,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
 
                     val mBuilder = AlertDialog.Builder(this@CustomerMapActivity)
-                    val mView = layoutInflater.inflate(R.layout.layout_destination, null)
+                    val mView = layoutInflater.inflate(R.layout.layout_asking_info, null)
                     val numberSetTextView : TextView = mView.findViewById(R.id.numberSetTextView)
                     val numberTextView : TextView = mView.findViewById(R.id.numberTextView)
                    // var typeEditText : TextView = mView.findViewById(R.id.typeEditText)
@@ -553,12 +516,16 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             editor.putString(DRIVER_USERID, "")
             editor.putString(CAR_INFO, "")
             editor.putString(BOARDING_NUMBER, "")
-            editor.putBoolean(CUSTOMER_LOGON,false)
-            customerDB.child(userId).child("Profile").setValue("")
+            editor.putBoolean(CUSTOMER_LOGON, false)
+            editor.putBoolean(ALARM_ALERTED, false)
+            editor.putBoolean(DRIVER_MATCHED_ALARM, false)
+            editor.putString(DEPARTURE, "출발지를 설정해주세요.")
+            editor.putString(DESTINATION, "목적지를 설정해주세요.")
+            editor.putBoolean(TRANSPORT_ACTIVE, false)
+            editor.apply()
             finish()
             return@setOnClickListener
         }
-        editor.apply()
 
         // Show Profile image bigger in Fragment
         profileImageView.setOnClickListener {
@@ -601,6 +568,30 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             dialog.show()
         }
+
+        //get ProfileUrl image from Firebase
+        customerDB.addValueEventListener(object: ValueEventListener{
+            override fun onCancelled(p0: DatabaseError?) {
+                if(p0 != null)p0.message
+            }
+
+            override fun onDataChange(dataSnapshot: DataSnapshot?) {
+                if(dataSnapshot != null) {
+                    profileImageUrl = dataSnapshot.child(userId).child("Profile").getValue().toString()
+                    if(profileImageUrl != "") {
+                        Glide.with(this@CustomerMapActivity).load(profileImageUrl)
+                                .centerCrop()
+                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                                .into(profileImageView)
+                    } else {
+                        Glide.with(this@CustomerMapActivity).load(R.drawable.profile)
+                                .centerCrop()
+                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                                .into(profileImageView)
+                    }
+                }
+            }
+        })
 
     }
 
