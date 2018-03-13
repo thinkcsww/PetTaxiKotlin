@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PetTaxiKotlin</string>
+    <string name="app_name">캣카독</string>
     <string name="title_activity_rider_map">Map</string>
     <string name="title_activity_driver_map">Map</string>
 

@@ -113,6 +113,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
 
+
         geocoder = Geocoder(this@CustomerMapActivity, Locale.getDefault())
         //get current date, year , month , hour, day
         getCurrentDate()
@@ -504,6 +505,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             } catch(e: UninitializedPropertyAccessException) {
                 toast("GPS 통신 에러 : 잠시 후 다시 시도해주세요.")
                 startActivity(getIntent());
+                finish()
             }
         }
 
@@ -578,19 +580,23 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             override fun onDataChange(dataSnapshot: DataSnapshot?) {
-                if(dataSnapshot != null) {
-                    profileImageUrl = dataSnapshot.child(userId).child("Profile").getValue().toString()
-                    if(profileImageUrl != "") {
-                        Glide.with(this@CustomerMapActivity).load(profileImageUrl)
-                                .centerCrop()
-                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
-                                .into(profileImageView)
-                    } else {
-                        Glide.with(this@CustomerMapActivity).load(R.drawable.profile)
-                                .centerCrop()
-                                .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
-                                .into(profileImageView)
+                try {
+                    if (dataSnapshot != null) {
+                        profileImageUrl = dataSnapshot.child(userId).child("Profile").getValue().toString()
+                        if (profileImageUrl != "") {
+                            Glide.with(this@CustomerMapActivity).load(profileImageUrl)
+                                    .centerCrop()
+                                    .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                                    .into(profileImageView)
+                        } else {
+                            Glide.with(this@CustomerMapActivity).load(R.drawable.profile)
+                                    .centerCrop()
+                                    .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                                    .into(profileImageView)
+                        }
                     }
+                } catch (e : IllegalArgumentException) {
+                    e.message
                 }
             }
         })
@@ -866,7 +872,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     driverDeparture = dataSnapshot.child("DD").getValue().toString().toBoolean()
                     Log.d("ASDASD", driverDeparture.toString())
                     editor.putString(DRIVER_USERID, customerState.driverUserId)
-                    editor.commit()
+                    editor.apply()
                 }
             }
 
@@ -877,27 +883,36 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PLACEPICKER_DEPARTURE_REQUESTCODE) {
             if(resultCode == Activity.RESULT_OK) {
-                var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
-                departureLatLng = place.latLng
-                if(Character.isDigit(place.name.elementAt(0))) {
-                    departure = String.format("출발지: ${place.address}")
-                } else {
-                    departure = String.format("출발지: ${place.name}")
+                try {
+                    var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
+                    departureLatLng = place.latLng
+                    if (Character.isDigit(place.name.elementAt(0))) {
+                        departure = String.format("출발지: ${place.address}")
+                    } else {
+                        departure = String.format("출발지: ${place.name}")
+                    }
+                    departureText.text = departure
+                } catch (e : StringIndexOutOfBoundsException) {
+                    toast("GPS 수신 에러 : 잠시 후 다시 시도해주세요.")
                 }
-                departureText.text = departure
             }
+
         } else if (requestCode == PLACEPICKER_ARRIVAL_REQUESTCODE) {
             if(resultCode == Activity.RESULT_OK) {
-                var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
-                if(Character.isDigit(place.name.elementAt(0))){
-                    destination = String.format("${place.address}")
-                } else {
-                    destination = String.format("${place.name}")
+                try {
+                    var place = PlacePicker.getPlace(data, this@CustomerMapActivity)
+                    if (Character.isDigit(place.name.elementAt(0))) {
+                        destination = String.format("${place.address}")
+                    } else {
+                        destination = String.format("${place.name}")
+                    }
+                    destinationLatLng = place.latLng
+                    destinationLatitude = destinationLatLng.latitude
+                    destinationLongitude = destinationLatLng.longitude
+                    destinationText.text = "도착지: $destination"
+                } catch (e : StringIndexOutOfBoundsException) {
+                    toast("GPS 수신 에러 : 잠시 후 다시 시도해주세요.")
                 }
-                destinationLatLng = place.latLng
-                destinationLatitude = destinationLatLng.latitude
-                destinationLongitude = destinationLatLng.longitude
-                destinationText.text = "도착지: $destination"
             }
         } else if (requestCode == CUSTOMERMAP_INTENT_CAMERA) {
             if(resultCode == Activity.RESULT_OK) {
@@ -989,6 +1004,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             val locationAlertView = layoutInflater.inflate(R.layout.layout_location_setting, null)
             locationAlertBuilder.setView(locationAlertView)
             val dialog = locationAlertBuilder.create()
+            dialog.setCanceledOnTouchOutside(false)
             val okBtn : Button = locationAlertView.findViewById(R.id.okBtn)
             val settingBtn : Button = locationAlertView.findViewById(R.id.settingBtn)
 

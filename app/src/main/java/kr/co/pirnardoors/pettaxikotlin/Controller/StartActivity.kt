@@ -72,8 +72,10 @@ class StartActivity : AppCompatActivity() {
                 override fun onDataChange(p0: DataSnapshot?) {
                     if (p0 != null) {
                         userTypeDriver = p0.child("UserType").getValue(String::class.java)
-                        driverAuthorized = p0.child("Auth").getValue(String::class.java)!!.toBoolean()
-                        readyToTest = p0.child("ReadyToTest").getValue(String::class.java)!!.toBoolean()
+                        if(userTypeDriver == "Driver") {
+                            driverAuthorized = p0.child("Auth").getValue(String::class.java)!!.toBoolean()
+                            readyToTest = p0.child("ReadyToTest").getValue(String::class.java)!!.toBoolean()
+                        }
                     }
                 }
             })

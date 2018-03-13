@@ -98,19 +98,23 @@ class ViewRequestActivity : AppCompatActivity() {
 
             override fun onDataChange(dataSnapshot: DataSnapshot?) {
                 if(dataSnapshot != null) {
-                    profileImageUrl = dataSnapshot.child(driverUserId).child("Profile").getValue().toString()
-                    if(profileImageUrl != "") {
-                        Glide.with(this@ViewRequestActivity).load(profileImageUrl)
-                                .centerCrop()
-                                .bitmapTransform(CropCircleTransformation(this@ViewRequestActivity))
-                                .into(profileImageView)
-                    } else {
-                        Glide.with(this@ViewRequestActivity).load(R.drawable.profile)
-                                .centerCrop()
-                                .bitmapTransform(CropCircleTransformation(this@ViewRequestActivity))
-                                .into(profileImageView)
+                    try {
+                        profileImageUrl = dataSnapshot.child(driverUserId).child("Profile").getValue().toString()
+                        if (profileImageUrl != "") {
+                            Glide.with(this@ViewRequestActivity).load(profileImageUrl)
+                                    .centerCrop()
+                                    .bitmapTransform(CropCircleTransformation(this@ViewRequestActivity))
+                                    .into(profileImageView)
+                        } else {
+                            Glide.with(this@ViewRequestActivity).load(R.drawable.profile)
+                                    .centerCrop()
+                                    .bitmapTransform(CropCircleTransformation(this@ViewRequestActivity))
+                                    .into(profileImageView)
+                        }
+                        Log.d("PROFILE", profileImageUrl)
+                    } catch (e : IllegalArgumentException) {
+                        e.message
                     }
-                    Log.d("PROFILE", profileImageUrl)
                 }
             }
         })
@@ -150,8 +154,6 @@ class ViewRequestActivity : AppCompatActivity() {
         lastKnownLocation = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(lastKnownLocation != null) {
             updateListView(lastKnownLocation!!)
-        } else {
-            Toast.makeText(this, "위치 파악 문제가 발생하였습니다.", Toast.LENGTH_SHORT).show()
         }
         //Logout button
 

@@ -371,6 +371,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val driveTimesTextView : TextView = finishDialogView.findViewById(R.id.driveTimesTextView)
         val earnTextView : TextView = finishDialogView.findViewById(R.id.earnTextView)
         val dialog = finishAlertDialog.create()
+        dialog.setCanceledOnTouchOutside(false)
 
         activityOn = false
         calendar = Calendar.getInstance()
@@ -386,6 +387,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             driverDB.child(driverUserId).child(year + month).child("DriveTime").setValue(driveTime + 1)
             driverDB.child(driverUserId).child(year + month).child("Earn").setValue(earn + wage)
+
             driverDB.child(driverUserId).child("TimeStamp").setValue("")
             step1 = false; step2 = false; step3 = false; customerToDestination = false
             editor.putBoolean(DRIVERMAP_STEP1, step1)

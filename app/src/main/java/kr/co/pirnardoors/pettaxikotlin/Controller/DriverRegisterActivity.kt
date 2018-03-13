@@ -63,7 +63,13 @@ class DriverRegisterActivity : AppCompatActivity() {
                         database.child(userId).child("TimeStamp").setValue("")
                         database.child(userId).child(year + month).child("DriveTime").setValue("0")
                         database.child(userId).child(year + month).child("Earn").setValue("0")
-
+                        if(month == "1") {
+                            database.child(userId).child((year.toInt() - 1).toString() + "12").child("DriveTime").setValue("0")
+                            database.child(userId).child((year.toInt() - 1).toString() + "12").child("Earn").setValue("0")
+                        } else {
+                            database.child(userId).child(year + (month.toInt() - 1).toString()).child("DriveTime").setValue("0")
+                            database.child(userId).child(year + (month.toInt() - 1).toString()).child("Earn").setValue("0")
+                        }
                         val intent = Intent(this@DriverRegisterActivity, DriverAuthorizingActivity::class.java)
                         startActivity(intent)
                         finish()
