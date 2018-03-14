@@ -11,7 +11,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_block.*
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_NICKNAME
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 

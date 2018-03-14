@@ -36,6 +36,7 @@ import kotlinx.android.synthetic.main.activity_view_request.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
+import org.jetbrains.anko.share
 import org.jetbrains.anko.toast
 import java.io.File
 import java.io.IOException
@@ -86,7 +87,7 @@ class ViewRequestActivity : AppCompatActivity() {
         listView.adapter = adapter
 
         driverUserId = FirebaseAuth.getInstance().currentUser!!.uid
-        Id = FirebaseAuth.getInstance().currentUser!!.email!!
+        Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
 
 
         //Get Profile info from firebase
@@ -99,6 +100,9 @@ class ViewRequestActivity : AppCompatActivity() {
             override fun onDataChange(dataSnapshot: DataSnapshot?) {
                 if(dataSnapshot != null) {
                     try {
+                        Id = dataSnapshot.child(driverUserId).child("Id").getValue().toString()
+                        editor.putString(DRIVER_NICKNAME, Id)
+                        editor.apply()
                         profileImageUrl = dataSnapshot.child(driverUserId).child("Profile").getValue().toString()
                         if (profileImageUrl != "") {
                             Glide.with(this@ViewRequestActivity).load(profileImageUrl)

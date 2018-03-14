@@ -47,8 +47,8 @@
 
         <activity android:name=".Controller.StartActivity" />
         <activity android:name=".Controller.CustomerLoginActivity" />
-        <activity android:name=".Controller.DriverLoginActivity" />
-        <activity android:name=".Controller.DriverRegisterActivity" />
+        <activity android:name=".Controller.DriverStartActivity" />
+        <activity android:name=".Controller.DriverRegisterActivity2" />
         <activity android:name=".Controller.CustomerRegisterActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -96,7 +96,8 @@
 
         <activity android:name=".Controller.DriverFinishActivity" />
         <activity android:name=".Controller.DriverBusinessActivity" />
-        <activity android:name=".Controller.DriverRegisteActivty"></activity>
+        <activity android:name=".Controller.DriverRegisterActivity" />
+        <activity android:name=".Controller.DriverLoginActivity"></activity>
     </application>
 
 </manifest>

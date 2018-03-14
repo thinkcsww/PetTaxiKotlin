@@ -13,12 +13,9 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import io.paperdb.Paper
 import kotlinx.android.synthetic.main.activity_start.*
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
-import kr.co.pirnardoors.pettaxikotlin.Utilities.READY_TO_TEST
 
 
 class StartActivity : AppCompatActivity() {
@@ -99,9 +96,8 @@ class StartActivity : AppCompatActivity() {
                 finish()
                 return@setOnClickListener
             } else if(userId == null || userTypeDriver.equals("Driver")) {
-                val intent = Intent(this, DriverLoginActivity::class.java)
+                val intent = Intent(this, DriverStartActivity::class.java)
                 startActivity(intent)
-                finish()
                 return@setOnClickListener
             }
             else if (userTypeDriver == null){
