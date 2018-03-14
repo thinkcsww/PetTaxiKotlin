@@ -94,8 +94,10 @@ class DriverLoginActivity : AppCompatActivity() {
         registerBtn.setOnClickListener {
 //            var intent = Intent(this, DriverAuthorizingActivity::class.java)
 //            startActivity(intent)
-            var intent = Intent(this, DriverRegisterActivity::class.java)
+            var intent = Intent(this, DriverRegisteActivty::class.java)
             startActivity(intent)
+            finish()
+            return@setOnClickListener
         }
     }
 

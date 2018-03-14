@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build.ID
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
@@ -50,7 +51,13 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_authorizing)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        Id = FirebaseAuth.getInstance().currentUser!!.email!!
+        var editor = sharedPreferences.edit()
+        Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
+        if (Id.equals("")) {
+            Id = intent.getStringExtra(DRIVER_NICKNAME)
+            editor.putString(DRIVER_NICKNAME, ID)
+            editor.apply()
+        }
 
         nextBtn.setOnClickListener {
             val intent = Intent(this, DriverBusinessActivity::class.java)

@@ -4,16 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import kotlinx.android.synthetic.main.activity_driver_login.*
 import kotlinx.android.synthetic.main.activity_waiting_auth.*
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LICENSE_AUTHORIZED
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_LOGON
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
@@ -61,7 +58,7 @@ class WaitingAuthActivity : AppCompatActivity() {
 //            return
 //        }
 
-        button3.setOnClickListener {
+        verifyBtn.setOnClickListener {
             auth.signOut()
             editor.putBoolean(DRIVER_LOGON,false)
             editor.putBoolean(DRIVER_LICENSE_AUTHORIZED, false)

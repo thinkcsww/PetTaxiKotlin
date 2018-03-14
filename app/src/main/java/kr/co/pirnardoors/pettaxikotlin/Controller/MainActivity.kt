@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
 
+//        Log.d("USERID", FirebaseAuth.getInstance().currentUser?.uid)
         driverLogon = sharedPreferences.getBoolean(DRIVER_LOGON, false)
         customerLogon = sharedPreferences.getBoolean(CUSTOMER_LOGON, false)
         transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
@@ -42,6 +44,9 @@ class MainActivity : AppCompatActivity() {
         driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
         driverBeforeDeparture = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
         driverBeforToDestination = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
+        val intent = Intent(this@MainActivity, DriverRegisteActivty::class.java)
+        startActivity(intent)
+        return
         if(transportActive == true || meetActivityActive == true ) {
             val intent = Intent(this@MainActivity, MeetActivity::class.java)
             startActivity(intent)
@@ -102,8 +107,9 @@ class MainActivity : AppCompatActivity() {
 
 
         startBtn.setOnClickListener {
-//            var intent = Intent(this, StartActivity::class.java)
+//            var intent = Intent(this@MainActivity, DriverRegisteActivty::class.java)
             val intent = Intent(this@MainActivity, StartActivity::class.java)
+
             startActivity(intent)
             finish()
             return@setOnClickListener

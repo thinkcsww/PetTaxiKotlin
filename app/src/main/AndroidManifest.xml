@@ -95,7 +95,8 @@
         <receiver android:name=".Controller.NotificationReceiver" />
 
         <activity android:name=".Controller.DriverFinishActivity" />
-        <activity android:name=".Controller.DriverBusinessActivity"></activity>
+        <activity android:name=".Controller.DriverBusinessActivity" />
+        <activity android:name=".Controller.DriverRegisteActivty"></activity>
     </application>
 
 </manifest>

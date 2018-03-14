@@ -18,6 +18,7 @@ class BlockActivity : AppCompatActivity() {
     var userId = FirebaseAuth.getInstance().currentUser?.uid
     val driverDB = FirebaseDatabase.getInstance().getReference("Driver")
     var readyToTest = false
+    val auth = FirebaseAuth.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_block)
@@ -25,6 +26,14 @@ class BlockActivity : AppCompatActivity() {
         var editor = sharedPreferences.edit()
         var Id = sharedPreferences.getString(DRIVER_ID, "")
         welcomText.text = "${Id}님\n 반갑습니다!"
+
+        okBtn.setOnClickListener {
+            auth.signOut()
+            val intent = Intent(this@BlockActivity, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+            return@setOnClickListener
+        }
 
 
             driverDB.child(userId).addValueEventListener(object : ValueEventListener {
