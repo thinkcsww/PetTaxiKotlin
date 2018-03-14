@@ -49,7 +49,6 @@ class BusinessExplainFragment2 : Fragment(), View.OnClickListener {
 
         if(fragmentManager!!.backStackEntryCount > 0) {
             fragmentManager!!.popBackStack(fragmentManager!!.getBackStackEntryAt(0).id, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-            toast(fragmentManager!!.backStackEntryCount.toString())
             transaction.replace(R.id.holder, fragment)
             transaction.addToBackStack(null)
             transaction.commit()

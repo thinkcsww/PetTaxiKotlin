@@ -3,6 +3,7 @@ package kr.co.pirnardoors.pettaxikotlin.Controller
 import android.app.Activity
 import android.app.FragmentManager
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
@@ -21,9 +22,7 @@ import kotlinx.android.synthetic.main.activity_driver_business.*
 import kotlinx.android.synthetic.main.fragment_business_explain_fragment1.*
 
 import kr.co.pirnardoors.pettaxikotlin.R
-import kr.co.pirnardoors.pettaxikotlin.Utilities.BUSINESS_IMAGE_INTENT
-import kr.co.pirnardoors.pettaxikotlin.Utilities.CUSTOMERMAP_INTENT_CHOOSER
-import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_AUTH_INTENT_CAMERA
+import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
 import java.io.File
 import java.io.IOException
@@ -40,8 +39,8 @@ class DriverBusinessActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_business)
-
-        Id = FirebaseAuth.getInstance().currentUser!!.email!!
+        val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
         businessImageView.setOnClickListener {
             val driverBusinessAlertDialog = AlertDialog.Builder(this@DriverBusinessActivity)
             val driverBusinessDialogView = layoutInflater.inflate(R.layout.layout_driver_auth_image_view, null)
@@ -78,7 +77,11 @@ class DriverBusinessActivity : AppCompatActivity() {
             transaction.commit()
             uploadBtn.visibility = View.GONE
         }
-        val businessExplainFragment2 =  BusinessExplainFragment2()
+
+        backBtn.setOnClickListener {
+            super.onBackPressed()
+            return@setOnClickListener
+        }
 
 
     }

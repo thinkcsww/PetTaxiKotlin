@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/cardview_light_background"
     tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.DriverAuthorizingActivity">
 
     <Button
@@ -11,7 +12,7 @@
         android:layout_width="173dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="@color/colorPrimaryDark"
+        android:background="@color/blue"
         android:text="제출하기"
         android:textColor="@color/cardview_light_background"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -38,9 +39,10 @@
             android:id="@+id/textView10"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/blue"
             android:text="면허증 등록"
             android:textAlignment="center"
-            android:textColor="@color/colorPrimaryDark"
+            android:textColor="@color/cardview_light_background"
             android:textSize="24sp" />
 
         <ImageView
@@ -211,13 +213,13 @@
         android:id="@+id/textView11"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:background="@color/blue"
         android:fontFamily="@font/marko_one"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
         android:text="CatCarDog"
         android:textAlignment="center"
-        android:textColor="@color/colorPrimaryDark"
+        android:textColor="@color/cardview_light_background"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -225,13 +227,13 @@
 
     <TextView
         android:id="@+id/textView12"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:background="@drawable/transparent_bottom_border"
         android:fontFamily="@font/marko_one"
         android:text="License Info"
+        android:textAlignment="center"
         android:textColor="@color/com_kakao_button_text_press"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -272,9 +274,9 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:background="@drawable/left_arrow"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginRight="16dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

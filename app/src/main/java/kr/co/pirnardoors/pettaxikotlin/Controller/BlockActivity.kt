@@ -12,6 +12,7 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_block.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_ID
+import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_NICKNAME
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
 
 class BlockActivity : AppCompatActivity() {
@@ -24,7 +25,7 @@ class BlockActivity : AppCompatActivity() {
         setContentView(R.layout.activity_block)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
-        var Id = sharedPreferences.getString(DRIVER_ID, "")
+        var Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
         welcomText.text = "${Id}님\n 반갑습니다!"
 
         okBtn.setOnClickListener {

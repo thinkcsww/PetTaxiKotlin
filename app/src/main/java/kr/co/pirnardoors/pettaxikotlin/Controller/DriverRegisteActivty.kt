@@ -43,69 +43,65 @@ class DriverRegisteActivty : AppCompatActivity() {
 
             override fun onCodeSent(code: String?, p1: PhoneAuthProvider.ForceResendingToken?) {
                 super.onCodeSent(code, p1)
+                progressBar.visibility = View.GONE
                 verificationCode = code!!
                 Toast.makeText(this@DriverRegisteActivty, "인증번호가 전송되었습니다.", Toast.LENGTH_SHORT).show()
                 phoneNumberEditText.visibility = View.GONE
+                textView46.visibility = View.GONE
                 askCodeBtn.visibility = View.GONE
                 verificationCodeEditText.visibility = View.VISIBLE
                 verifyBtn.visibility = View.VISIBLE
+                noticeTextView.text = "인증번호 6자리를 입력해주세요."
+
             }
 
         }
 
         askCodeBtn.setOnClickListener {
-//            phoneNumber = phoneNumberEditText.text.toString()
-//            PhoneAuthProvider.getInstance().verifyPhoneNumber(
-//                    phoneNumber!!, 10, TimeUnit.SECONDS, this, mCallback)
+            progressBar.visibility = View.VISIBLE
+            phoneNumber = phoneNumberEditText.text.toString()
+            PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                    phoneNumber!!, 10, TimeUnit.SECONDS, this, mCallback)
 
-            Toast.makeText(this@DriverRegisteActivty, "인증번호가 전송되었습니다.", Toast.LENGTH_SHORT).show()
-            phoneNumberEditText.visibility = View.GONE
-            noticeTextView.text = "인증번호 6자리를 입력해주세요."
-            textView46.visibility = View.GONE
-            askCodeBtn.visibility = View.GONE
-            verificationCodeEditText.visibility = View.VISIBLE
-            verifyBtn.visibility = View.VISIBLE
         }
         verifyBtn.setOnClickListener {
-            val transaction = fragmentManager.beginTransaction()
-            val driverNickNameFragment = DriverNickNameFragment()
-            transaction.replace(R.id.fragmentHolder, driverNickNameFragment)
-            transaction.commit()
+            progressBar.visibility = View.VISIBLE
             verifyBtn.visibility = View.GONE
             var input_code = verificationCodeEditText.text.toString()
-//            if(verificationCode != null) {
-//                var credential = PhoneAuthProvider.getCredential(verificationCode, input_code)
-//                if(credential != null) {
-//                    auth.signInWithCredential(credential).addOnCompleteListener {
-//                        if(it.isSuccessful) {
-//                            toast("회원가입에 성공하였습니다.")
-//                            var userId = FirebaseAuth.getInstance().currentUser?.uid
-//                            driverDB.child(userId).child("PhoneNumber").setValue(phoneNumber)
-//                            driverDB.child(userId).child("UserType").setValue("Driver")
-//                            driverDB.child(userId).child("Auth").setValue("false")
-//                            driverDB.child(userId).child("ReadyToTest").setValue("false")
-//                            driverDB.child(userId).child("Departure").setValue("false")
-//                            driverDB.child(userId).child("Profile").setValue("")
-//                            driverDB.child(userId).child("TimeStamp").setValue("")
-//                            driverDB.child(userId).child(year + month).child("DriveTime").setValue("0")
-//                            driverDB.child(userId).child(year + month).child("Earn").setValue("0")
-//                            if(month == "1") {
-//                                driverDB.child(userId).child((year.toInt() - 1).toString() + "12").child("DriveTime").setValue("0")
-//                                driverDB.child(userId).child((year.toInt() - 1).toString() + "12").child("Earn").setValue("0")
-//                            } else {
-//                                driverDB.child(userId).child(year + (month.toInt() - 1).toString()).child("DriveTime").setValue("0")
-//                                driverDB.child(userId).child(year + (month.toInt() - 1).toString()).child("Earn").setValue("0")
-//                            }
-//                            val transaction = fragmentManager.beginTransaction()
-//                            val driverNickNameFragment = DriverNickNameFragment()
-//                            transaction.replace(R.id.container, driverNickNameFragment)
-//                            transaction.commit()
-//                        } else {
-//                            toast("회원가입에 실패하였습니다.")
-//                        }
-//                    }
-//                }
-//            }
+            if(verificationCode != null) {
+                var credential = PhoneAuthProvider.getCredential(verificationCode, input_code)
+                if(credential != null) {
+                    auth.signInWithCredential(credential).addOnCompleteListener {
+                        if(it.isSuccessful) {
+                            progressBar.visibility = View.GONE
+                            toast("회원가입에 성공하였습니다.")
+                            var userId = FirebaseAuth.getInstance().currentUser?.uid
+                            driverDB.child(userId).child("PhoneNumber").setValue(phoneNumber)
+                            driverDB.child(userId).child("UserType").setValue("Driver")
+                            driverDB.child(userId).child("Auth").setValue("false")
+                            driverDB.child(userId).child("ReadyToTest").setValue("false")
+                            driverDB.child(userId).child("Departure").setValue("false")
+                            driverDB.child(userId).child("Profile").setValue("")
+                            driverDB.child(userId).child("TimeStamp").setValue("")
+                            driverDB.child(userId).child(year + month).child("DriveTime").setValue("0")
+                            driverDB.child(userId).child(year + month).child("Earn").setValue("0")
+                            if(month == "1") {
+                                driverDB.child(userId).child((year.toInt() - 1).toString() + "12").child("DriveTime").setValue("0")
+                                driverDB.child(userId).child((year.toInt() - 1).toString() + "12").child("Earn").setValue("0")
+                            } else {
+                                driverDB.child(userId).child(year + (month.toInt() - 1).toString()).child("DriveTime").setValue("0")
+                                driverDB.child(userId).child(year + (month.toInt() - 1).toString()).child("Earn").setValue("0")
+                            }
+                            val transaction = fragmentManager.beginTransaction()
+                            val driverNickNameFragment = DriverNickNameFragment()
+                            transaction.replace(R.id.container, driverNickNameFragment)
+                            transaction.commit()
+                        } else {
+                            toast("회원가입에 실패하였습니다.")
+                        }
+                    }
+                }
+            }
 
 
         }

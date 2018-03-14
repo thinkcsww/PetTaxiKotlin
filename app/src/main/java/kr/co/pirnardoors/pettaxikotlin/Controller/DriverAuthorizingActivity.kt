@@ -55,14 +55,13 @@ class DriverAuthorizingActivity : AppCompatActivity() {
         Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
         if (Id.equals("")) {
             Id = intent.getStringExtra(DRIVER_NICKNAME)
-            editor.putString(DRIVER_NICKNAME, ID)
+            editor.putString(DRIVER_NICKNAME, Id)
             editor.apply()
         }
 
         nextBtn.setOnClickListener {
             val intent = Intent(this, DriverBusinessActivity::class.java)
             startActivity(intent)
-            finish()
             return@setOnClickListener
         }
 

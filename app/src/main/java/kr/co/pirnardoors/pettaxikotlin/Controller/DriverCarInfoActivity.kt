@@ -39,7 +39,7 @@ class DriverCarInfoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_driver_car_info)
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
-        Id = sharedPreferences.getString(DRIVER_ID, "")
+        Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
         carImageView.setOnClickListener {
             val carInfoAlerDialog = AlertDialog.Builder(this@DriverCarInfoActivity)
             val carInfoDialogView = layoutInflater.inflate(R.layout.layout_driver_auth_image_view, null)

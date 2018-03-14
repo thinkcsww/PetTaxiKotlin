@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
 
-//        Log.d("USERID", FirebaseAuth.getInstance().currentUser?.uid)
+        Log.d("USERID", sharedPreferences.getString(DRIVER_NICKNAME, ""))
         driverLogon = sharedPreferences.getBoolean(DRIVER_LOGON, false)
         customerLogon = sharedPreferences.getBoolean(CUSTOMER_LOGON, false)
         transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
@@ -44,9 +44,9 @@ class MainActivity : AppCompatActivity() {
         driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
         driverBeforeDeparture = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
         driverBeforToDestination = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
-        val intent = Intent(this@MainActivity, DriverRegisteActivty::class.java)
-        startActivity(intent)
-        return
+//        val intent = Intent(this@MainActivity, DriverRegisteActivty::class.java)
+//        startActivity(intent)
+//        return
         if(transportActive == true || meetActivityActive == true ) {
             val intent = Intent(this@MainActivity, MeetActivity::class.java)
             startActivity(intent)

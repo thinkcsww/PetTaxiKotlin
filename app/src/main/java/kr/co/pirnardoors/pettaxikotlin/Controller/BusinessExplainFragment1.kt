@@ -36,8 +36,6 @@ class BusinessExplainFragment1 : Fragment(), View.OnClickListener {
             R.id.nextBtn -> {
                 fragment = BusinessExplainFragment2()
                 replaceFragment(fragment)
-                toast(fragmentManager!!.backStackEntryCount.toString())
-
             }
 
             else -> {
