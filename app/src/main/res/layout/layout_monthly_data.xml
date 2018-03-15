@@ -24,7 +24,7 @@
     <Button
         android:id="@+id/okBtn"
         android:layout_width="75dp"
-        android:layout_height="75dp"
+        android:layout_height="76dp"
         android:layout_marginBottom="16dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/blue_circle"
@@ -34,10 +34,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/monthDriveTimesTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/lastMonthDriveTimesTextView" />
 
     <TextView
-        android:id="@+id/monthEarnTextView"
+        android:id="@+id/curMonthEarnTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -53,7 +53,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
     <TextView
-        android:id="@+id/monthDriveTimesTextView"
+        android:id="@+id/curMonthDriveTimesTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -66,6 +66,38 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/monthEarnTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/curMonthEarnTextView" />
+
+    <TextView
+        android:id="@+id/lastMonthEarnTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/transparent_bottom_border"
+        android:paddingBottom="8dp"
+        android:paddingLeft="16dp"
+        android:text="지난 달 수입"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/curMonthDriveTimesTextView" />
+
+    <TextView
+        android:id="@+id/lastMonthDriveTimesTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/transparent_bottom_border"
+        android:paddingBottom="8dp"
+        android:paddingLeft="16dp"
+        android:text="지난 달 운행 횟수"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lastMonthEarnTextView" />
 
 </android.support.constraint.ConstraintLayout>

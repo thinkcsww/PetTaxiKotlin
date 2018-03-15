@@ -5,7 +5,6 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -13,7 +12,6 @@ import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
-import android.provider.ContactsContract
 import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -27,7 +25,6 @@ import android.widget.*
 import com.bumptech.glide.Glide
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
-import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
@@ -36,11 +33,9 @@ import kotlinx.android.synthetic.main.activity_view_request.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Request
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
-import org.jetbrains.anko.share
 import org.jetbrains.anko.toast
 import java.io.File
 import java.io.IOException
-import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,6 +47,7 @@ class ViewRequestActivity : AppCompatActivity() {
     lateinit var pictureUri : Uri
     val mStorage = FirebaseStorage.getInstance().getReference()
     val driverDB = FirebaseDatabase.getInstance().getReference("Driver")
+    val requestDB = FirebaseDatabase.getInstance().getReference("Request")
     var profileImageUrl = ""
     var request = ArrayList<String>()
     var requestUserId = ArrayList<String>()
@@ -210,7 +206,7 @@ class ViewRequestActivity : AppCompatActivity() {
                 if(requestLatitudes.size > i && requestLongitudes.size > i && requestUserId.size > i
                         && lastKnownLocation != null) {
 
-                    var req : Request = Request(0.0,0.0,"",0.0,0.0,"","",0.0)
+                    var req : Request = Request(0.0,0.0,"",0.0,0.0,"","")
                     req.requestLatitude = requestLatitudes[i]
                     req.requestLongitude = requestLongitudes[i]
                     req.driverLatitude = lastKnownLocation!!.latitude
@@ -218,7 +214,6 @@ class ViewRequestActivity : AppCompatActivity() {
                     req.requestUserId = requestUserId[i]
                     req.requestDestination = requestDestinations[i]
                     req.requestNumber = requestNumbers[i]
-                    req.requestDistance = requestDistances[i]
                     //req.requestType = requestTypes[i]
 
                     var intent = Intent(this@ViewRequestActivity, DriverMapActivity::class.java)
@@ -285,11 +280,48 @@ class ViewRequestActivity : AppCompatActivity() {
 
         //Button to show how much money i earn this month
         monthlyDataBtn.setOnClickListener {
+
             val monthlyDataAlertDialog = AlertDialog.Builder(this@ViewRequestActivity)
             val monthlyDataDialogView = layoutInflater.inflate(R.layout.layout_monthly_data, null)
             monthlyDataAlertDialog.setView(monthlyDataDialogView)
             val okBtn : Button = monthlyDataDialogView.findViewById(R.id.okBtn)
+            val curMonthEarnTextView : TextView = monthlyDataDialogView.findViewById(R.id.curMonthEarnTextView)
+            val curMonthDriveTimesTextView : TextView = monthlyDataDialogView.findViewById(R.id.curMonthDriveTimesTextView)
+            val lastMonthEarnTextView : TextView = monthlyDataDialogView.findViewById(R.id.lastMonthEarnTextView)
+            val lastMonthDriveTimesTextView : TextView = monthlyDataDialogView.findViewById(R.id.lastMonthDriveTimesTextView)
             val dialog = monthlyDataAlertDialog.create()
+
+            driverDB.addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError?) {
+                    if (p0 != null) p0.message
+                }
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    if (p0 != null) {
+                        val curMonthEarn = p0.child(driverUserId).child(year + month).child("Earn").getValue().toString()
+                        val curMonthDriveTime = p0.child(driverUserId).child(year + month).child("DriveTime").getValue().toString()
+                        curMonthEarnTextView.text = "이번 달 수입 : $curMonthEarn"
+                        curMonthDriveTimesTextView.text = "이번 달 운행 횟수 : $curMonthDriveTime"
+                        if(month.toInt() != 1) {
+                            val lastMonthEarn = p0.child(driverUserId).child(year + (month.toInt() -1).toString()).child("DriveTime").getValue().toString()
+                            val lastMonthDriveTime = p0.child(driverUserId).child(year + (month.toInt() - 1).toString()).child("Earn").getValue().toString()
+                            curMonthEarnTextView.text = "이번 달 수입 : $curMonthEarn"
+                            curMonthDriveTimesTextView.text = "이번 달 운행 횟수 : $curMonthDriveTime"
+                            lastMonthEarnTextView.text = "지난 달 수입 : $lastMonthEarn"
+                            lastMonthDriveTimesTextView.text = "지난 달 운행 횟수 : $lastMonthDriveTime"
+                        } else if (month.toInt() == 1) {
+                            val lastMonthEarn = p0.child(driverUserId).child((year.toInt() - 1).toString() + "12").child("DriveTime").getValue().toString()
+                            val lastMonthDriveTime = p0.child(driverUserId).child((year.toInt() - 1).toString() + "12").child("Earn").getValue().toString()
+                            curMonthEarnTextView.text = "이번 달 수입 : $curMonthEarn"
+                            curMonthDriveTimesTextView.text = "이번 달 운행 횟수 : $curMonthDriveTime"
+                            lastMonthEarnTextView.text = "지난 달 수입 : $lastMonthEarn"
+                            lastMonthDriveTimesTextView.text = "지난 달 운행 횟수 : $lastMonthDriveTime"
+                        }
+                    }
+                }
+
+            })
+
 
             okBtn.setOnClickListener {
                 dialog.dismiss()
@@ -375,8 +407,7 @@ class ViewRequestActivity : AppCompatActivity() {
     private fun updateListView(location : Location) {
 
         var driverLocation = location
-        var database = FirebaseDatabase.getInstance().getReference("Request")
-        database.addValueEventListener(object : ValueEventListener {
+        requestDB.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError?) {
                 if (p0 != null) {
                     p0.message

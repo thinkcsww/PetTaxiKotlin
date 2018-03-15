@@ -83,7 +83,6 @@ class StartActivity : AppCompatActivity() {
             if(userId == null || userTypeCustomer.equals("Customer")) {
                 val intent = Intent(this, CustomerLoginActivity::class.java)
                 startActivity(intent)
-                finish()
                 return@setOnClickListener
             } else if (userTypeCustomer == null) {
                 Toast.makeText(this@StartActivity, "Driver 모드를 로그아웃 해주세요.", Toast.LENGTH_SHORT).show()

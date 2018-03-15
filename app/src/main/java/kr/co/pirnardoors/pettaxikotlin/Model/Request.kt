@@ -8,7 +8,7 @@ import android.os.Parcelable
  */
 class Request constructor(var requestLatitude : Double, var requestLongitude : Double,
                           var requestUserId : String, var driverLatitude : Double, var driverLongitude : Double,
-                          var requestDestination: String, var requestNumber: String, var requestDistance : Double) : Parcelable {
+                          var requestDestination: String, var requestNumber: String) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readDouble(),
             parcel.readDouble(),
@@ -16,8 +16,7 @@ class Request constructor(var requestLatitude : Double, var requestLongitude : D
             parcel.readDouble(),
             parcel.readDouble(),
             parcel.readString(),
-            parcel.readString(),
-            parcel.readDouble()) {
+            parcel.readString()) {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -28,7 +27,6 @@ class Request constructor(var requestLatitude : Double, var requestLongitude : D
         parcel.writeDouble(driverLongitude)
         parcel.writeString(requestDestination)
         parcel.writeString(requestNumber)
-        parcel.writeDouble(requestDistance)
     }
 
     override fun describeContents(): Int {

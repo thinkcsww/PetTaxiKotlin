@@ -6,6 +6,8 @@
     android:layout_height="match_parent"
     tools:context="kr.co.pirnardoors.pettaxikotlin.Controller.StartActivity">
 
+
+
     <ImageView
         android:id="@+id/imageView7"
         android:layout_width="0dp"
@@ -37,7 +39,7 @@
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="61dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:orientation="horizontal"
@@ -51,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:background="@drawable/catcardog_button"
+            android:background="@color/pink"
             android:text="Customer"
             android:textColor="@color/common_google_signin_btn_text_dark_default" />
 
@@ -61,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_weight="1"
-            android:background="@drawable/catcardog_button"
+            android:background="@color/blue"
             android:text="Driver"
             android:textColor="@color/common_google_signin_btn_text_dark_default" />
     </LinearLayout>

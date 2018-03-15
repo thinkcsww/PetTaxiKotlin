@@ -56,7 +56,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var timeStamp = ""
     var handler = Handler()
     var driverLocation : LatLng? = null
-    var requestLocation : LatLng? = null
+    var requestLatLng : LatLng? = null
     var requestDestination : String? = ""
     var requestUserId = ""
     var driverUserId = FirebaseAuth.getInstance().currentUser!!.uid
@@ -72,6 +72,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var activityOn = true
     var customerToDestination = false
     val fragmentManager = supportFragmentManager
+    var requestDistance : Double = 0.0
     lateinit var req : Request
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,48 +115,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         }).start()
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-        //intent receive
-        if(step1 == false) {
-            req = intent.getParcelableExtra(EXTRA_REQUEST)
-            driverUserId = FirebaseAuth.getInstance().currentUser!!.uid
-            driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
-            requestLocation = LatLng(req.requestLatitude, req.requestLongitude)
-            requestUserId = req.requestUserId
-            editor.putString(DRIVER_MAP_REQUEST_USER_ID, requestUserId)
-            editor.putString(DRIVERMAP_REQUEST_LATITUDE, req.requestLatitude.toString())
-            editor.putString(DRIVERMAP_REQUEST_LONGITUDE, req.requestLongitude.toString())
-            editor.putString(DRIVERMAP_DRIVER_LATITUDE, req.driverLatitude.toString())
-            editor.putString(DRIVERMAP_DRIVER_LONGITUDE, req.driverLongitude.toString())
-            editor.apply()
-            requestDestination = req.requestDestination
-            toCustomerTextView.text = "손님까지: ${req.requestDistance}km"
-            destinationTextView.text = "손님의 목적지: ${req.requestDestination.substring(5)}"
-            earnTextView.text = "예상 요금: ${caclulateWage()}"
-        }
-        if(step1 == true && step2 == false) {
-            departureBtn.visibility = View.VISIBLE
-            acceptBtn.visibility = View.GONE
-        }
-        if(step2 == true && step3 == false) {
-            departureBtn.visibility = View.GONE
-            toDestinationBtn.visibility = View.VISIBLE
-            acceptBtn.visibility = View.GONE
-        }
-        if(step3 == true) {
-            showFinalAlertDialog()
-            return
-        }
-
-        button4.setOnClickListener {
-            step1 = false
-            editor.putBoolean(DRIVERMAP_STEP1, step1)
-            editor.apply()
-        }
-
         /**
          *  Get Destination LatLng
          */
@@ -185,6 +144,59 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             })
         }
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        val mapFragment = supportFragmentManager
+                .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+        //intent receive
+        if(step1 == false) {
+            req = intent.getParcelableExtra(EXTRA_REQUEST)
+            driverUserId = FirebaseAuth.getInstance().currentUser!!.uid
+            driverLocation = LatLng(req.driverLatitude, req.driverLongitude)
+            requestLatLng = LatLng(req.requestLatitude, req.requestLongitude)
+            requestUserId = req.requestUserId
+            requestDestination = req.requestDestination
+            editor.putString(DRIVER_MAP_REQUEST_USER_ID, requestUserId)
+            editor.putString(DRIVERMAP_REQUEST_LATITUDE, req.requestLatitude.toString())
+            editor.putString(DRIVERMAP_REQUEST_LONGITUDE, req.requestLongitude.toString())
+            editor.putString(DRIVERMAP_DRIVER_LATITUDE, req.driverLatitude.toString())
+            editor.putString(DRIVERMAP_DRIVER_LONGITUDE, req.driverLongitude.toString())
+            editor.apply()
+
+            var requestLocation = android.location.Location("requestLocation")
+            var destinationLocation = android.location.Location("destinationLocation")
+            requestLocation.latitude = requestLatLng!!.latitude
+            requestLocation.longitude = requestLatLng!!.longitude
+            destinationLocation.latitude = destinationLatitude
+            destinationLocation.longitude = destinationLongitude
+
+            requestDistance = requestLocation .distanceTo(destinationLocation)/ 1000.toDouble()
+            toCustomerTextView.text = "손님까지: ${requestDistance}km"
+            destinationTextView.text = "손님의 목적지: ${req.requestDestination.substring(5)}"
+            earnTextView.text = "예상 요금: ${caclulateWage()}"
+        }
+        if(step1 == true && step2 == false) {
+            departureBtn.visibility = View.VISIBLE
+            acceptBtn.visibility = View.GONE
+        }
+        if(step2 == true && step3 == false) {
+            departureBtn.visibility = View.GONE
+            toDestinationBtn.visibility = View.VISIBLE
+            acceptBtn.visibility = View.GONE
+        }
+        if(step3 == true) {
+            showFinalAlertDialog()
+            return
+        }
+
+        button4.setOnClickListener {
+            step1 = false
+            editor.putBoolean(DRIVERMAP_STEP1, step1)
+            editor.apply()
+        }
+
+
 
         //accept button -> add data on customer request using customer userId
 
@@ -261,7 +273,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         .setVehicleType(VehicleType.FIRST)
                         .setRpOption(RpOption.SHORTEST).build()
 
-                val destination = Location.newBuilder("목적지", requestLocation!!.longitude, requestLocation!!.latitude).build()
+                val destination = Location.newBuilder("목적지", requestLatLng!!.longitude, requestLatLng!!.latitude).build()
 
 
                 // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
@@ -485,7 +497,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     sharedPreferences.getString(DRIVERMAP_DRIVER_LATITUDE,"").toDouble(),
                     sharedPreferences.getString(DRIVERMAP_DRIVER_LONGITUDE,"").toDouble()
             )
-            requestLocation = LatLng(
+            requestLatLng = LatLng(
                     sharedPreferences.getString(DRIVERMAP_REQUEST_LATITUDE,"").toDouble(),
                     sharedPreferences.getString(DRIVERMAP_REQUEST_LONGITUDE,"").toDouble()
             )
@@ -513,9 +525,9 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapLayout = findViewById(R.id.mapRelativeLayout) as RelativeLayout
         mapLayout.viewTreeObserver.addOnGlobalLayoutListener {
             val markers = ArrayList<Marker>()
-            if (driverLocation != null && requestLocation != null) {
+            if (driverLocation != null && requestLatLng != null) {
                 markers.add(mMap.addMarker(MarkerOptions().position(driverLocation!!).title("Your Location")))
-                markers.add(mMap.addMarker(MarkerOptions().position(requestLocation!!).title("Request Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))))
+                markers.add(mMap.addMarker(MarkerOptions().position(requestLatLng!!).title("Request Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))))
                 val builder = LatLngBounds.Builder()
                 for (marker in markers) {
                     builder.include(marker.position)
@@ -534,31 +546,31 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 /*
         // Add a marker in Sydney and move the camera
         val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(requestLocation).title("당신의 위치입니다."))
+        mMap.addMarker(MarkerOptions().position(requestLatLng).title("당신의 위치입니다."))
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(requestLocation, 15f))*/
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(requestLatLng, 15f))*/
     }
 
     private fun caclulateWage() : Int {
 
         var fare = 0
-        if (req.requestDistance<= 5.0) {
+        if (requestDistance<= 5.0) {
             fare = 12500
-        } else if (req.requestDistance > 5.0 && req.requestDistance <= 7.5) {
+        } else if (requestDistance > 5.0 && requestDistance <= 7.5) {
             fare = 15000
-        } else if (req.requestDistance > 7.5 && req.requestDistance <= 10.0) {
+        } else if (requestDistance > 7.5 && requestDistance <= 10.0) {
             fare = 17500
-        } else if (req.requestDistance > 10.0 && req.requestDistance <= 12.5) {
+        } else if (requestDistance > 10.0 && requestDistance <= 12.5) {
             fare = 20000
-        } else if (req.requestDistance > 12.5 && req.requestDistance <= 15.0) {
+        } else if (requestDistance > 12.5 && requestDistance <= 15.0) {
             fare = 22500
-        } else if (req.requestDistance > 15.0 && req.requestDistance <= 17.5) {
+        } else if (requestDistance > 15.0 && requestDistance <= 17.5) {
             fare = 25000
-        } else if (req.requestDistance > 17.5 && req.requestDistance <= 20.0) {
+        } else if (requestDistance > 17.5 && requestDistance <= 20.0) {
             fare = 27500
-        } else if (req.requestDistance > 20.0 && req.requestDistance <= 22.5) {
+        } else if (requestDistance > 20.0 && requestDistance <= 22.5) {
             fare = 30000
-        } else if (req.requestDistance > 22.5 && req.requestDistance <= 25.0) {
+        } else if (requestDistance > 22.5 && requestDistance <= 25.0) {
             fare = 32500
         }
         return fare

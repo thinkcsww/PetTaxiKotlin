@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
@@ -34,6 +35,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+        //Button Animation
+
+        val animScale = AnimationUtils.loadAnimation(this@MainActivity, R.anim.button_main)
+        startBtn.startAnimation(animScale)
 
         Log.d("USERID", sharedPreferences.getString(DRIVER_NICKNAME, ""))
         driverLogon = sharedPreferences.getBoolean(DRIVER_LOGON, false)
@@ -66,6 +71,7 @@ class MainActivity : AppCompatActivity() {
                 finish()
                 return
             } else if(driverLogon == true && driverAuthorized == true){
+                toast("자동 로그인되었습니다.")
                 val intent = Intent(this@MainActivity, ViewRequestActivity::class.java)
                 startActivity(intent)
                 finish()
@@ -76,6 +82,7 @@ class MainActivity : AppCompatActivity() {
                 finish()
                 return
             } else if (customerLogon == true) {
+                toast("자동 로그인되었습니다.")
                 val intent = Intent(this@MainActivity, CustomerMapActivity::class.java)
                 startActivity(intent)
                 finish()
