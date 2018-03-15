@@ -206,7 +206,7 @@ class ViewRequestActivity : AppCompatActivity() {
                 if(requestLatitudes.size > i && requestLongitudes.size > i && requestUserId.size > i
                         && lastKnownLocation != null) {
 
-                    var req : Request = Request(0.0,0.0,"",0.0,0.0,"","")
+                    var req : Request = Request(0.0,0.0,"",0.0,0.0,"","",0.0)
                     req.requestLatitude = requestLatitudes[i]
                     req.requestLongitude = requestLongitudes[i]
                     req.driverLatitude = lastKnownLocation!!.latitude
@@ -214,6 +214,7 @@ class ViewRequestActivity : AppCompatActivity() {
                     req.requestUserId = requestUserId[i]
                     req.requestDestination = requestDestinations[i]
                     req.requestNumber = requestNumbers[i]
+                    req.distanceToCustomer = requestDistances[i]
                     //req.requestType = requestTypes[i]
 
                     var intent = Intent(this@ViewRequestActivity, DriverMapActivity::class.java)

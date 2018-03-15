@@ -12,14 +12,10 @@ import android.util.Log
 import android.view.animation.AnimationUtils
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
-import com.kakao.kakaonavi.KakaoNaviWebViewActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
-import org.jetbrains.anko.share
 import org.jetbrains.anko.toast
-import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity() {
     var transportActive : Boolean = false
@@ -30,15 +26,20 @@ class MainActivity : AppCompatActivity() {
     var driverAuthorized = false
     var driverBeforeDeparture = false
     var driverBeforToDestination = false
+    var buttonAnim = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         var editor = sharedPreferences.edit()
+
+
         //Button Animation
 
-        val animScale = AnimationUtils.loadAnimation(this@MainActivity, R.anim.button_main)
-        startBtn.startAnimation(animScale)
+        val animScaleToBig = AnimationUtils.loadAnimation(this@MainActivity, R.anim.button_anim)
+        startBtn.startAnimation(animScaleToBig)
+
+
 
         Log.d("USERID", sharedPreferences.getString(DRIVER_NICKNAME, ""))
         driverLogon = sharedPreferences.getBoolean(DRIVER_LOGON, false)
@@ -49,9 +50,7 @@ class MainActivity : AppCompatActivity() {
         driverAuthorized = sharedPreferences.getBoolean(DRIVER_LICENSE_AUTHORIZED, false)
         driverBeforeDeparture = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
         driverBeforToDestination = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
-//        val intent = Intent(this@MainActivity, DriverRegisteActivty::class.java)
-//        startActivity(intent)
-//        return
+
         if(transportActive == true || meetActivityActive == true ) {
             val intent = Intent(this@MainActivity, MeetActivity::class.java)
             startActivity(intent)
@@ -135,5 +134,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
 
 }

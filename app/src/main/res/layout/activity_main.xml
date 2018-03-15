@@ -54,15 +54,15 @@
     <Button
         android:id="@+id/startBtn"
         style="@android:style/Widget.Button"
-        android:layout_width="0dp"
+        android:layout_width="387dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:background="@color/pink"
         android:text="시작하기!"
         android:textColor="@color/cardview_light_background"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

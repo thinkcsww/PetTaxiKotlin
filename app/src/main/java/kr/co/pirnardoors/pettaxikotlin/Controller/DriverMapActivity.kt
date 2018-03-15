@@ -172,7 +172,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             destinationLocation.longitude = destinationLongitude
 
             requestDistance = requestLocation .distanceTo(destinationLocation)/ 1000.toDouble()
-            toCustomerTextView.text = "손님까지: ${requestDistance}km"
+            toCustomerTextView.text = "손님까지: ${req.distanceToCustomer}km"
             destinationTextView.text = "손님의 목적지: ${req.requestDestination.substring(5)}"
             earnTextView.text = "예상 요금: ${caclulateWage()}"
         }
@@ -211,6 +211,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 dialogInterface, i ->
                 departureBtn.visibility = View.VISIBLE
                 acceptBtn.visibility = View.INVISIBLE
+                infoLayout.visibility = View.GONE
 
 //                acceptBtn.visibility = View.INVISIBLE
                 var databaseCustomer = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId)
@@ -322,7 +323,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-            myRunnable = Runnable {
+            /*myRunnable = Runnable {
                 val transaction = fragmentManager.beginTransaction()
                 val finishFragment = DriverFinishFragment()
                 transaction.replace(R.id.fragmentHolder, finishFragment)
@@ -332,7 +333,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 handler.removeCallbacks(myRunnable)
             }
 
-            handler.postDelayed(myRunnable, 2000)
+            handler.postDelayed(myRunnable, 2000)*/
             }
 
     } // Oncreate finish
