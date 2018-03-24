@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 finish()
                 return
-            } else if (driverLogon == true && driverAuthorized == true && driverBeforeDeparture == true ) {
+            } else if (driverLogon == true && driverAuthorized == true && driverBeforToDestination == true ) {
                 val intent = Intent(this@MainActivity, DriverMapActivity::class.java)
                 startActivity(intent)
                 finish()

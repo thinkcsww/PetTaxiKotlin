@@ -9,8 +9,10 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -37,6 +39,8 @@ import kr.co.pirnardoors.pettaxikotlin.R
 import org.jetbrains.anko.toast
 import com.kakao.kakaonavi.KakaoNaviParams
 import com.kakao.kakaonavi.KakaoNaviService
+import kr.co.pirnardoors.pettaxikotlin.R.id.departureBtn
+import kr.co.pirnardoors.pettaxikotlin.R.id.toDestinationBtn
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import java.io.IOException
 import java.util.*
@@ -73,6 +77,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var customerToDestination = false
     val fragmentManager = supportFragmentManager
     var requestDistance : Double = 0.0
+    var finalAlertDialog = false
     lateinit var req : Request
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,23 +97,59 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
          *   to calculate wage, distance, driverTimes, earn of this month.
          */
         val thread = Thread(object : Runnable{
+            var alerted = false
             override fun run() {
+
                 try {
-                     while(activityOn == true) {
-                         Thread.sleep(2000)
-                         if (step1 == true && step2 == true) {
-                             runOnUiThread(object : Runnable {
-                                 override fun run() {
-                                     getFinalInformationForDriver()
-                                     if(customerToDestination == true && step3 == true) {
-                                         showFinalAlertDialog()
-                                     }
-                                     Log.d("WHATTHEHELL", "나는 살아있다!!")
-                                 }
-                             })
-                         }
-                     }
-                } catch (e: IOException) {
+                    while (activityOn == true) {
+                        Thread.sleep(2000)
+                        if (step1 == true && step2 == true) {
+                            runOnUiThread(object : Runnable {
+                                override fun run() {
+                                    getFinalInformationForDriver()
+                                    if (customerToDestination == true && step3 == true) {
+                                        showFinalAlertDialog()
+                                    }
+                                    Log.d("WHATTHEHELL", "나는 살아있다!!")
+                                }
+                            })
+                        }
+                        if (step1 == false && alerted == false) {
+                            destinationDatabase.addValueEventListener(object : ValueEventListener {
+                                override fun onCancelled(p0: DatabaseError?) {
+                                    if (p0 != null) p0.message
+                                }
+
+                                override fun onDataChange(p0: DataSnapshot?) {
+                                    if (p0 != null) {
+                                        var exist = p0.child(req.requestUserId).child("DD").getValue()
+                                        Log.d("WhatTheHell,", exist.toString())
+                                        if (exist == null) {
+                                            val requestCancledAlertDialog = AlertDialog.Builder(this@DriverMapActivity)
+                                            val requestCancleDialogView = layoutInflater.inflate(R.layout.layout_request_cancled, null)
+                                            requestCancledAlertDialog.setView(requestCancleDialogView)
+                                            val dialog = requestCancledAlertDialog.create()
+                                            dialog.setCanceledOnTouchOutside(false)
+                                            val okBtn: Button = requestCancleDialogView.findViewById(R.id.okBtn)
+                                            okBtn.setOnClickListener {
+                                                dialog.dismiss()
+                                                finish()
+                                                return@setOnClickListener
+                                            }
+                                            try {
+                                                dialog.show()
+                                            } catch (e : WindowManager.BadTokenException) {
+                                                e.message
+                                            }
+                                            alerted = true
+                                        }
+                                    }
+                                }
+                            })
+                        }
+
+                    }
+                } catch (e : IOException) {
                     e.message
                 }
             }
@@ -133,13 +174,17 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 override fun onDataChange(p0: DataSnapshot?) {
                     var dataSnapshot = p0
                     if (dataSnapshot != null) {
-                        destinationLatitude = dataSnapshot.child(requestUserId).child("DestinationLatitude").getValue().toString().toDouble()
-                        destinationLongitude = dataSnapshot.child(requestUserId).child("DestinationLongitude").getValue().toString().toDouble()
-                        customerToDestination = dataSnapshot.child(requestUserId).child("TD").getValue().toString().toBoolean()
-                        editor.putBoolean(CUSTOMER_TO_DESTINATION, customerToDestination)
-                        editor.putString(DESTINATION_LATITUDE, destinationLatitude.toString())
-                        editor.putString(DESTINATION_LONGITUDE, destinationLongitude.toString())
-                        editor.apply()
+                        try {
+                            destinationLatitude = dataSnapshot.child(requestUserId).child("DestinationLatitude").getValue().toString().toDouble()
+                            destinationLongitude = dataSnapshot.child(requestUserId).child("DestinationLongitude").getValue().toString().toDouble()
+                            customerToDestination = dataSnapshot.child(requestUserId).child("TD").getValue().toString().toBoolean()
+                            editor.putBoolean(CUSTOMER_TO_DESTINATION, customerToDestination)
+                            editor.putString(DESTINATION_LATITUDE, destinationLatitude.toString())
+                            editor.putString(DESTINATION_LONGITUDE, destinationLongitude.toString())
+                            editor.apply()
+                        } catch( e : NumberFormatException) {
+                            e.message
+                        }
                     }
                 }
             })
@@ -191,9 +236,16 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         button4.setOnClickListener {
-            step1 = false
+            step1 = false; step2 = false; step3 = false; customerToDestination = false
             editor.putBoolean(DRIVERMAP_STEP1, step1)
+            editor.putBoolean(DRIVERMAP_STEP2, step2)
+            editor.putBoolean(DRIVERMAP_STEP3, step3)
+            editor.putBoolean(CUSTOMER_TO_DESTINATION, customerToDestination)
+            editor.putString(DRIVER_MAP_REQUEST_USER_ID, "")
             editor.apply()
+            editor.apply()
+            finish()
+            return@setOnClickListener
         }
 
 
@@ -264,10 +316,17 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         // Departure Button -> 출발했음을 알림
         departureBtn.setOnClickListener {
             departureBtn.visibility = View.GONE
-            val handler = Handler()
             //Write in DB that driver is departure
             destinationDatabase.child(requestUserId).child("DD").setValue("true")
-            myRunnable = Runnable {
+//                explainText.visibility = View.INVISIBLE
+
+//            explainText.visibility = View.VISIBLE
+            val departureAlertDialog = AlertDialog.Builder(this@DriverMapActivity)
+            val departureDialogView = layoutInflater.inflate(R.layout.layout_driver_departure, null)
+            departureAlertDialog.setView(departureDialogView)
+            val dialog = departureAlertDialog.create()
+            val okBtn : Button = departureDialogView.findViewById(R.id.okBtn)
+            okBtn.setOnClickListener {
                 toDestinationBtn.visibility = View.VISIBLE
                 val options = NaviOptions.newBuilder()
                         .setCoordType(CoordType.WGS84)
@@ -285,17 +344,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
                 KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
                 toDestinationBtn.visibility = View.VISIBLE
-//                explainText.visibility = View.INVISIBLE
-                handler.removeCallbacks(myRunnable)
-            }
-            handler.postDelayed(myRunnable, 5000)
-//            explainText.visibility = View.VISIBLE
-            val departureAlertDialog = AlertDialog.Builder(this@DriverMapActivity)
-            val departureDialogView = layoutInflater.inflate(R.layout.layout_driver_departure, null)
-            departureAlertDialog.setView(departureDialogView)
-            val dialog = departureAlertDialog.create()
-            val okBtn : Button = departureDialogView.findViewById(R.id.okBtn)
-            okBtn.setOnClickListener {
                 dialog.dismiss()
             }
             dialog.show()
@@ -394,7 +442,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         val earnTextView : TextView = finishDialogView.findViewById(R.id.earnTextView)
         val dialog = finishAlertDialog.create()
         dialog.setCanceledOnTouchOutside(false)
-
+        finalAlertDialog = true
         activityOn = false
         calendar = Calendar.getInstance()
         year = calendar.get(Calendar.YEAR).toString()
@@ -419,8 +467,6 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             editor.putString(DRIVER_MAP_REQUEST_USER_ID, "")
             editor.apply()
             dialog.dismiss()
-            val intent = Intent(this@DriverMapActivity, ViewRequestActivity::class.java)
-            startActivity(intent)
             finish()
             return@setOnClickListener
 
@@ -429,70 +475,30 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    /**
-         *  WebView kakaonavi
-         */
+    override fun onBackPressed() {
+        val editor = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit()
+        if (finalAlertDialog == true) {
+            driverDB.child(driverUserId).child(year + month).child("DriveTime").setValue(driveTime + 1)
+            driverDB.child(driverUserId).child(year + month).child("Earn").setValue(earn + wage)
 
-    /*    val kakaoWebView = findViewById(R.id.webView) as WebView
-        kakaoWebView!!.setWebViewClient(KakaoWebViewClient(this))
-        val settings = webView.settings
-        kakaoWebView.settings.javaScriptEnabled
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            val cookieManager = CookieManager.getInstance()
-            cookieManager.setAcceptCookie(true)
-            cookieManager.setAcceptThirdPartyCookies(webView, true)
+            driverDB.child(driverUserId).child("TimeStamp").setValue("")
+            step1 = false; step2 = false; step3 = false; customerToDestination = false
+            editor.putBoolean(DRIVERMAP_STEP1, step1)
+            editor.putBoolean(DRIVERMAP_STEP2, step2)
+            editor.putBoolean(DRIVERMAP_STEP3, step3)
+            editor.putBoolean(CUSTOMER_TO_DESTINATION, customerToDestination)
+            editor.putString(DRIVER_MAP_REQUEST_USER_ID, "")
+            editor.apply()
+            finish()
+            return
         }
+        if(step3 == true) {
+            toast("지금은 종료할 수 없습니다.")
+            return
+        }
+        super.onBackPressed()
 
-        val intent = intent
-        val intentData = intent.data
-        if (intentData == null) run {
-        kakaoWebView.loadData("<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "<meta charset=\"utf-8\"/>\n" +
-                "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"/>\n" +
-                "<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width\"/>\n" +
-                "<title>API Demo - Kakao JavaScript SDK</title>\n" +
-                "<script src=\"//developers.kakao.com/sdk/js/kakao.min.js\"></script>\n" +
-                "\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "<a id=\"navi\" href=\"#\" onclick=\"navi();\">\n" +
-                "<img src=\"/assets/img/about/buttons/navi/kakaonavi_btn_medium.png\"/>\n" +
-                "</a>\n" +
-                "<script type='text/javascript'>\n" +
-                "  //<![CDATA[\n" +
-                "    // 사용할 앱의 JavaScript 키를 설정해 주세요.\n" +
-                "    Kakao.init('ac61973c37daf8c5af4e99ee9b1e2caf');\n" +
-                "    // 카카오 로그인 버튼을 생성합니다.\n" +
-                "    function navi(){\n" +
-                "        Kakao.Navi.start({\n" +
-                "            name: \"현대백화점 판교점\",\n" +
-                "            x: 127.11205203011632,\n" +
-                "            y: 37.39279717586919,\n" +
-                "            coordType: 'wgs84'\n" +
-                "        });\n" +
-                "    }\n" +
-                "  //]]>\n" +
-                "</script>\n" +
-                "\n" +
-                "</body>\n" +
-                "</html>", "text/html; charset=utf-8", "UTF-8")
-        }*/
-
-        //Kakao navigation
-
-//        val options = NaviOptions.newBuilder()
-//                .setCoordType(CoordType.WGS84)
-//                .setVehicleType(VehicleType.FIRST)
-//                .setRpOption(RpOption.SHORTEST).build()
-//
-//        val destination = Location.newBuilder("목적지", req.requestLatitude, req.requestLongitude).build()
-//        val builder = KakaoNaviParams.newBuilder(destination).setNaviOptions(options)
-
-
+    }
 
     private fun reincarnation() {
         var sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

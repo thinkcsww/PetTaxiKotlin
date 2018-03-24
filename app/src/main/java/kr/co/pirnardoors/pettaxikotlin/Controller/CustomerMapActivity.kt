@@ -434,10 +434,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             if (customerState.requestActive == false) {
                                 editor.putString(BOARDING_NUMBER, customerState.number)
 
-
-
-
-                                if (!TextUtils.isEmpty(number) && destination != "" && departureLatLng != null) {
+                                if (!TextUtils.isEmpty(number) && destination != "" && departureLatLng != null
+                                    && timeTextViewInDestinationLayout.text.length > 17.toInt()) {
                                     customerState.requestActive = true
                                     editor.putBoolean(REQUEST_ACTIVE, customerState.requestActive)
                                     editor.apply()
@@ -473,6 +471,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     Log.d("ASASD hour : ", (calendar.get(Calendar.HOUR_OF_DAY) + 1).toString())
                                     Log.d("ASASD currentHour : ", currentHour.toString())
                                     Log.d("ASASD minute : ", minute.toString())
+
                                     if (
                                             currentHour == calendar.get(Calendar.HOUR_OF_DAY) + 1
                                             && currentYear == calendar.get(Calendar.YEAR)
@@ -488,6 +487,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                         Toast.makeText(this@CustomerMapActivity, "${reserveTime}예약되었습니다.", Toast.LENGTH_SHORT).show()
                                         dialog.dismiss()
                                     }
+
                                 } else if (destination == "") {
                                     toast("목적지를 설정해주세요.")
                                 } else if (number.isEmpty()) {
@@ -501,6 +501,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                         }
                         noBtn.setOnClickListener {
+                            number = ""
                             dialog.dismiss()
                         }
                         dialog.show()
@@ -517,6 +518,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         destinationText.text = "목적지를 설정해주세요."
                         departureText.text = "출발지를 설정해주세요."
                         callBtn.setText("캣카독 부르기")
+                        number = ""
                         destination = ""
                         geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
                             if (error == null) {
@@ -666,7 +668,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     .setContentIntent(pendingIntent)
                     .setContentTitle("CatCarDog 알림")
                     .setContentText("Driver가 출발하였습니다.")
-                    .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
                     .setPriority(NotificationManager.IMPORTANCE_HIGH)
         } else {
@@ -674,7 +676,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     .setAutoCancel(true)
                     .setContentTitle("CatCarDog 알림")
                     .setContentText("Driver가 출발하였습니다.")
-                    .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
                     .setPriority(Notification.PRIORITY_MAX)
         }
@@ -828,7 +830,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             .setContentIntent(pendingIntent)
                             .setContentTitle("CatCarDog 알림")
                             .setContentText("Driver가 매칭되었습니다.")
-                            .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                            .setSmallIcon(R.mipmap.ic_launcher)
                             .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
                             .setPriority(NotificationManager.IMPORTANCE_HIGH)
                 } else {
@@ -836,7 +838,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             .setAutoCancel(true)
                             .setContentTitle("CatCarDog 알림")
                             .setContentText("Driver가 매칭되었습니다.")
-                            .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                            .setSmallIcon(R.mipmap.ic_launcher)
                             .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
                             .setPriority(Notification.PRIORITY_MAX)
                 }

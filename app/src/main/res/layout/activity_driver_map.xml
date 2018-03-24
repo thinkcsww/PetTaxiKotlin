@@ -156,20 +156,6 @@
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/explainText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/acceptBtn"
-            android:layout_centerHorizontal="true"
-            android:text="손님과 만난 후 카카오네비를 종료하고 \n현재 화면으로 돌아와주세요"
-            android:textAlignment="center"
-            android:textColor="@color/colorPrimaryDark"
-            android:textSize="24sp"
-            android:visibility="visible"
-            tools:layout_editor_absoluteX="15dp"
-            tools:layout_editor_absoluteY="495dp" />
-
         <Button
             android:id="@+id/button4"
             android:layout_width="wrap_content"
@@ -177,11 +163,12 @@
             android:layout_alignLeft="@+id/acceptBtn"
             android:layout_alignParentTop="true"
             android:layout_alignStart="@+id/acceptBtn"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="304dp"
+            android:layout_marginTop="16dp"
             android:text="Button"
             map:layout_constraintEnd_toEndOf="parent"
-            tools:layout_editor_absoluteY="142dp"
-            android:layout_marginRight="8dp" />
+            map:layout_constraintTop_toTopOf="parent"
+            tools:ignore="NotSibling" />
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/constraintLayout2"

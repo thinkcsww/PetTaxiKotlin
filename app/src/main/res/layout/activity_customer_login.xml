@@ -10,38 +10,39 @@
         android:id="@+id/imageView2"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="fitXY"
+        android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/start2" />
+        app:srcCompat="@drawable/main" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@android:color/holo_green_dark"
-        android:fontFamily="@font/marko_one"
+        android:background="@color/pink"
+        android:fontFamily="@font/wendy_one"
         android:paddingBottom="8dp"
         android:paddingTop="8dp"
         android:text="CatCarDog"
         android:textAlignment="center"
         android:textColor="@color/cardview_light_background"
-        android:textSize="30sp"
+        android:textSize="36sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="0dp"
         android:layout_height="145dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="76dp"
+        android:layout_marginTop="52dp"
         android:background="@drawable/text_background"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
@@ -67,19 +68,20 @@
             android:ems="10"
             android:fontFamily="@font/marko_one"
             android:hint="Password"
-            android:inputType="textPersonName" />
+            android:inputType="textPassword" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout6"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="316dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent">
 
         <Button
@@ -89,7 +91,8 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:background="@android:color/holo_green_dark"
+            android:background="@color/pink"
+            android:fontFamily="@font/wendy_one"
             android:text="로그인"
             android:textColor="@android:color/background_light" />
 
@@ -100,7 +103,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:background="@android:color/holo_green_light"
+            android:background="@color/light_pink"
             android:text="회원가입"
             android:textColor="@android:color/background_light" />
     </LinearLayout>

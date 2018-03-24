@@ -15,6 +15,8 @@ import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.Toast
+import com.firebase.geofire.GeoFire
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -28,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_meet.*
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.R.drawable.location
 import kr.co.pirnardoors.pettaxikotlin.R.id.*
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
@@ -41,7 +44,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
     val requestDB = FirebaseDatabase.getInstance().getReference("Request")
-
+    val geoFire = GeoFire(requestDB)
 
     var carNumber = "1"
     var carColor = ""
@@ -123,6 +126,14 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             editor.putBoolean(DRIVER_MATCHED_ALARM, false)
             editor.putBoolean(ALARM_ALERTED, false)
             editor.apply()
+            geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
+                if (error == null) {
+                    Toast.makeText(this@MeetActivity, "취소되었습니다.", Toast.LENGTH_SHORT).show()
+
+                } else {
+                    error.message
+                }
+            })
             finish()
         }
         receiveDestinationInfo()
@@ -222,20 +233,24 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
             }
             override fun onDataChange(dataSnapshot: DataSnapshot?) {
                 if(dataSnapshot != null) {
-                    destinationLatitude = dataSnapshot.child("DestinationLatitude").getValue().toString().toDouble()
-                    destinationLongitude = dataSnapshot.child("DestinationLongitude").getValue().toString().toDouble()
-                    destination = dataSnapshot.child("Destination").getValue().toString()
-                    driverUserId = dataSnapshot.child("MD").getValue().toString()
-                    editor.putString(DESTINATION, destination)
-                    editor.apply()
+                    try {
+                        destinationLatitude = dataSnapshot.child("DestinationLatitude").getValue().toString().toDouble()
+                        destinationLongitude = dataSnapshot.child("DestinationLongitude").getValue().toString().toDouble()
+                        destination = dataSnapshot.child("Destination").getValue().toString()
+                        driverUserId = dataSnapshot.child("MD").getValue().toString()
+                        editor.putString(DESTINATION, destination)
+                        editor.apply()
 
-                    destinationText.text = "$destination"
-                    destinationLocation  = Location("currentPosition")
-                    destinationLocation?.latitude = destinationLatitude.toString().toDouble()
-                    destinationLocation?.longitude = destinationLongitude.toString().toDouble()
+                        destinationText.text = "$destination"
+                        destinationLocation = Location("currentPosition")
+                        destinationLocation?.latitude = destinationLatitude.toString().toDouble()
+                        destinationLocation?.longitude = destinationLongitude.toString().toDouble()
 
-                    if(driverUserId != "") {
-                        getDriverInfo()
+                        if (driverUserId != "") {
+                            getDriverInfo()
+                        }
+                    } catch (e : NumberFormatException) {
+                        e.message
                     }
 
                 }

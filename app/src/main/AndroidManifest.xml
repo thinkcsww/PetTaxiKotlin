@@ -46,10 +46,12 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity android:name=".Controller.StartActivity" />
-        <activity android:name=".Controller.CustomerLoginActivity" />
+        <activity android:name=".Controller.CustomerLoginActivity"
+            android:windowSoftInputMode="stateVisible"/>
         <activity android:name=".Controller.DriverStartActivity" />
         <activity android:name=".Controller.DriverRegisterActivity2" />
-        <activity android:name=".Controller.CustomerRegisterActivity" />
+        <activity android:name=".Controller.CustomerRegisterActivity"
+            android:windowSoftInputMode="stateAlwaysVisible"/>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

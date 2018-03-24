@@ -29,7 +29,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     .setAutoCancel(true)
                     .setContentTitle("CatCarDog 알림")
                     .setContentText("1시간 후 예약시간입니다.")
-                    .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
                     .setPriority(NotificationManager.IMPORTANCE_HIGH)
         } else {
@@ -38,7 +38,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     .setAutoCancel(true)
                     .setContentTitle("CatCarDog 알림")
                     .setContentText("1시간 후 예약시간입니다.")
-                    .setSmallIcon(R.drawable.ic_subdirectory_arrow_left_black_24dp)
+                    .setSmallIcon(R.mipmap.ic_launcher)
                     .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_SOUND)
                     .setPriority(Notification.PRIORITY_MAX)
         }
