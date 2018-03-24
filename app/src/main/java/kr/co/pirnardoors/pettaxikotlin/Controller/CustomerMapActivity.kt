@@ -24,6 +24,9 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.GlideDrawable
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.firebase.geofire.GeoFire
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.places.ui.PlacePicker
@@ -45,6 +48,7 @@ import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
 import java.io.File
 import java.io.IOException
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -154,6 +158,28 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 }
             }).start()
+
+        mapRelativeLayout.setOnTouchListener(object : OnSwipeTouchListener(this@CustomerMapActivity) {
+            override fun onSwipeRight() {
+                if (isPageOpen == false) {
+                    menuLayout.startAnimation(translateAnimRight)
+                    menuLayout.setVisibility(View.VISIBLE)
+                    menuBtn.visibility = View.INVISIBLE
+                } else {
+                    menuLayout.startAnimation(translateAnimLeft)
+                }
+            }
+            override fun onSwipeLeft() {
+                if(isPageOpen == true) {
+                    menuLayout.startAnimation(translateAnimLeft)
+                    menuBtn.visibility = View.VISIBLE
+                }
+            }
+        })
+
+
+
+
 
         // Driver Info Button when driver is matched
 
@@ -584,9 +610,22 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     if (dataSnapshot != null) {
                         profileImageUrl = dataSnapshot.child(userId).child("Profile").getValue().toString()
                         if (profileImageUrl != "") {
+                            imageProgressBar.visibility = View.VISIBLE
                             Glide.with(this@CustomerMapActivity).load(profileImageUrl)
                                     .centerCrop()
                                     .bitmapTransform(CropCircleTransformation(this@CustomerMapActivity))
+                                    .listener(object : RequestListener<String, GlideDrawable> {
+                                        override fun onException(e: Exception?, model: String?, target: Target<GlideDrawable>?, isFirstResource: Boolean): Boolean {
+                                            imageProgressBar.visibility = View.GONE
+                                            return false
+                                        }
+
+                                        override fun onResourceReady(resource: GlideDrawable?, model: String?, target: Target<GlideDrawable>?, isFromMemoryCache: Boolean, isFirstResource: Boolean): Boolean {
+                                            imageProgressBar.visibility = View.GONE
+                                            return false
+                                        }
+
+                                    })
                                     .into(profileImageView)
                         } else {
                             Glide.with(this@CustomerMapActivity).load(R.drawable.profile)
@@ -997,6 +1036,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        //If gps is not ready show the alert dialog to set location setting.
         var isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         Log.d("GPS", isGPSEnabled.toString())
         if(isGPSEnabled == false) {
@@ -1024,6 +1065,8 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             dialog.show()
         }
 
+        /// Location listener
+
         locationListener = object :LocationListener{
             override fun onLocationChanged(p0: Location?) {
                 var location = p0
@@ -1048,7 +1091,9 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 100f, locationListener)
+
+        // if gps is ready setting a map, curLocationTextView
         if(isGPSEnabled) {
 
             try {
@@ -1073,7 +1118,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, locationListener)
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 100f, locationListener)
 
         val lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(lastKnownLocation != null) {

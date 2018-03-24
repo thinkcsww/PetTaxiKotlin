@@ -166,7 +166,9 @@
             android:textAlignment="center"
             android:textColor="@color/colorPrimaryDark"
             android:textSize="24sp"
-            android:visibility="gone" />
+            android:visibility="visible"
+            tools:layout_editor_absoluteX="15dp"
+            tools:layout_editor_absoluteY="495dp" />
 
         <Button
             android:id="@+id/button4"

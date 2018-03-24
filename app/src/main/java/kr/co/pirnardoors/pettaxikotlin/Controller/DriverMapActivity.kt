@@ -285,11 +285,20 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
                 KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
                 toDestinationBtn.visibility = View.VISIBLE
-                explainText.visibility = View.INVISIBLE
+//                explainText.visibility = View.INVISIBLE
                 handler.removeCallbacks(myRunnable)
             }
             handler.postDelayed(myRunnable, 5000)
-            explainText.visibility = View.VISIBLE
+//            explainText.visibility = View.VISIBLE
+            val departureAlertDialog = AlertDialog.Builder(this@DriverMapActivity)
+            val departureDialogView = layoutInflater.inflate(R.layout.layout_driver_departure, null)
+            departureAlertDialog.setView(departureDialogView)
+            val dialog = departureAlertDialog.create()
+            val okBtn : Button = departureDialogView.findViewById(R.id.okBtn)
+            okBtn.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
             step2 = true
             editor.putBoolean(DRIVERMAP_STEP2, step2)
             editor.apply()
