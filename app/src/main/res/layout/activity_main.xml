@@ -58,6 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:background="@color/pink"
+        android:fontFamily="@font/wendy_one"
         android:text="시작하기!"
         android:textColor="@color/cardview_light_background"
         android:textSize="18sp"

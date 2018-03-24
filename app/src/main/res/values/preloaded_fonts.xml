@@ -2,6 +2,8 @@
 <resources>
     <array name="preloaded_fonts" translatable="false">
         <item>@font/alfa_slab_one</item>
+        <item>@font/baloo_da</item>
+        <item>@font/goblin_one</item>
         <item>@font/marko_one</item>
         <item>@font/wendy_one</item>
     </array>
