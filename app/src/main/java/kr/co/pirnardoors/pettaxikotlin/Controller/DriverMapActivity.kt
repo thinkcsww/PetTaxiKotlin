@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationListener
 import android.location.LocationManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -43,6 +44,7 @@ import kr.co.pirnardoors.pettaxikotlin.R.id.departureBtn
 import kr.co.pirnardoors.pettaxikotlin.R.id.toDestinationBtn
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import java.io.IOException
+import java.lang.Math.round
 import java.util.*
 
 
@@ -79,6 +81,13 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     var requestDistance : Double = 0.0
     var finalAlertDialog = false
     lateinit var req : Request
+
+    //location Part
+
+    lateinit var locationManager : LocationManager
+    var locationListener : LocationListener? = null
+    var lastKnownLocation : android.location.Location? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_driver_map)
@@ -96,6 +105,10 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
          *   If flag is true -> get the information from the DB
          *   to calculate wage, distance, driverTimes, earn of this month.
          */
+
+        Log.d("Step1", step1.toString())
+        Log.d("Step2", step2.toString())
+        Log.d("Step3", step3.toString())
         val thread = Thread(object : Runnable{
             var alerted = false
             override fun run() {
@@ -122,7 +135,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                                 override fun onDataChange(p0: DataSnapshot?) {
                                     if (p0 != null) {
-                                        var exist = p0.child(req.requestUserId).child("DD").getValue()
+                                        var exist = p0.child(requestUserId).child("DD").getValue()
                                         Log.d("WhatTheHell,", exist.toString())
                                         if (exist == null) {
                                             val requestCancledAlertDialog = AlertDialog.Builder(this@DriverMapActivity)
@@ -220,6 +233,9 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             toCustomerTextView.text = "손님까지: ${req.distanceToCustomer}km"
             destinationTextView.text = "손님의 목적지: ${req.requestDestination.substring(5)}"
             earnTextView.text = "예상 요금: ${caclulateWage()}"
+
+            editor.putString(DRIVERMAP_WAGE, caclulateWage().toString())
+            editor.putString(CUSTOMER_DESTINATION, req.requestDestination.substring(5))
         }
         if(step1 == true && step2 == false) {
             departureBtn.visibility = View.VISIBLE
@@ -263,7 +279,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 dialogInterface, i ->
                 departureBtn.visibility = View.VISIBLE
                 acceptBtn.visibility = View.INVISIBLE
-                infoLayout.visibility = View.GONE
+//                infoLayout.visibility = View.GONE
 
 //                acceptBtn.visibility = View.INVISIBLE
                 var databaseCustomer = FirebaseDatabase.getInstance().getReference("Request").child(requestUserId)
@@ -316,6 +332,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         // Departure Button -> 출발했음을 알림
         departureBtn.setOnClickListener {
             departureBtn.visibility = View.GONE
+            infoLayout.visibility = View.GONE
             //Write in DB that driver is departure
             destinationDatabase.child(requestUserId).child("DD").setValue("true")
 //                explainText.visibility = View.INVISIBLE
@@ -465,6 +482,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             editor.putBoolean(DRIVERMAP_STEP3, step3)
             editor.putBoolean(CUSTOMER_TO_DESTINATION, customerToDestination)
             editor.putString(DRIVER_MAP_REQUEST_USER_ID, "")
+            editor.putString(CUSTOMER_DESTINATION, "")
             editor.apply()
             dialog.dismiss()
             finish()
@@ -523,18 +541,62 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         step1 = sharedPreferences.getBoolean(DRIVERMAP_STEP1, false)
         step2 = sharedPreferences.getBoolean(DRIVERMAP_STEP2, false)
         step3 = sharedPreferences.getBoolean(DRIVERMAP_STEP3, false)
+        requestUserId = sharedPreferences.getString(DRIVER_MAP_REQUEST_USER_ID, "")
+
 
         if(step2 == true) {
+            infoLayout.visibility = View.GONE
             toDestinationBtn.visibility = View.VISIBLE
             departureBtn.visibility = View.GONE
         } else if (step1 == true && step2 == false) {
-            toDestinationBtn.visibility = View.GONE
-            departureBtn.visibility = View.VISIBLE
+            locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+            var destinationLocation = android.location.Location("destinationLocation")
+            destinationLocation.latitude = sharedPreferences.getString(DRIVERMAP_REQUEST_LATITUDE, "").toDouble()
+            destinationLocation.longitude = sharedPreferences.getString(DRIVERMAP_REQUEST_LONGITUDE, "").toDouble()
+            locationListener = object : LocationListener {
+                override fun onLocationChanged(p0: android.location.Location?) {
+                }
+
+                override fun onStatusChanged(p0: String?, p1: Int, p2: Bundle?) {
+                }
+
+                override fun onProviderEnabled(p0: String?) {
+
+                }
+
+                override fun onProviderDisabled(p0: String?) {
+                    toast("위치 정보를 켜주세요.")
+                }
+
+            }
+
+            if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                return
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 100f, locationListener)
+            lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            Log.d("LastKnownLocation : ", lastKnownLocation.toString())
+
+            if(lastKnownLocation != null) {
+                var distanceToCustomer = round(lastKnownLocation!!.distanceTo(destinationLocation) / 1000.toDouble())
+                var requestDestination = sharedPreferences.getString(CUSTOMER_DESTINATION, "")
+                var wage = sharedPreferences.getString(DRIVERMAP_WAGE, "").toInt()
+                toCustomerTextView.text = "손님까지: ${distanceToCustomer}km"
+                destinationTextView.text = "손님의 목적지: ${requestDestination}"
+                earnTextView.text = "예상 요금: ${wage}"
+                toDestinationBtn.visibility = View.GONE
+                departureBtn.visibility = View.VISIBLE
+            }
+
+
         }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
 
 
         // Double marker driver, and customer

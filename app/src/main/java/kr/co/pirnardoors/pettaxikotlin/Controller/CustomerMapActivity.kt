@@ -1128,6 +1128,17 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 val curAddress: List<Address> = geocoder.getFromLocation(lastKnownLocation.latitude, lastKnownLocation.longitude, 1)
                 Log.d("Address : : ", curAddress.get(0).getAddressLine(0))
                 curLocationTextView.text = curAddress.get(0).getAddressLine(0).substring(5)
+                val gpsEnabledAlertDialog = AlertDialog.Builder(this@CustomerMapActivity)
+                val gpsEnabledDialogView = layoutInflater.inflate(R.layout.layout_gps_enabled, null)
+                gpsEnabledAlertDialog.setView(gpsEnabledDialogView)
+                val okBtn : Button = gpsEnabledDialogView.findViewById(R.id.okBtn)
+                val dialog = gpsEnabledAlertDialog.create()
+                dialog.setCanceledOnTouchOutside(false)
+                okBtn.setOnClickListener {
+                    finish()
+                    startActivity(intent)
+                }
+                dialog.show()
             }
             val userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
 

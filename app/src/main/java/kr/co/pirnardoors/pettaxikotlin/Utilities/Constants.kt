@@ -56,6 +56,8 @@ const val DRIVERMAP_DRIVER_LONGITUDE = "driverMapDriverLongitude"
 const val DRIVERMAP_REQUEST_LATITUDE = "driverMapCustomerLatitude"
 const val DRIVERMAP_REQUEST_LONGITUDE = "driverMapCustomerLongitude"
 const val CUSTOMER_TO_DESTINATION = "customerToDestination"
+const val CUSTOMER_DESTINATION = "customerDestination"
+const val DRIVERMAP_WAGE = "wage"
 //DriverAuthorActivity
 const val LICENSE_PARCELABLE = "licenseParcelable"
 const val LICENSE_IMAGE_INTENT = 3
