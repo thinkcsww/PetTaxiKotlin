@@ -12,6 +12,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <Button
+            android:id="@+id/button5"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_marginBottom="292dp"
+            android:layout_marginEnd="28dp"
+            android:background="@drawable/blue_circle"
+            android:text="채팅하기"
+            android:textColor="@color/cardview_light_background"
+            android:textSize="18sp"
+            android:visibility="gone"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent" />
+
         <android.support.constraint.ConstraintLayout
             android:id="@+id/infoLayout"
             android:layout_width="match_parent"
@@ -229,18 +243,18 @@
                 map:layout_constraintStart_toStartOf="parent" />
         </android.support.constraint.ConstraintLayout>
 
-        <FrameLayout
-            android:id="@+id/fragmentHolder"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            map:layout_constraintBottom_toBottomOf="parent"
-            map:layout_constraintEnd_toEndOf="parent"
-            map:layout_constraintStart_toStartOf="parent"
-            map:layout_constraintTop_toTopOf="parent">
+        <!--<FrameLayout-->
+            <!--android:id="@+id/fragmentHolder"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_alignParentTop="true"-->
+            <!--android:layout_centerHorizontal="true"-->
+            <!--map:layout_constraintBottom_toBottomOf="parent"-->
+            <!--map:layout_constraintEnd_toEndOf="parent"-->
+            <!--map:layout_constraintStart_toStartOf="parent"-->
+            <!--map:layout_constraintTop_toTopOf="parent">-->
 
-        </FrameLayout>
+        <!--</FrameLayout>-->
     </android.support.constraint.ConstraintLayout>
 
 </RelativeLayout>

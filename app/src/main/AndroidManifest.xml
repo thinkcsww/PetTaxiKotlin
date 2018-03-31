@@ -50,8 +50,7 @@
             android:windowSoftInputMode="stateVisible"/>
         <activity android:name=".Controller.DriverStartActivity" />
         <activity android:name=".Controller.DriverRegisterActivity2" />
-        <activity android:name=".Controller.CustomerRegisterActivity"
-            android:windowSoftInputMode="stateAlwaysVisible"/>
+        <activity android:name=".Controller.CustomerRegisterActivity"/>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

@@ -65,6 +65,10 @@ const val CAR_IMAGE_INTENT = 4
 const val DRIVER_AUTH_INTENT_CAMERA = 8
 const val BUSINESS_IMAGE_INTENT = 10
 
+
+//CustomerRegisterActivity
+
+const val CUSTOMER_NICKNAME = "customerNickName"
 //DriverRegisterActivity
 
 const val DRIVER_NICKNAME = "driverNickName"

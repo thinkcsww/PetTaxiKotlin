@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import android.provider.Settings
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
@@ -44,6 +45,7 @@ import jp.wasabeef.glide.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.activity_customer_map.*
 import kr.co.pirnardoors.pettaxikotlin.Model.Customer
 import kr.co.pirnardoors.pettaxikotlin.R
+import kr.co.pirnardoors.pettaxikotlin.R.id.*
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
 import org.jetbrains.anko.toast
 import java.io.File
@@ -55,7 +57,7 @@ import java.util.*
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     //DB ZONE
-    var Id = FirebaseAuth.getInstance().currentUser!!.email!!
+    var Id : String = ""
     val mStorage = FirebaseStorage.getInstance().getReference()
     val customerDB = FirebaseDatabase.getInstance().getReference("Customer")
     var respondDB = FirebaseDatabase.getInstance().getReference("Respond")
@@ -126,7 +128,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         reincarnation()
-
+        Id = sharedPreferences.getString(CUSTOMER_NICKNAME, "")
         editor.putBoolean(CUSTOMER_LOGON, true)
         editor.apply()
         var thread = Thread(object : Runnable {
@@ -231,6 +233,21 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             } else {
                 toast("매칭된 Driver가 없습니다.")
             }
+        }
+
+
+
+        //Notice Button ->
+        noticeBtn.setOnClickListener {
+            val noticeAlertDialog = AlertDialog.Builder(this@CustomerMapActivity)
+            val noticeDialogView = layoutInflater.inflate(R.layout.layout_notice_customer, null)
+            noticeAlertDialog.setView(noticeDialogView)
+            val dialog = noticeAlertDialog.create()
+            val okBtn : Button = noticeDialogView.findViewById(R.id.okBtn)
+            okBtn.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
         }
         //Reservation Button
 
@@ -539,24 +556,40 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         //Log out
         logoutBtn.setOnClickListener {
-            auth.signOut()
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            geoFire.removeLocation(userId)
-            editor.putBoolean(REQUEST_ACTIVE, false)
-            editor.putBoolean(DRIVER_ACTIVE, false)
-            editor.putString(DRIVER_USERID, "")
-            editor.putString(CAR_INFO, "")
-            editor.putString(BOARDING_NUMBER, "")
-            editor.putBoolean(CUSTOMER_LOGON, false)
-            editor.putBoolean(ALARM_ALERTED, false)
-            editor.putBoolean(DRIVER_MATCHED_ALARM, false)
-            editor.putString(DEPARTURE, "출발지를 설정해주세요.")
-            editor.putString(DESTINATION, "목적지를 설정해주세요.")
-            editor.putBoolean(TRANSPORT_ACTIVE, false)
-            editor.apply()
-            finish()
-            return@setOnClickListener
+
+
+            val noticeAlertDialog = AlertDialog.Builder(this@CustomerMapActivity)
+            val noticeDialogView = layoutInflater.inflate(R.layout.layout_logout_customer, null)
+            noticeAlertDialog.setView(noticeDialogView)
+            val dialog = noticeAlertDialog.create()
+            val okBtn : Button = noticeDialogView.findViewById(R.id.okBtn)
+            val noBtn : Button = noticeDialogView.findViewById(R.id.noBtn)
+
+            okBtn.setOnClickListener {
+                dialog.dismiss()
+                auth.signOut()
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                geoFire.removeLocation(userId)
+                editor.putBoolean(REQUEST_ACTIVE, false)
+                editor.putBoolean(DRIVER_ACTIVE, false)
+                editor.putString(DRIVER_USERID, "")
+                editor.putString(CAR_INFO, "")
+                editor.putString(BOARDING_NUMBER, "")
+                editor.putBoolean(CUSTOMER_LOGON, false)
+                editor.putBoolean(ALARM_ALERTED, false)
+                editor.putBoolean(DRIVER_MATCHED_ALARM, false)
+                editor.putString(DEPARTURE, "출발지를 설정해주세요.")
+                editor.putString(DESTINATION, "목적지를 설정해주세요.")
+                editor.putBoolean(TRANSPORT_ACTIVE, false)
+                editor.apply()
+                finish()
+                return@setOnClickListener
+            }
+            noBtn.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
         }
 
         // Show Profile image bigger in Fragment
@@ -1036,7 +1069,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
+        mMap.isMyLocationEnabled = true
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         //If gps is not ready show the alert dialog to set location setting.
@@ -1097,13 +1130,12 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // if gps is ready setting a map, curLocationTextView
         if(isGPSEnabled) {
-
             try {
                 lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 var userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
                 mMap.clear()
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
-                mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
+                mMap.addMarker(MarkerOptions().position(userLocation).title("현재 위치"))
                 val curAddress: List<Address> = geocoder.getFromLocation(lastKnownLocation.latitude, lastKnownLocation.longitude, 1)
                 Log.d("Address : : ", curAddress.get(0).getAddressLine(0))
                 curLocationTextView.text = curAddress.get(0).getAddressLine(0).substring(5)
@@ -1111,6 +1143,19 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 e.message
             }
         }
+            mMap.setOnMyLocationButtonClickListener {
+                if(isGPSEnabled) {
+                    val userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
+                    mMap.clear()
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+                    mMap.addMarker(MarkerOptions().position(userLocation).title("현재 위치"))
+                    true
+                } else {
+                    toast("위치 정보 설정을 확인해주세요.")
+                    true
+                }
+            }
+
 
 
     }
@@ -1122,7 +1167,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 100f, locationListener)
 
-        val lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(lastKnownLocation != null) {
             if(curLocationTextView.text == "주소 검색중...") {
                 val curAddress: List<Address> = geocoder.getFromLocation(lastKnownLocation.latitude, lastKnownLocation.longitude, 1)
@@ -1140,11 +1185,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 dialog.show()
             }
-            val userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
-
-            mMap.clear()
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
-            mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
+//            val userLocation = LatLng(lastKnownLocation.latitude, lastKnownLocation.longitude)
+//
+//            mMap.clear()
+//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+//            mMap.addMarker(MarkerOptions().position(userLocation).title("Your Location"))
         }
 
 

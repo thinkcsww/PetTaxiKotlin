@@ -178,15 +178,29 @@ class ViewRequestActivity : AppCompatActivity() {
         //Logout button
 
         logoutBtn.setOnClickListener {
-            auth.signOut()
-            editor.putBoolean(DRIVER_LOGON, false)
-            editor.putBoolean(DRIVER_LICENSE_AUTHORIZED,false)
-            editor.putString(DRIVER_NICKNAME, "")
-            editor.apply()
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-            return@setOnClickListener
+
+            val noticeAlertDialog = AlertDialog.Builder(this@ViewRequestActivity)
+            val noticeDialogView = layoutInflater.inflate(R.layout.layout_logout_driver, null)
+            noticeAlertDialog.setView(noticeDialogView)
+            val dialog = noticeAlertDialog.create()
+            val okBtn : Button = noticeDialogView.findViewById(R.id.okBtn)
+            val noBtn : Button = noticeDialogView.findViewById(R.id.noBtn)
+
+            okBtn.setOnClickListener {
+                auth.signOut()
+                editor.putBoolean(DRIVER_LOGON, false)
+                editor.putBoolean(DRIVER_LICENSE_AUTHORIZED,false)
+                editor.putString(DRIVER_NICKNAME, "")
+                editor.apply()
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+                return@setOnClickListener
+            }
+            noBtn.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
 
         }
 
@@ -210,6 +224,20 @@ class ViewRequestActivity : AppCompatActivity() {
                 }
             }
         })
+
+        //Notice Button
+
+        noticeBtn.setOnClickListener {
+            val noticeAlertDialog = AlertDialog.Builder(this@ViewRequestActivity)
+            val noticeDialogView = layoutInflater.inflate(R.layout.layout_notice_driver, null)
+            noticeAlertDialog.setView(noticeDialogView)
+            val dialog = noticeAlertDialog.create()
+            val okBtn : Button = noticeDialogView.findViewById(R.id.okBtn)
+            okBtn.setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
+        }
         //refresh Button
 
         refreshBtn.setOnClickListener {

@@ -62,6 +62,7 @@
         android:text="시작하기!"
         android:textColor="@color/cardview_light_background"
         android:textSize="18sp"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

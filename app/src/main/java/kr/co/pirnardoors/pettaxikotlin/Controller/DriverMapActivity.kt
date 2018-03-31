@@ -270,6 +270,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         acceptBtn.setOnClickListener {
 
+
             val simpleAlert = AlertDialog.Builder(this@DriverMapActivity, R.style.AlertDialogTheme).create()
             simpleAlert.setTitle("확인")
             simpleAlert.setMessage("정말 수락하시겠습니까?")

@@ -91,18 +91,6 @@ class DriverLoginActivity : AppCompatActivity() {
 
         }
     }
-
-    fun signInWithPhone(credential: PhoneAuthCredential) {
-        auth.signInWithCredential(credential)
-                .addOnCompleteListener {
-                    Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
-                }
-    }
-
-
-
-
-
     override fun onStart() {
         super.onStart()
         auth.addAuthStateListener(authStateListener)

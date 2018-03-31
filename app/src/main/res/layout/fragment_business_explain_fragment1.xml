@@ -16,7 +16,7 @@
             android:id="@+id/textView13"
             android:layout_width="0dp"
             android:layout_height="73dp"
-            android:background="@color/cardview_dark_background"
+            android:background="@color/blue"
             android:fontFamily="@font/marko_one"
             android:paddingTop="16dp"
             android:text="사업자 등록 설명"
@@ -83,7 +83,7 @@
                 android:id="@+id/textView33"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1. 국세청 홈페이지 http://www.nts.go.kr/info/info_01_03.asp에 들어가서 사업자등록신청서(개인사업자용)을 다운받습니다." />
+                android:text="1. 국세청 홈텍스에 들어가서 로그인 후 사업자등록신청을 클릭합니다." />
 
             <TextView
                 android:id="@+id/textView34"
@@ -94,7 +94,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="3. 업태 : 주종목 : " />
+                android:text="3. 업종 선택 : 업종코드는 749401입니다. 펫 택시는 신생 업종이기 때문에 기타 개인 서비스로 구분 되어 있습니다." />
 
             <TextView
                 android:id="@+id/textView40"
