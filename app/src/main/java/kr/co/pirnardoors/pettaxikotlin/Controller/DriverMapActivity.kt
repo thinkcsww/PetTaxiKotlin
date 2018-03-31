@@ -14,10 +14,7 @@ import android.support.v4.content.ContextCompat.startActivity
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.RelativeLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -43,6 +40,7 @@ import com.kakao.kakaonavi.KakaoNaviService
 import kr.co.pirnardoors.pettaxikotlin.R.id.departureBtn
 import kr.co.pirnardoors.pettaxikotlin.R.id.toDestinationBtn
 import kr.co.pirnardoors.pettaxikotlin.Utilities.*
+import org.jetbrains.anko.find
 import java.io.IOException
 import java.lang.Math.round
 import java.util.*
@@ -50,6 +48,7 @@ import java.util.*
 
 class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    val requestDB = FirebaseDatabase.getInstance().getReference("Request")
     var calendar = Calendar.getInstance()
     var year = calendar.get(Calendar.YEAR).toString()
     var month = (calendar.get(Calendar.MONTH) + 1).toString()
@@ -80,6 +79,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
     val fragmentManager = supportFragmentManager
     var requestDistance : Double = 0.0
     var finalAlertDialog = false
+    var nickname = ""
     lateinit var req : Request
 
     //location Part
@@ -109,6 +109,8 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         Log.d("Step1", step1.toString())
         Log.d("Step2", step2.toString())
         Log.d("Step3", step3.toString())
+
+        nickname = sharedPreferences.getString(DRIVER_NICKNAME, "")
         val thread = Thread(object : Runnable{
             var alerted = false
             override fun run() {
@@ -240,6 +242,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         if(step1 == true && step2 == false) {
             departureBtn.visibility = View.VISIBLE
             acceptBtn.visibility = View.GONE
+            chatBtn.visibility = View.VISIBLE
         }
         if(step2 == true && step3 == false) {
             departureBtn.visibility = View.GONE
@@ -270,7 +273,7 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         acceptBtn.setOnClickListener {
 
-
+            chatBtn.visibility = View.VISIBLE
             val simpleAlert = AlertDialog.Builder(this@DriverMapActivity, R.style.AlertDialogTheme).create()
             simpleAlert.setTitle("확인")
             simpleAlert.setMessage("정말 수락하시겠습니까?")
@@ -330,6 +333,45 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         }
 
+        // Chatroom Btn
+
+        chatBtn.setOnClickListener {
+            val driverChatAlertDialog = AlertDialog.Builder(this@DriverMapActivity)
+            val driverChatDialogView = layoutInflater.inflate(R.layout.layout_driver_chat, null)
+            driverChatAlertDialog.setView(driverChatDialogView)
+            val dialog = driverChatAlertDialog.create()
+            val messageTextView : TextView = driverChatDialogView.findViewById(R.id.messageTextView)
+            val messageEditText : EditText = driverChatDialogView.findViewById(R.id.messageEditText)
+            val sendBtn : Button = driverChatDialogView.findViewById(R.id.sendBtn)
+            var key = 0
+            requestDB.addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError?) {
+                    if (p0 != null) p0.message
+                }
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    if (p0 != null) {
+                        val children = p0.child(requestUserId).child("Chat").children
+                        messageTextView.text = ""
+                        for (message in children) {
+                            messageTextView.append(java.lang.String.format(message.getValue().toString(), "%10s"))
+                            messageTextView.append("\n")
+                            key = message.key.toInt()
+                        }
+                    }
+                }
+
+            })
+            sendBtn.setOnClickListener {
+                val message = messageEditText.text.toString()
+                if(message != "") {
+                    requestDB.child(requestUserId).child("Chat").child((key + 1).toString()).setValue(nickname + " : " + message)
+                    messageEditText.setText("")
+                }
+            }
+            dialog.show()
+        }
+
         // Departure Button -> 출발했음을 알림
         departureBtn.setOnClickListener {
             departureBtn.visibility = View.GONE
@@ -344,7 +386,28 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             departureAlertDialog.setView(departureDialogView)
             val dialog = departureAlertDialog.create()
             val okBtn : Button = departureDialogView.findViewById(R.id.okBtn)
+
             okBtn.setOnClickListener {
+                toDestinationBtn.visibility = View.VISIBLE
+                val options = NaviOptions.newBuilder()
+                        .setCoordType(CoordType.WGS84)
+                        .setVehicleType(VehicleType.FIRST)
+                        .setRpOption(RpOption.SHORTEST).build()
+
+                val destination = Location.newBuilder("목적지", requestLatLng!!.longitude, requestLatLng!!.latitude).build()
+
+
+                // 경유지를 1개 포함하는 KakaoNaviParams.Builder 객체
+
+                val builder = KakaoNaviParams.newBuilder(destination)
+                        .setNaviOptions(NaviOptions.newBuilder().setCoordType(CoordType.WGS84).build())
+
+                KakaoNaviService.shareDestination(this@DriverMapActivity, builder.build())
+                KakaoNaviService.navigate(this@DriverMapActivity, builder.build())
+                toDestinationBtn.visibility = View.VISIBLE
+                dialog.dismiss()
+            }
+            dialog.setOnCancelListener {
                 toDestinationBtn.visibility = View.VISIBLE
                 val options = NaviOptions.newBuilder()
                         .setCoordType(CoordType.WGS84)
@@ -465,14 +528,11 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
         calendar = Calendar.getInstance()
         year = calendar.get(Calendar.YEAR).toString()
         month = (calendar.get(Calendar.MONTH) + 1).toString()
-
         distanceTextView.text = "운행거리 : ${distance}"
         wageTextView.text = "운행요금(수수료 처리 전) : ${wage}"
         driveTimesTextView.text = "이번 달 운행 수 : ${driveTime + 1}"
         earnTextView.text = "이번 달 소득 : ${earn + wage}"
-        dialog.show()
         okBtn.setOnClickListener {
-
             driverDB.child(driverUserId).child(year + month).child("DriveTime").setValue(driveTime + 1)
             driverDB.child(driverUserId).child(year + month).child("Earn").setValue(earn + wage)
 
@@ -488,8 +548,9 @@ class DriverMapActivity : AppCompatActivity(), OnMapReadyCallback {
             dialog.dismiss()
             finish()
             return@setOnClickListener
-
         }
+
+        dialog.show()
 
     }
 

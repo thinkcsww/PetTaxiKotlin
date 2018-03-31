@@ -2,6 +2,7 @@ package kr.co.pirnardoors.pettaxikotlin.Controller
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -37,10 +38,10 @@ import org.jetbrains.anko.toast
 import java.io.IOException
 import java.text.Format
 
-class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
+class MeetActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
-    var timeStamp = System.currentTimeMillis()/1000;
+    var timeStamp = System.currentTimeMillis() / 1000;
     var recordDB = FirebaseDatabase.getInstance().getReference("Record").child(timeStamp.toString())
     var driverDB = FirebaseDatabase.getInstance().getReference("Driver")
     val requestDB = FirebaseDatabase.getInstance().getReference("Request")
@@ -53,27 +54,27 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
     private var mainWebView: WebView? = null
     private val APP_SCHEME = "iamporttest://"
     val database = FirebaseDatabase.getInstance().getReference("Request")
-    var locationManager : LocationManager? = null
-    var locationListener : LocationListener? = null
-    var distanceFromDestinationM : Double? = null
-    var destinationLatitude : Double? = null
-    var destinationLongitude : Double? = null
-    var destinationLocation : Location? = null
+    var locationManager: LocationManager? = null
+    var locationListener: LocationListener? = null
+    var distanceFromDestinationM: Double? = null
+    var destinationLatitude: Double? = null
+    var destinationLongitude: Double? = null
+    var destinationLocation: Location? = null
     var destination = ""
     var distanceKm = 0.0
     var activityOn = true
-    lateinit var mMap : GoogleMap
-    lateinit var lastKnownLocation : Location
-    lateinit var currentLocation : Location
-    lateinit var previousLocation : Location
+    lateinit var mMap: GoogleMap
+    lateinit var lastKnownLocation: Location
+    lateinit var currentLocation: Location
+    lateinit var previousLocation: Location
     private var userId = FirebaseAuth.getInstance().currentUser?.uid
     var driverUserId = ""
     var transportActive = false
     var meetActivityACtive = true
-    var distance : Double = 0.0
-    var wage : Int = 5000
+    var distance: Double = 0.0
+    var wage: Int = 5000
     val TAG = "MeetActivity"
-
+    var paid = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_meet)
@@ -89,7 +90,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
 
         transportActive = sharedPreferences.getBoolean(TRANSPORT_ACTIVE, false)
-        if(transportActive == true) {
+        if (transportActive == true) {
             reincarnation()
         }
 
@@ -147,7 +148,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                 try {
                     while (activityOn == true) {
                         Thread.sleep(1000)
-                        if(transportActive == true) {
+                        if (transportActive == true) {
                             runOnUiThread(object : Runnable {
                                 override fun run() {
                                     distanceFromDestinationM = lastKnownLocation.distanceTo(destinationLocation).toDouble()
@@ -186,13 +187,13 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
         lastKnownLocation = locationManager!!.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         currentLocation = lastKnownLocation
-        distanceKm = currentLocation.distanceTo(destinationLocation)/ 1000.toDouble()
+        distanceKm = currentLocation.distanceTo(destinationLocation) / 1000.toDouble()
         editor.putString(DISTANCE_TO_DESTINATION, distanceKm.toString())
         distanceText.text = "목적지까지 직선거리 : ${String.format("%.2f", distanceKm)}km"
         if (distanceKm <= 5.0) {
@@ -225,14 +226,15 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
         val sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        requestDB.child(userId).addValueEventListener(object : ValueEventListener{
+        requestDB.child(userId).addValueEventListener(object : ValueEventListener {
             override fun onCancelled(err: DatabaseError?) {
-                if(err != null) {
+                if (err != null) {
                     err.message
                 }
             }
+
             override fun onDataChange(dataSnapshot: DataSnapshot?) {
-                if(dataSnapshot != null) {
+                if (dataSnapshot != null) {
                     try {
                         destinationLatitude = dataSnapshot.child("DestinationLatitude").getValue().toString().toDouble()
                         destinationLongitude = dataSnapshot.child("DestinationLongitude").getValue().toString().toDouble()
@@ -249,7 +251,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                         if (driverUserId != "") {
                             getDriverInfo()
                         }
-                    } catch (e : NumberFormatException) {
+                    } catch (e: NumberFormatException) {
                         e.message
                     }
 
@@ -267,6 +269,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     p0.message
                 }
             }
+
             override fun onDataChange(p0: DataSnapshot?) {
                 var dataSnapshot = p0
                 if (dataSnapshot != null) {
@@ -295,20 +298,18 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
 
 
         //Yes Button
-        simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", {
-            dialogInterface, i ->
-            transportActive = false
-            editor.putString(DESTINATION, "")
-            editor.putInt(WAGE, 0)
-            editor.putString(DISTANCE_TO_DESTINATION, "")
-            editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
-            editor.apply()
+        simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "네", { dialogInterface, i ->
+//            transportActive = false
+//            editor.putString(DESTINATION, "")
+//            editor.putInt(WAGE, 0)
+//            editor.putString(DISTANCE_TO_DESTINATION, "")
+//            editor.putBoolean(TRANSPORT_ACTIVE, transportActive)
+//            editor.apply()
             kakaoPay()
 
         })
         // No Button
-        simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", {
-            dialogInterface, i ->
+        simpleAlert.setButton(AlertDialog.BUTTON_NEGATIVE, "아니오", { dialogInterface, i ->
             toast("취소되었습니다.")
         })
 
@@ -320,6 +321,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
      */
     private fun kakaoPay() {
         mainWebView = findViewById(R.id.mainWebView) as WebView
+        mainWebView!!.visibility = View.VISIBLE
         mainWebView!!.setWebViewClient(KakaoWebViewClient(this))
         val settings = mainWebView!!.getSettings()
         settings!!.javaScriptEnabled = true
@@ -336,6 +338,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
         val intentData = intent.data
 
         if (intentData == null) run {
+            Log.d("결제", paid.toString())
             mainWebView!!.loadData("<!DOCTYPE html>\n" +
                     "<!-- 아임포트 자바스크립트는 jQuery 기반으로 개발되었습니다 -->\n" +
                     "<script type=\"text/javascript\" src=\"https://code.jquery.com/jquery-1.12.4.min.js\" ></script>\n" +
@@ -352,8 +355,8 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     "    pg : 'kakao', // version 1.1.0부터 지원.\n" +
                     "    pay_method : 'card',\n" +
                     "    merchant_uid : 'merchant_' + new Date().getTime(),\n" +
-                    "    name : '캣카톡 결제',\n" +
-                    "    amount : $wage,\n" +
+                    "    name : '구매',\n" +
+                    "    amount : 1000,\n" +
                     "    buyer_email : 'iamport@siot.do',\n" +
                     "    buyer_name : '구매자이름',\n" +
                     "    buyer_tel : '010-1234-5678',\n" +
@@ -368,6 +371,7 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     "        msg += '상점 거래ID : ' + rsp.merchant_uid;\n" +
                     "        msg += '결제 금액 : ' + rsp.paid_amount;\n" +
                     "        msg += '카드 승인번호 : ' + rsp.apply_num;\n" +
+
                     "    } else {\n" +
                     "        var msg = '결제에 실패하였습니다.';\n" +
                     "        msg += '에러내용 : ' + rsp.error_msg;\n" +
@@ -376,15 +380,16 @@ class MeetActivity : AppCompatActivity(), OnMapReadyCallback{
                     "    alert(msg);\n" +
                     "});\n" +
                     "</script>\n", "text/html; charset=utf-8", "UTF-8")
-        } else {
+        }
+        else {
             //isp 인증 후 복귀했을 때 결제 후속조치
             val url = intentData.toString()
             if (url.startsWith(APP_SCHEME)) {
                 val redirectURL = url.substring(APP_SCHEME.length + 3)
                 mainWebView!!.loadUrl(redirectURL)
             }
-        }
 
+        }
 
     }
 

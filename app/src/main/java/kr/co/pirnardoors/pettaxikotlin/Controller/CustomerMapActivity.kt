@@ -57,7 +57,7 @@ import java.util.*
 class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     //DB ZONE
-    var Id : String = ""
+    var nickName : String = ""
     val mStorage = FirebaseStorage.getInstance().getReference()
     val customerDB = FirebaseDatabase.getInstance().getReference("Customer")
     var respondDB = FirebaseDatabase.getInstance().getReference("Respond")
@@ -128,7 +128,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         reincarnation()
-        Id = sharedPreferences.getString(CUSTOMER_NICKNAME, "")
+        nickName = sharedPreferences.getString(CUSTOMER_NICKNAME, "")
         editor.putBoolean(CUSTOMER_LOGON, true)
         editor.apply()
         var thread = Thread(object : Runnable {
@@ -233,6 +233,45 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             } else {
                 toast("매칭된 Driver가 없습니다.")
             }
+        }
+
+        //chatting button ->
+
+        chatBtn.setOnClickListener {
+            val customerChatAlertDialog = AlertDialog.Builder(this@CustomerMapActivity)
+            val customerChatDialogView = layoutInflater.inflate(R.layout.layout_customer_chat, null)
+            customerChatAlertDialog.setView(customerChatDialogView)
+            val dialog = customerChatAlertDialog.create()
+            val messageTextView : TextView = customerChatDialogView.findViewById(R.id.messageTextView)
+            val messageEditText : EditText = customerChatDialogView.findViewById(R.id.messageEditText)
+            val sendBtn : Button = customerChatDialogView.findViewById(R.id.sendBtn)
+            var key = 0
+            requestDB.addValueEventListener(object : ValueEventListener{
+                override fun onCancelled(p0: DatabaseError?) {
+                    if (p0 != null) p0.message
+                }
+
+                override fun onDataChange(p0: DataSnapshot?) {
+                    if (p0 != null) {
+                        val children = p0.child(userId).child("Chat").children
+                        messageTextView.text = ""
+                        for (message in children) {
+                            messageTextView.append(java.lang.String.format(message.getValue().toString(), "%10s"))
+                            messageTextView.append("\n")
+                            key = message.key.toInt()
+                        }
+                    }
+                }
+
+            })
+            sendBtn.setOnClickListener {
+                val message = messageEditText.text.toString()
+                if(message != "") {
+                    requestDB.child(userId).child("Chat").child((key + 1).toString()).setValue(nickName + " : " + message)
+                    messageEditText.setText("")
+                }
+            }
+            dialog.show()
         }
 
 
@@ -468,6 +507,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                                     requestDB.child(userId).child("Reservation").setValue(calendar.time.toString())
                                     requestDB.child(userId).child("DD").setValue("false")
                                     requestDB.child(userId).child("TD").setValue("false")
+                                    requestDB.child(userId).child("Chat").child("0").setValue("")
                                     departure = departureText.text.toString()
                                     destination = destinationText.text.toString()
                                     editor.putString(DEPARTURE, departure)
@@ -535,6 +575,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                         destinationText.text = "목적지를 설정해주세요."
                         departureText.text = "출발지를 설정해주세요."
                         callBtn.setText("캣카독 부르기")
+                        chatBtn.visibility = View.INVISIBLE
                         number = ""
                         destination = ""
                         geoFire.removeLocation(userId, GeoFire.CompletionListener { key, error ->
@@ -823,6 +864,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
                     myRunnable = Runnable {
                         callBtn.setVisibility(View.VISIBLE)
                         callBtn.setText("캣카독 부르기")
+                        chatBtn.visibility = View.INVISIBLE
                         updateMap(lastKnownLocation)
 
                         matchText.visibility = View.INVISIBLE
@@ -891,6 +933,7 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
             } else {
                 matchText.visibility = View.VISIBLE
                 matchText.text = "출발 대기중입니다."
+                chatBtn.visibility = View.VISIBLE
             }
         }
     }
@@ -1045,11 +1088,11 @@ class CustomerMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private fun uploadImage() {
-        if(Id != "") {
+        if(nickName != "") {
             val progressDialog = ProgressDialog(this)
             progressDialog.setTitle("잠시만 기다려주세요...")
             progressDialog.show()
-            mStorage.child(Id).child("Profile").putFile(profileImagefilePath).addOnSuccessListener {
+            mStorage.child(nickName).child("Profile").putFile(profileImagefilePath).addOnSuccessListener {
                 profileImageUrl = it.downloadUrl.toString()
                 customerDB.child(userId).child("Profile").setValue(profileImageUrl)
 
