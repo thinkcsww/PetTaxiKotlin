@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.activity_block.*
 import kr.co.pirnardoors.pettaxikotlin.R
 import kr.co.pirnardoors.pettaxikotlin.Utilities.DRIVER_NICKNAME
 import kr.co.pirnardoors.pettaxikotlin.Utilities.PREF_NAME
+import org.jetbrains.anko.toast
 
 class BlockActivity : AppCompatActivity() {
     var userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -26,7 +27,7 @@ class BlockActivity : AppCompatActivity() {
         var editor = sharedPreferences.edit()
         var Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
         welcomText.text = "${Id}님\n 반갑습니다!"
-
+        toast("ad");
         okBtn.setOnClickListener {
             auth.signOut()
             val intent = Intent(this@BlockActivity, MainActivity::class.java)
