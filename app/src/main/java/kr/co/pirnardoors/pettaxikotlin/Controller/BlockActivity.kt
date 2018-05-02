@@ -27,7 +27,6 @@ class BlockActivity : AppCompatActivity() {
         var editor = sharedPreferences.edit()
         var Id = sharedPreferences.getString(DRIVER_NICKNAME, "")
         welcomText.text = "${Id}님\n 반갑습니다!"
-        toast("ad");
         okBtn.setOnClickListener {
             auth.signOut()
             val intent = Intent(this@BlockActivity, MainActivity::class.java)
